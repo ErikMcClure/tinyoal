@@ -1,0 +1,59 @@
+*********************
+* TinyOAL Changelog *
+*********************
+
+0.9.93
+------
+- Changed cAudio to request a source when it starts playing for the first time
+- Added Replace() convenience function to cAudio which lets you swap the audio resource out
+- Added several overloads to PlaySound()
+
+0.9.92
+------
+- Threw out useless errlog.h header
+- Standardized logging and put useful log messages everywhere
+- Utilizes bss_compiler.h
+- TinyOAL.rc included for windows version info
+- Replaced proprietary openAL with open-source softOAL implementation
+- Threw out stupid linked list implementation
+- Renamed ManagedLoad to PlaySound
+- Updated examples
+- Renamed SetLoopPoint to SetLoopPointSeconds and SetLoopPointSamples to SetLoopPoint
+- Now compiles to 64-bit using the 64-bit softOAL library. Unfortunately, we don't have a matching 64-bit ogg.dll so only 01 WavFile works in 64-bit.
+
+0.9.91
+------
+- Updated to use bss-util v0.3.82
+- Removed lame attempt at using LAME
+- All MP3 components must be forced on by using __INCLUDE_MP3. This is, of course, useless, becuase they don't work right now.
+- Evil #pragma once usage replaced by include gaurds
+
+0.9.9
+-----
+- Fixed invalid resource deletion
+- Fixed incorrect Play() source
+- Renamed AUDIO_flags to TINYOAL_flags
+- Removed Permaloads
+- Introduced cAudioRefs for reference management as a replacement to permaloading
+- Introduced a ManagedCreate function that allows you to create an audio source and have it be automatically deleted after it finishes playing
+- Various utility updates
+
+0.9.85
+------
+- Added changelog
+- Added version number to source
+- Added several OGG function calls
+- Implemented a faster Reset for OGG using ov_seek_raw()
+- Added time to sample conversion for all formats
+- Implemented skipping
+- Implemented loop points
+- OGG format now looks for LOOPSTART and automatically sets the loop point to that on load
+- Added looping utility to insert LOOPSTART into an OGG file and added its associated dependencies
+
+0.9.8
+-----
+- Minor bugfixees
+
+0.9.5
+-----
+- Initial Public Release
