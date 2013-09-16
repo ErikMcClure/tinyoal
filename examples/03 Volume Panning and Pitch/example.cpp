@@ -5,16 +5,15 @@
  * Copyright ©2013 Erik McClure
  */
 
-
-#include "TinyOAL.h"
+#include "cTinyOAL.h"
 
 using namespace TinyOAL;
 
 int __cdecl main()
 {
   cTinyOAL engine;
-  cAudioRef songref("..\\media\\mono.ogg", TINYOAL_AUTOPLAY|TINYOAL_LOOP);
-  cAudio song(songref); // We can initialize an audio instance from any resource reference.
+  cAudioResource* songref = cAudioResource::Create("..\\media\\mono.ogg",0,0);
+  cAudio song(songref,TINYOAL_ISPLAYING); // We can initialize an audio instance from any resource reference.
   
   song.SetPitch(2.0f);
   song.SetPosition(1.0f); //If you do not specify 1.0f on either the y or z axis, the ratios between everything

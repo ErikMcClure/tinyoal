@@ -6,7 +6,6 @@
 #include "cAudioResourceMP3.h"
 #include "cMp3Functions.h"
 #include "cTinyOAL.h"
-#include "cDataStream.h"
 
 using namespace TinyOAL;
 
@@ -23,21 +22,21 @@ cAudioResourceMP3::cAudioResourceMP3(const cAudioResourceMP3 &copy) : cAudioReso
 // Constructor that takes a file pointer, a length of data to copy, and a set of flags.
 // It appears to pull the data off the file and then calls a constructor with a flag to load the file into memory.
 // The constructor it calls then loads the file into memory regardless of whether that flag is set or not.
-cAudioResourceMP3::cAudioResourceMP3(_iobuf *file, unsigned int datalength, T_TINYOAL_FLAGS flags) : cAudioResource(file, datalength, flags|TINYOAL_LOADINTOMEMORY), _filebuf(0)
+cAudioResourceMP3::cAudioResourceMP3(_iobuf *file, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(file, datalength, flags|TINYOAL_LOADINTOMEMORY), _filebuf(0)
 {
   _functions = cTinyOAL::Instance()->getMP3();
 }
 
 // "Reading from a file path"
 // Constructor takes a file name and flags. Most of the work is done in the base class's constructor.
-cAudioResourceMP3::cAudioResourceMP3(const char *file, T_TINYOAL_FLAGS flags) : cAudioResource(file, flags), _filebuf(0)
+cAudioResourceMP3::cAudioResourceMP3(const char *file, TINYOAL_FLAG flags) : cAudioResource(file, flags), _filebuf(0)
 {
   _functions = cTinyOAL::Instance()->getMP3();
 }
 
 // "Reading from an arbitrary point in memory for x number of bytes."
 // Constructor that takes a data pointer, a length of data, and flags.
-cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, T_TINYOAL_FLAGS flags) : cAudioResource(data, datalength, flags), _filebuf(0)
+cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags) : cAudioResource(data, datalength, flags), _filebuf(0)
 {
   _functions = cTinyOAL::Instance()->getMP3();
 }
@@ -45,6 +44,7 @@ cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, T_TINY
 // Destructor that doesn't do anything
 cAudioResourceMP3::~cAudioResourceMP3()
 {
+  _destruct();
 }
 
 //////////////////////////
@@ -62,7 +62,7 @@ struct id3v2header
  unsigned char size;
 };
 
-/* This returns an AUDIOSTREAM on success, or NULL on failure */
+// This returns an AUDIOSTREAM on success, or NULL on failure 
 AUDIOSTREAM* cAudioResourceMP3::OpenStream()
 {
   AUDIOSTREAM* retval = cAudioResource::OpenStream();
@@ -101,8 +101,8 @@ AUDIOSTREAM* cAudioResourceMP3::OpenStream()
   _filebuf = new unsigned char[_framesize];
   return 0;
 }
-/* This reads the next chunk of MP3 specific data. pDecodeBuffer must be at least GetBufSize() long */
-unsigned long cAudioResourceMP3::ReadNext(AUDIOSTREAM* stream, char* pDecodeBuffer)
+// This reads the next chunk of MP3 specific data. pDecodeBuffer must be at least GetBufSize() long 
+unsigned long cAudioResourceMP3::Read(AUDIOSTREAM* stream, char* pDecodeBuffer)
 {
   short* left=0; //This will cause a runtime error but since we dont' even get this far yet i don't care
   short* right=0;
@@ -130,7 +130,7 @@ unsigned long cAudioResourceMP3::ReadNext(AUDIOSTREAM* stream, char* pDecodeBuff
 
   return retval;
 }
-/* This resets the stream to the beginning. */
+// This resets the stream to the beginning. 
 bool cAudioResourceMP3::Reset(AUDIOSTREAM* stream)
 {
   if(stream->isfile)
@@ -140,7 +140,7 @@ bool cAudioResourceMP3::Reset(AUDIOSTREAM* stream)
 
   return false;
 }
-/* This closes a stream and destroys any associated data (not the actual audio source itself) */
+// This closes a stream and destroys any associated data (not the actual audio source itself) 
 void cAudioResourceMP3::CloseStream(AUDIOSTREAM* stream)
 {
   cAudioResource::CloseStream(stream);

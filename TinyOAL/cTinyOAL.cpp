@@ -3,21 +3,23 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "cTinyOAL.h"
-#include <fstream>
-#include "openAL\aldlist.h"
 #include "openAL\al.h"
 #include "openAL\alc.h"
-#define WINVER 0x0502
-#define _WIN32_WINNT 0x0502    
-#define WIN32_LEAN_AND_MEAN
-#include "openAL\CWaves.h"
+#include "openAL\loadoal.h"
 #include "cAudioResource.h"
 #include "cAudio.h"
 #include "cOggFunctions.h"
 #include "cMp3Functions.h"
+#include "cWaveFunctions.h"
+#include <fstream>
 
 using namespace TinyOAL;
 using namespace bss_util;
+
+#ifdef BSS_PLATFORM_WIN32
+#include "bss_util\bss_win32_includes.h"
+
+OPENALFNTABLE* cTinyOAL::oalFuncs=0;
 
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.
 extern size_t BSS_FASTCALL UTF8toUTF16(const char* input,wchar_t* output, size_t buflen)
@@ -29,65 +31,26 @@ extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, char* output, size_
 {
   return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, -1, output, !output?0:buflen, NULL, NULL);
 }
+#else //POSIX
 
-#pragma warning(push)
-#pragma warning(disable:4355)
-cTinyOAL::cTinyOAL(char defaultbuffers, std::ostream* errout) : cSingleton<cTinyOAL>(this), _audiolist(0), _errbuf(0)
-{
-  if(!errout) //if errout is zero, produce a default filestream to write to
-  {
-    _errbuf = new std::filebuf();
-    _errout = new std::ostream(_errbuf);
-    _errbuf->open("TinyOAL_log.txt", std::ios_base::trunc+std::ios_base::out); //clear and open file for writing
-  }
-  else
-    _errout = errout;
-
-  _oggfuncs = new cOggFunctions(_errout);
-#ifdef __INCLUDE_MP3
-  _mp3funcs = new cMp3Functions(_errout);
 #endif
-  _construct(defaultbuffers);
-}
 
-cTinyOAL::cTinyOAL(const char* logfile, char defaultbuffers) : cSingleton<cTinyOAL>(this), _audiolist(0), _errbuf(new std::filebuf())
+cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
+  defNumBuf(defnumbuf)
 {
-  _errout = new std::ostream(_errbuf);
-  _errbuf->open(!logfile?L"TinyOAL_log.txt":cStrW(logfile), std::ios_base::trunc+std::ios_base::out); //clear and open file for writing
-
-  _oggfuncs = new cOggFunctions(_errout);
-#ifdef __INCLUDE_MP3
-  _mp3funcs = new cMp3Functions(_errout);
-#endif
-  _construct(defaultbuffers);
+  _construct(errout,"TinyOAL_log.txt");
 }
-#pragma warning(pop)
+cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
+  defNumBuf(defnumbuf)
+{
+  _construct(0,!logfile?"TinyOAL_log.txt":logfile);
+}
 
 cTinyOAL::~cTinyOAL()
 {
-  /* DEBUG VERIFY */
-#if defined(DEBUG) || defined(_DEBUG)
-  cKhash_Pointer<char,false> hasher;
-  cAudio* dcur = _audiolist;
-  khiter_t iter;
-  while(dcur) {
-    iter = hasher.GetIterator(dcur);
-    assert(!hasher.Exists(iter));
-    hasher.Insert(dcur,0);
-    dcur=dcur->next;
-  }
-#endif
-
-  /* Destroy managed pointers */
-  cAudio* cur = _audiolist;
-  while(cur) {
-    if(cur->GetFlags()&TINYOAL_MANAGED)
-      delete cur;
-    cur->prev=0;
-    cur=cur->next;
-  }
-
-  cAudioResource::DeleteAll();
+  // Destroy managed pointers 
+  while(_activereslist) delete _activereslist;
+  while(_reslist) delete _reslist;
 
   if(_errbuf) //if this is not 0, it means we used it as a backup error output and we need to blow it up
   {
@@ -98,177 +61,194 @@ cTinyOAL::~cTinyOAL()
     _errout = 0;
   } //otherwise _errout is just a pointer that we don't want to mess with
 
-  if(_functions) //If _functions doesn't exist, we don't need to do (or are capable of doing) this
+  if(oalFuncs) //If _functions doesn't exist, we don't need to do (or are capable of doing) this
   {
-	  ALCcontext* pContext = _functions->alcGetCurrentContext();
-	  ALCdevice* pDevice = _functions->alcGetContextsDevice(pContext);
+	  ALCcontext* pContext = oalFuncs->alcGetCurrentContext();
+	  ALCdevice* pDevice = oalFuncs->alcGetContextsDevice(pContext);
   	
-	  _functions->alcMakeContextCurrent(NULL);
-	  _functions->alcDestroyContext(pContext);
-	  _functions->alcCloseDevice(pDevice);
+	  oalFuncs->alcMakeContextCurrent(NULL);
+	  oalFuncs->alcDestroyContext(pContext);
+	  oalFuncs->alcCloseDevice(pDevice);
+    UnloadOAL10Library();
+    delete oalFuncs;
+    oalFuncs=0;
   }
 
-  if(_devicelist)
-    delete _devicelist;
-  if(_waveLoader)
-    delete _waveLoader;
-  if(_oggfuncs)
-    delete _oggfuncs;
+  if(waveFuncs) delete waveFuncs;
+  if(oggFuncs) delete oggFuncs;
+  if(mp3Funcs) delete mp3Funcs;
 }
-
-void cTinyOAL::_construct(int defaultbuffers)
-{
-  _defaultbuffers = defaultbuffers;
-  _functions = 0;
-  _waveLoader = 0;
-
-  //create the wave loader
-  _waveLoader = new CWaves();
-
-  //OpenAL initialization code
-  _devicelist = NULL;
-	ALCcontext* pContext = NULL;
-	ALCdevice* pDevice = NULL;
-
-	_devicelist = new ALDeviceList();
-	if ((_devicelist) && (_devicelist->GetNumDevices()))
-	{
-    pDevice = _devicelist->getFunctions()->alcOpenDevice(_devicelist->GetDeviceName(_devicelist->GetDefaultDevice()));
-		if (pDevice)
-		{
-			pContext = _devicelist->getFunctions()->alcCreateContext(pDevice, NULL);
-			if (pContext)
-			{
-        TINYOAL_LOG("INFO") << "Opened Device: " << _devicelist->getFunctions()->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-				_devicelist->getFunctions()->alcMakeContextCurrent(pContext);
-		    _functions = _devicelist->getFunctions();
-			}
-			else
-      {
-				_devicelist->getFunctions()->alcCloseDevice(pDevice);
-        TINYOAL_LOG("ERROR") << "Failed to create context for " << _devicelist->getFunctions()->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-      }
-		}
-    else
-      TINYOAL_LOG("ERROR") << "Failed to open device: " << _devicelist->getFunctions()->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-	}
-  else if(!_devicelist->GetNumDevices())
-    TINYOAL_LOG("WARNING") << "No devices in device list!" << std::endl;
-  else
-    TINYOAL_LOG("ERROR") << "Failed to create device list" << std::endl;
-
-}
-bool cTinyOAL::_addaudio(cAudio* ref)
-{ // We have to ensure ref is not in the list, _instance exists, and its not in the hash.
-  if(_instance!=0 && !ref->prev && ref!=_instance->_audiolist && !(_instance->_audiohash.Exists(_instance->_audiohash.GetIterator(ref))))
-  {
-    LLAdd(ref,_instance->_audiolist);
-    return _instance->_audiohash.Insert(ref,1);
-  }
-  return false;
-}
-
-bool cTinyOAL::_removeaudio(cAudio* ref)
-{
-  if(!ref->prev && ref!=_instance->_audiolist) return false; // You aren't in the list.
-  if(_instance)
-  {
-    if(_instance->_audiohash.Remove(ref)) {
-      LLRemove(ref,_instance->_audiolist);
-      ref->prev=0;
-      if(ref->_flags&TINYOAL_MANAGED)
-        delete ref;
-      return true;
-    }
-  }
-  assert(false); // Should never get here or something is broken.
-  return false;
-}
-
 unsigned int cTinyOAL::Update()
 {
-  cAudio* cur = _audiolist;
-  cAudio* hold;
-  while(cur) {
+  unsigned int a=0;
+  cAudioResource* cur;
+  cAudioResource* hold = _activereslist; // Theoretically an audioresource CAN get destroyed by an update() indirectly.
+  cAudio* x;
+  cAudio* t;
+  while(cur=hold) {
     hold=cur->next;
-    cur->Update();
-    cur=hold;
+    t=cur->_activelist;
+    while(x=t) {
+      t=x->next;
+      a+=(char)x->Update();
+    }
   }
-  return _audiohash.Length();
+  return a;
 }
 std::ostream& BSS_FASTCALL cTinyOAL::FormatLog(const char* FILE, unsigned int LINE)
 {
-  (*_errout) << '(' << _trimpath(FILE) << ':' << LINE << ") ";
+	const char* r=strrchr(FILE,'/');
+	const char* r2=strrchr(FILE,'\\');
+  r=bssmax(r,r2);
+  FILE = (!r)?FILE:(r+1);
+
+  (*_errout) << '(' << FILE << ':' << LINE << ") ";
   return *_errout;
 }
-const char* BSS_FASTCALL cTinyOAL::_trimpath(const char* path)
-{
-	const char* r=strrchr(path,'/');
-	const char* r2=strrchr(path,'\\');
-  r=bssmax(r,r2);
-  return (!r)?path:(r+1);
-}
+cTinyOAL* cTinyOAL::Instance() { return _instance; }
 
-//void cTinyOAL::PermaLoad(const char* file)
-//{
-//  cAudioResource::CreateAudioReference(file, TINYOAL_LOADINTOMEMORY);
-//}
-//
-//void cTinyOAL::PermaLoad(void* data, unsigned int datalength)
-//{
-//  cAudioResource::CreateAudioReference(data,datalength, TINYOAL_LOADINTOMEMORY);
-//}
-//
-//void cTinyOAL::PermaLoad(_iobuf* file, unsigned int datalength)
-//{
-//  cAudioResource::CreateAudioReference(file,datalength, TINYOAL_LOADINTOMEMORY);
-//}
-//
-//void cTinyOAL::UnPermaLoad(const char* file)
-//{
-//  cAudioResource* retval = cAudioResource::CreateAudioReference(file, TINYOAL_LOADINTOMEMORY);
-//  retval->Drop(); //Negates our call to CreateAudioReference, and...
-//  retval->Drop(); //actually drops the permanent reference
-//}
-//
-//void cTinyOAL::UnPermaLoad(void* data, unsigned int datalength)
-//{
-//  cAudioResource* retval = cAudioResource::CreateAudioReference(data, datalength, TINYOAL_LOADINTOMEMORY);
-//  retval->Drop(); //Negates our call to CreateAudioReference, and...
-//  retval->Drop(); //actually drops the permanent reference
-//}
-//
-//void cTinyOAL::UnPermaLoad(_iobuf* file, unsigned int datalength)
-//{
-//  cAudioResource* retval = cAudioResource::CreateAudioReference(file,datalength, TINYOAL_LOADINTOMEMORY);
-//  retval->Drop(); //Negates our call to CreateAudioReference, and...
-//  retval->Drop(); //actually drops the permanent reference
-//}
-//cAudio* cTinyOAL::ManagedLoad(const char* file, int flags)
-//{
-//  return new cAudio(file,flags|TINYOAL_MANAGED);
-//}
-//cAudio* cTinyOAL::ManagedLoad(void* data, unsigned int datalength, int flags)
-//{
-//  return new cAudio(data,datalength,flags|TINYOAL_MANAGED);
-//}
-//cAudio* cTinyOAL::ManagedLoad(_iobuf* file, unsigned int datalength, int flags)
-//{
-//  return new cAudio(file,datalength,flags|TINYOAL_MANAGED);
-//}
-cAudio* cTinyOAL::PlaySound(const cAudioRef& ref)
+typedef struct
 {
-  return new cAudio(ref,TINYOAL_MANAGED);
+	std::string			strDeviceName;
+	int				iMajorVersion;
+	int				iMinorVersion;
+	unsigned int	uiSourceCount;
+	std::vector<std::string>	pvstrExtensions;
+	bool			bSelected;
+} ALDEVICEINFO, *LPALDEVICEINFO;
+
+void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
+{
+  if(!errout) //if errout is zero, produce a default filestream to write to
+  {
+    _errbuf = new std::filebuf();
+    _errout = new std::ostream(_errbuf);
+    _errbuf->open(logfile, std::ios_base::trunc+std::ios_base::out); //clear and open file for writing
+  }
+  else
+    _errout = errout;
+  
+  oalFuncs=0;
+  OPENALFNTABLE* functmp = new OPENALFNTABLE();
+
+  //OpenAL initialization code
+	const char *actualDeviceName;
+  OPENALFNTABLE& ALFunction=*functmp;
+  std::vector<ALDEVICEINFO> vDeviceInfo(5);
+	size_t defaultDeviceIndex = 0;
+
+	// grab function pointers for 1.0-API functions, and if successful proceed to enumerate all devices
+	if (LoadOAL10Library(NULL, &ALFunction) == TRUE) {
+		if (ALFunction.alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
+			char* devices = (char *)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+			const char* defaultDeviceName = (char *)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+			size_t index = 0;
+			// go through device list (each device terminated with a single NULL, list terminated with double NULL)
+			while (*devices != NULL) {
+				if(!strcmp(defaultDeviceName, devices)) {
+					defaultDeviceIndex = index;
+				}
+				ALCdevice *device = ALFunction.alcOpenDevice(devices);
+				if (device) {
+					ALCcontext *context = ALFunction.alcCreateContext(device, NULL);
+					if (context) {
+						ALFunction.alcMakeContextCurrent(context);
+						actualDeviceName = ALFunction.alcGetString(device, ALC_DEVICE_SPECIFIER);
+						bool bNewName = true;
+						for (size_t i = 0; i < vDeviceInfo.size(); i++) {
+							if (!strcmp(vDeviceInfo[i].strDeviceName.c_str(), actualDeviceName))
+								bNewName = false;
+						}
+						if ((bNewName) && (actualDeviceName != NULL) && (strlen(actualDeviceName) > 0)) {
+              vDeviceInfo.resize(vDeviceInfo.size()+1);
+              ALDEVICEINFO& ALDeviceInfo = vDeviceInfo.back();
+							ALDeviceInfo.bSelected = true;
+							ALDeviceInfo.strDeviceName = actualDeviceName;
+							ALFunction.alcGetIntegerv(device, ALC_MAJOR_VERSION, sizeof(int), &ALDeviceInfo.iMajorVersion);
+							ALFunction.alcGetIntegerv(device, ALC_MINOR_VERSION, sizeof(int), &ALDeviceInfo.iMinorVersion);
+
+              const char* exts[] = { "ALC_EXT_CAPTURE", "ALC_EXT_EFX", "AL_EXT_OFFSET", "AL_EXT_LINEAR_DISTANCE","AL_EXT_EXPONENT_DISTANCE",
+                "EAX2.0","EAX3.0","EAX4.0","EAX5.0","EAX-RAM" };
+
+							// Check for Extensions
+              for(int i = 0; i < sizeof(exts)/sizeof(const char*); ++i)
+							if (ALFunction.alcIsExtensionPresent(device, exts[i]) == AL_TRUE)
+								ALDeviceInfo.pvstrExtensions.push_back(exts[i]);
+
+							ALDeviceInfo.uiSourceCount = 0; // Get Source Count
+						}
+						ALFunction.alcMakeContextCurrent(NULL);
+						ALFunction.alcDestroyContext(context);
+					}
+					ALFunction.alcCloseDevice(device);
+				}
+				devices += strlen(devices) + 1;
+				index += 1;
+			}
+		}
+	}
+
+	if(vDeviceInfo.size())
+	{
+    ALCdevice* pDevice = functmp->alcOpenDevice(vDeviceInfo[defaultDeviceIndex].strDeviceName.c_str());
+		if (pDevice)
+		{
+			ALCcontext* pContext = functmp->alcCreateContext(pDevice, NULL);
+			if (pContext)
+			{
+        TINYOAL_LOG("INFO") << "Opened Device: " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
+				functmp->alcMakeContextCurrent(pContext);
+		    oalFuncs = functmp;
+        functmp=0;
+			}
+			else
+      {
+				functmp->alcCloseDevice(pDevice);
+        TINYOAL_LOG("ERROR") << "Failed to create context for " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
+      }
+		}
+    else
+      TINYOAL_LOG("ERROR") << "Failed to open device: " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
+	}
+  else
+    TINYOAL_LOG("ERROR") << "No devices in device list!" << std::endl;
+  
+  if(functmp) delete functmp; // If functmp is nonzero, something blew up, so delete it
+
+  waveFuncs = new cWaveFunctions();
+  oggFuncs = new cOggFunctions(_errout);
+  mp3Funcs = 0;
+#ifdef __INCLUDE_MP3
+  mp3funcs = new cMp3Functions(_errout);
+#endif
 }
-cAudio* cTinyOAL::PlaySound(const char* file, unsigned char flags)
+void BSS_FASTCALL cTinyOAL::_addaudio(cAudio* ref, cAudioResource* res)
 {
-  return new cAudio(file,flags|TINYOAL_MANAGED);
+  if(!res->_activelist) // If true we need to move it
+  {
+    bss_util::LLRemove(res,_reslist);
+    bss_util::LLAdd(res,_activereslist);
+  }
+  bss_util::LLRemove(ref,res->_inactivelist);
+  bss_util::LLAdd(ref,res->_activelist,res->_activelistend);
+  ++res->_numactive;
 }
-cAudio* cTinyOAL::PlaySound(void* data, unsigned int datalength, unsigned char flags)
+void BSS_FASTCALL cTinyOAL::_removeaudio(cAudio* ref, cAudioResource* res)
 {
-  return new cAudio(data,datalength,flags|TINYOAL_MANAGED);
+  bss_util::LLRemove(ref,res->_activelist,res->_activelistend);
+  bss_util::LLAdd(ref,res->_inactivelist);
+  --res->_numactive;
+  if(!res->_activelist)
+  {
+    bss_util::LLRemove(res,_activereslist);
+    bss_util::LLAdd(res,_reslist);
+  }
 }
-cAudio* cTinyOAL::PlaySound(_iobuf* file, unsigned int datalength, unsigned char flags)
+void BSS_FASTCALL cTinyOAL::_in_addaudio(cAudio* ref, cAudioResource* res)
 {
-  return new cAudio(file,datalength,flags|TINYOAL_MANAGED);
+  bss_util::LLAdd<cAudio>(ref,res->_inactivelist);
+}
+void BSS_FASTCALL cTinyOAL::_in_removeaudio(cAudio* ref, cAudioResource* res)
+{
+  bss_util::LLRemove<cAudio>(ref,res->_inactivelist);
 }

@@ -4,9 +4,7 @@
 
 0.9.93
 ------
-- Changed cAudio to request a source when it starts playing for the first time
-- Added Replace() convenience function to cAudio which lets you swap the audio resource out
-- Added several overloads to PlaySound()
+- Completely rewrote entire architecture.
 
 0.9.92
 ------

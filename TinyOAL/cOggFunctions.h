@@ -24,7 +24,7 @@ namespace TinyOAL {
   typedef ogg_int64_t (*LPOVRAWTELL)(OggVorbis_File *vf);
   typedef ogg_int64_t (*LPOVPCMTELL)(OggVorbis_File *vf);
 
-	/* This is a holder class for the OGG DLL specific functions */
+	// This is a holder class for the OGG DLL specific functions 
   class cOggFunctions
   {
   public:

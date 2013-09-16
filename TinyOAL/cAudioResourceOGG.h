@@ -9,44 +9,30 @@
 #include "cAudioResource.h"
 #include "openAL/vorbisfile.h"
 
-struct vorbis_info;
-
 namespace TinyOAL {
-	/* This is a resource class for OGG files, and handles all the IO operations from the given buffer */
+  struct OggVorbis_FileEx { // To make things simpler, we append data streaming information to the end of the ogg file.
+    OggVorbis_File ogg;
+    DatStream stream;
+  };
+
+	// This is a resource class for OGG files, and handles all the IO operations from the given buffer 
   class cAudioResourceOGG : public cAudioResource
   {
   public:
-    /* This returns an AUDIOSTREAM on success, or NULL on failure */
-    virtual AUDIOSTREAM* OpenStream();
-    /* This reads the next chunk of OGG specific data. pDecodeBuffer must be at least GetBufSize() long */
-    virtual unsigned long ReadNext(AUDIOSTREAM* stream, char* pDecodeBuffer);
-    /* This resets the stream to the beginning. */
-    virtual bool Reset(AUDIOSTREAM* stream);
-    /* This closes a stream and destroys any associated data (not the actual audio source itself) */
-    virtual void CloseStream(AUDIOSTREAM* stream);
-    /* Skips the stream to the given sample */
-    virtual bool Skip(AUDIOSTREAM* stream, unsigned __int64 samples);
-    /* Gets sample point of given time */
-    virtual unsigned __int64 ToSample(AUDIOSTREAM* stream, double seconds);
-    /* Get embedded loopstart */
-    virtual unsigned __int64 GetLoopStart(AUDIOSTREAM* stream);
+    cAudioResourceOGG(const cAudioResourceOGG& copy);
+    cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop);
+    ~cAudioResourceOGG();
+    virtual void* OpenStream(); // This returns a pointer to the internal stream on success, or NULL on failure 
+    virtual void CloseStream(void* stream); //This closes an AUDIOSTREAM pointer
+    virtual unsigned long Read(void* stream, char* buffer); // Reads next chunk of data - buffer must be at least GetBufSize() long 
+    virtual bool Reset(void* stream); // This resets a stream to the beginning 
+    virtual bool Skip(void* stream, unsigned __int64 samples); // Sets a stream to given sample 
+    virtual unsigned __int64 ToSample(void* stream, double seconds); // Converts given time to sample point
 
   protected:
-    friend class cAudioResourceOGG; //This, combined with protected constructors/destructors, ensures a client program cannot, under any circumstance, delete an audio resource without calling the appropriate function
-    friend class cAudioResource;
+    bool _openstream(OggVorbis_FileEx* target);
 
-    cAudioResourceOGG(const cAudioResourceOGG& copy);
-    cAudioResourceOGG(void* data, unsigned int datalength, T_TINYOAL_FLAGS flags);
-    cAudioResourceOGG(const char* file, T_TINYOAL_FLAGS flags);
-    cAudioResourceOGG(_iobuf* file, unsigned int datalength, T_TINYOAL_FLAGS flags);
-    ~cAudioResourceOGG();
-    bool _buildstream(bool file);
-    void _altclearstream(AUDIOSTREAM* protostream);
-    void Swap(short &s1, short &s2);
-
-	  ov_callbacks	sCallbacks;
-    bool _readinfo;
-    ogg_int64_t _loopstart;
+    ov_callbacks _callbacks;
   };
 }
 

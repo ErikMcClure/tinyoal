@@ -3,13 +3,18 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "cOggFunctions.h"
-#include "bss_util/bss_win32_includes.h"
+#include "bss_util/bss_util.h"
+#include "bss_util/cStr.h"
+#include "bss_util/bss_deprecated.h"
 #include "openAL\vorbisfile.h"
-#include "bss_util\bss_util.h"
-#include "bss_util\cStr.h"
-#include "bss_util\bss_deprecated.h"
-#include "TinyOAL.h"
+#include "cTinyOAL.h"
 #include <ostream>
+
+#ifdef BSS_PLATFORM_WIN32
+#include "bss_util/bss_win32_includes.h"
+#else
+
+#endif
 
 using namespace TinyOAL;
 

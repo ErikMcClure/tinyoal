@@ -1,4 +1,4 @@
-// Copyright ©2008-2009 Erik McClure
+// Copyright ©2013 Erik McClure
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -34,17 +34,17 @@ namespace TinyOAL_net {
   public ref class clr_Audio
   {
   public:
-		/* Constructor for loading audio from a file */
+		// Constructor for loading audio from a file 
     clr_Audio(System::String^ file, unsigned char flags);
 		/* Constructor for loading audio from either a file or from data. If it is data, isdata must be true, and data must be a string containing the audio information. The data will be loaded into memory regardless of the flags set */
     clr_Audio(System::String^ data, unsigned char flags, bool isdata);
     clr_Audio(clr_AudioRef^ ref, unsigned char addflags);
     explicit clr_Audio(clr_AudioRef^ ref);
-		/* Destructor */
+		// Destructor 
     ~clr_Audio();
 		/* Updates the stream buffers. This is normally called by the engine automatically, but it can be called outside of that, its just usually very pointless */
     void Update();
-		/* Plays an audio stream */
+		// Plays an audio stream 
     bool Play();
 		/* Stops an audio stream and resets the pointer to the beginning. Audio streams automatically stop when the end of the stream is reached, UNLESS the loop flag is specified, in which case it will loop until Stop() is called */
     void Stop();
@@ -66,9 +66,9 @@ namespace TinyOAL_net {
     /* Sets loop point in seconds, or samples */
     void SetLoopPoint(double seconds);
     void SetLoopPointSample(unsigned __int64 sample);
-    /* Get Flags */
+    // Get Flags 
     int GetFlags();
-    /* Grab reference to audio resource used by this cAudio instance */
+    // Grab reference to audio resource used by this cAudio instance 
     clr_AudioRef^ GetAudioRef();
 
 		//The following flags are taken from cAudio.h AUDIO_FLAGS enum class
