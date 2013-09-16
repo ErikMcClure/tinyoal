@@ -58,5 +58,4 @@ void cMp3Functions::_invalidate()
   fn_lameDecode1HeadersB=0;
   fn_lameExitDecoder=0;   
 }
-
 #endif

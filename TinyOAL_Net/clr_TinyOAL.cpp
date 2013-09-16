@@ -1,4 +1,4 @@
-// Copyright ©2008-2009 Erik McClure
+// Copyright ©2013 Erik McClure
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -22,7 +22,8 @@ clr_TinyOAL::clr_TinyOAL(int defaultbuffers)
 
 clr_TinyOAL::clr_TinyOAL(int defaultbuffers, System::String^ logfile)
 {
-  _ref = new TinyOAL::cTinyOAL(TOCHAR(logfile), defaultbuffers);
+  TOCHAR(logfile)
+  _ref = new TinyOAL::cTinyOAL(pstr, defaultbuffers);
 }
 
 clr_TinyOAL::~clr_TinyOAL()

@@ -2,7 +2,7 @@
  * -------------------------
  * This example encodes loop information into OGG files
  *
- * Copyright ©2009 Erik McClure
+ * Copyright ©2013 Erik McClure
  */
 
 #include "TinyOAL.h"

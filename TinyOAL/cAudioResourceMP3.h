@@ -13,21 +13,21 @@
 namespace TinyOAL {
   class cMp3Functions;
 
-	/* This is a resource class for MP3 files, and handles all the IO operations from the given buffer */
+	// This is a resource class for MP3 files, and handles all the IO operations from the given buffer 
   class cAudioResourceMP3 : public cAudioResource
   {
   public:
-    /* This returns an AUDIOSTREAM on success, or NULL on failure */
+    // This returns an AUDIOSTREAM on success, or NULL on failure 
     virtual AUDIOSTREAM* OpenStream();
-    /* This reads the next chunk of OGG specific data. pDecodeBuffer must be at least GetBufSize() long and AUDIOSTREAM must be non-null */
-    virtual unsigned long ReadNext(AUDIOSTREAM* stream, char* pDecodeBuffer);
-    /* This resets the stream to the beginning. */
+    // This reads the next chunk of OGG specific data. pDecodeBuffer must be at least GetBufSize() long and AUDIOSTREAM must be non-null 
+    virtual unsigned long Read(AUDIOSTREAM* stream, char* pDecodeBuffer);
+    // This resets the stream to the beginning. 
     virtual bool Reset(AUDIOSTREAM* stream);
-    /* This closes a stream and destroys any associated data (not the actual audio source itself). Stream will be an invalid pointer after this function is called. */
+    // This closes a stream and destroys any associated data (not the actual audio source itself). Stream will be an invalid pointer after this function is called. 
     virtual void CloseStream(AUDIOSTREAM* stream);
-    /* Gets sample point of given time */
+    // Gets sample point of given time 
     virtual unsigned __int64 ToSample(AUDIOSTREAM* stream, double seconds);
-    /* Sets stream to given sample */
+    // Sets stream to given sample 
     virtual bool Skip(AUDIOSTREAM* stream, unsigned __int64 samples);
 
   protected:
@@ -35,9 +35,9 @@ namespace TinyOAL {
     friend class cAudioResource;
 
     cAudioResourceMP3(const cAudioResourceMP3& copy);
-    cAudioResourceMP3(void* data, unsigned int datalength, T_TINYOAL_FLAGS flags);
-    cAudioResourceMP3(const char* file, T_TINYOAL_FLAGS flags);
-    cAudioResourceMP3(_iobuf* file, unsigned int datalength, T_TINYOAL_FLAGS flags);
+    cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+    cAudioResourceMP3(const char* file, TINYOAL_FLAG flags);
+    cAudioResourceMP3(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags);
     ~cAudioResourceMP3();
 
 	  bool _buildstream(bool file);

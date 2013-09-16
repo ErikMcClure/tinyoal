@@ -1,4 +1,4 @@
-// Copyright ©2008-2009 Erik McClure
+// Copyright ©2013 Erik McClure
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -18,9 +18,8 @@ clr_Audio::clr_Audio(System::String^ data, unsigned char flags, bool isdata)
 {
   if(isdata)
   {
-    char* _str = (char*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(data).ToPointer();
-    _ref = new cAudio((void*)_str, strlen(_str), flags|TINYOAL_LOADINTOMEMORY);
-    System::Runtime::InteropServices::Marshal::FreeHGlobal((IntPtr)_str);
+    TOCHAR(data);
+    _ref = new cAudio((void*)pstr, strlen(pstr), flags|TINYOAL_LOADINTOMEMORY);
   }
   else
     _ref = new cAudio(TOCHAR(data),flags);
@@ -117,9 +116,8 @@ clr_AudioRef::clr_AudioRef(System::String^ data, bool isdata, unsigned char flag
 {
   if(isdata)
   {
-    char* _str = (char*)System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(data).ToPointer();
-    _ref = new cAudioRef((void*)_str, strlen(_str), flags|TINYOAL_LOADINTOMEMORY);
-    System::Runtime::InteropServices::Marshal::FreeHGlobal((IntPtr)_str);
+    TOCHAR(data);
+    _ref = new cAudioRef((void*)pstr, strlen(pstr), flags|TINYOAL_LOADINTOMEMORY);
   }
   else
     _ref = new cAudioRef(TOCHAR(data),flags);

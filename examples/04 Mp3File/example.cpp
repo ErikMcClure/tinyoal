@@ -3,7 +3,7 @@
  * This example demonstrates MP3 file support. You MUST have compiled TinyOAL 
  * with __INCLUDE_MP3 defined, or this won't work!
  *
- * Copyright ©2009 Erik McClure
+ * Copyright ©2013 Erik McClure
  */
 
 #include "TinyOAL.h"
