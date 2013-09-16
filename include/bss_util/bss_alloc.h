@@ -5,8 +5,8 @@
 #define __BSS_ALLOC_H__
 
 #include "bss_defines.h"
-#include <limits>
 #include <memory>
+#include <malloc.h> // Must be included because GCC is weird
 #include <assert.h>
 
 namespace bss_util {
@@ -15,23 +15,15 @@ namespace bss_util {
   class BSS_COMPILER_DLLEXPORT AllocPolicySize
   {
   public:
-    typedef std::size_t size_type;
-    typedef std::ptrdiff_t difference_type;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
     typedef T *pointer;
     typedef const T *const_pointer;
     typedef T& reference;
     typedef const T& const_reference;
     typedef T value_type;
 
-  #ifdef max
-  #define REDEFMAX
-  #undef max
-  #endif
-      inline std::size_t max_size() const { return std::numeric_limits<std::size_t>::max(); }
-
-  #ifdef REDEFMAX
-  #define max(a,b)            (((a) > (b)) ? (a) : (b))
-  #endif
+    inline size_t max_size() const { return ((size_t)(-1)/sizeof(T)); }
   };
 
   // An implementation of a standard allocation policy, conforming to standard library requirements.
@@ -48,26 +40,27 @@ namespace bss_util {
     template <typename U>
     inline explicit StandardAllocPolicy(StandardAllocPolicy<U> const&) {}
 
-    inline pointer allocate(std::size_t cnt, 
+    inline pointer allocate(size_t cnt, 
       typename std::allocator<void>::const_pointer = 0) { 
         //return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T))); // note that while operator new does not call a constructor (it can't), it's much easier to override for leak tests.
         return reinterpret_cast<pointer>(malloc(cnt*sizeof(T)));
     }
-    //inline void deallocate(pointer p, std::size_t = 0) { ::operator delete(p); }
-    inline void deallocate(pointer p, std::size_t = 0) { free(p); }
-    inline pointer reallocate(pointer p, std::size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
+    //inline void deallocate(pointer p, size_t = 0) { ::operator delete(p); }
+    inline void deallocate(pointer p, size_t = 0) { free(p); }
+    inline pointer reallocate(pointer p, size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
 	};
 
   // Static implementation of the standard allocation policy, used for cArraySimple
 	template<typename T>
-  class BSS_COMPILER_DLLEXPORT StaticAllocPolicy : public AllocPolicySize<T> {
+    class BSS_COMPILER_DLLEXPORT StaticAllocPolicy : public AllocPolicySize<T> {
+    typedef typename bss_util::AllocPolicySize<T>::pointer pointer; 
 	public:
-    inline static pointer allocate(std::size_t cnt, 
+    inline static pointer allocate(size_t cnt, 
       typename std::allocator<void>::const_pointer = 0) { 
         return reinterpret_cast<pointer>(malloc(cnt*sizeof(T)));
     }
-    inline static void deallocate(pointer p, std::size_t = 0) { free(p); }
-    inline static pointer reallocate(pointer p, std::size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
+    inline static void deallocate(pointer p, size_t = 0) { free(p); }
+    inline static pointer reallocate(pointer p, size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
 	};
 
 	template<typename T, typename T2>
@@ -182,8 +175,8 @@ namespace bss_util {
     inline i_AllocTracker(i_AllocTracker&& mov) : _allocator(mov._allocator), _alloc_extern(mov._alloc_extern) { mov._alloc_extern=true; }
 		inline i_AllocTracker(_Ax* ptr=0) :	_allocator((!ptr)?(new _Ax()):(ptr)), _alloc_extern(ptr!=0) {}
 		inline ~i_AllocTracker() { if(!_alloc_extern) delete _allocator; }
-    inline pointer _allocate(std::size_t cnt, typename std::allocator<void>::const_pointer p = 0) { return _allocator->allocate(cnt,p); }
-    inline void _deallocate(pointer p, std::size_t s = 0) { _allocator->deallocate(p,s); }
+    inline pointer _allocate(size_t cnt, typename std::allocator<void>::const_pointer p = 0) { return _allocator->allocate(cnt,p); }
+    inline void _deallocate(pointer p, size_t s = 0) { _allocator->deallocate(p,s); }
 
 		inline i_AllocTracker& operator =(const i_AllocTracker& copy) { if(&copy==this) return *this; if(!_alloc_extern) delete _allocator; _allocator = copy._alloc_extern?copy._allocator:new _Ax(*copy._allocator); _alloc_extern=copy._alloc_extern; return *this; }
 		inline i_AllocTracker& operator =(i_AllocTracker&& mov) { if(&mov==this) return *this; if(!_alloc_extern) delete _allocator; _allocator = mov._allocator; _alloc_extern=mov._alloc_extern; mov._alloc_extern=true; return *this; }
@@ -200,10 +193,8 @@ namespace bss_util {
     typedef typename Allocator<T>::pointer pointer;
 	public:
 		inline i_AllocTracker(Allocator<T>* ptr=0) {}
-    //inline pointer _allocate(std::size_t cnt, typename std::allocator<void>::const_pointer=0) { return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T))); } // note that while operator new does not call a constructor (it can't), it's much easier to override for leak tests.
-    inline pointer _allocate(std::size_t cnt, typename std::allocator<void>::const_pointer=0) { return reinterpret_cast<pointer>(malloc(cnt*sizeof(T))); }
-    //inline void _deallocate(pointer p, std::size_t = 0) { ::operator delete(p); }
-    inline void _deallocate(pointer p, std::size_t = 0) { free(p); }
+    inline pointer _allocate(size_t cnt, typename std::allocator<void>::const_pointer=0) { return reinterpret_cast<pointer>(malloc(cnt*sizeof(T))); }
+    inline void _deallocate(pointer p, size_t = 0) { free(p); }
 	};
 
   // This implements stateful allocators.
@@ -235,8 +226,8 @@ namespace bss_util {
 //    template <typename U>
 //    inline explicit StaticAllocPolicy(StaticAllocPolicy<U,Alloc> const&) {}
 //
-//    inline static pointer allocate(std::size_t cnt, typename std::allocator<void>::const_pointer = 0) { return _alloc.allocate(cnt); }
-//    inline static void deallocate(pointer p, std::size_t = 0) { _alloc.deallocate(p); }
+//    inline static pointer allocate(size_t cnt, typename std::allocator<void>::const_pointer = 0) { return _alloc.allocate(cnt); }
+//    inline static void deallocate(pointer p, size_t = 0) { _alloc.deallocate(p); }
 //
 //    static Alloc _alloc;
 //	};
@@ -254,14 +245,14 @@ namespace bss_util {
 //    template <typename U>
 //    inline explicit StaticAllocPolicy(StaticAllocPolicy<U,void> const&) {}
 //
-//    inline static pointer allocate(std::size_t cnt, 
+//    inline static pointer allocate(size_t cnt, 
 //      typename std::allocator<void>::const_pointer = 0) { 
 //        //return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T))); // note that while operator new does not call a constructor (it can't), it's much easier to override for leak tests.
 //        return reinterpret_cast<pointer>(malloc(cnt*sizeof(T)));
 //    }
-//    //inline static void deallocate(pointer p, std::size_t = 0) { ::operator delete(p); }
-//    inline static void deallocate(pointer p, std::size_t = 0) { free(p); }
-//    inline static pointer reallocate(pointer p, std::size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
+//    //inline static void deallocate(pointer p, size_t = 0) { ::operator delete(p); }
+//    inline static void deallocate(pointer p, size_t = 0) { free(p); }
+//    inline static pointer reallocate(pointer p, size_t cnt) { return reinterpret_cast<pointer>(realloc(p,cnt*sizeof(T))); }
 //  };
 //
 //#define BSSBUILD_STATIC_POLICY(name,alloc) template<class T> \

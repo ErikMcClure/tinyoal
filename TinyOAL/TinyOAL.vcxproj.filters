@@ -18,9 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="aldlist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cAudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
     <ClCompile Include="cAudioResourceWAV.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cDataStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cMp3Functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,10 +42,10 @@
     <ClCompile Include="cTinyOAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CWaves.cpp">
+    <ClCompile Include="LoadOAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadOAL.cpp">
+    <ClCompile Include="cWaveFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,16 +59,10 @@
     <ClInclude Include="cAudioResourceWAV.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cDataStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="cMp3Functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cOggFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TinyOALdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\cAudio.h">
@@ -86,11 +74,11 @@
     <ClInclude Include="..\include\cTinyOAL.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\TinyOAL.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\TinyOAL_dlldef.h">
       <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="cWaveFunctions.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
