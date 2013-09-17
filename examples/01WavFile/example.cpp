@@ -26,19 +26,19 @@ int main()
   // any audio created using it should immediately start playing, and should be loaded into memory. Short
   // sounds benefit from being loaded into memory, but longer sounds, such as music, should not (if the
   // LOADINTOMEMORY flag is not specified, it is streamed from the disk).
-  cAudioResource* songref = cAudioResource::Create("..\\media\\wave.wav",TINYOAL_COPYINTOMEMORY);
+  cAudioResource* songref = cAudioResource::Create("../media/wave.wav",TINYOAL_COPYINTOMEMORY);
   if(!songref) return 0;
-  songref->SetMaxActive(2);
+  songref->SetMaxActive(1);
 
   int count=0;
   // Now we tell the engine to create a new instance of the sound and play it. The engine will delete the
   // sound instance once it has finished playing. This is useful for one-shot sounds that need to overlap
   // each other when being played multiple times, which is *usually* what you want.
-  songref->Play();
-  songref->Play()->SkipSeconds(1.0);
-  songref->Play()->SkipSeconds(2.0);
-  songref->Play()->SkipSeconds(3.0);
-  songref->Play()->SkipSeconds(4.0);
+  songref->Play()->SetPosition(1,0,0);
+  //songref->Play()->SkipSeconds(1.0);
+  //songref->Play()->SkipSeconds(2.0);
+  //songref->Play()->SkipSeconds(3.0);
+  //songref->Play()->SkipSeconds(4.0);
 
   // Update returns how many sounds are playing. You should call this every frame, but the absolute minimum
   // is calling it before a single buffer runs out. This is usually somewhere around 200 ms, but it varies.
