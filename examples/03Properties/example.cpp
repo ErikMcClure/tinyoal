@@ -9,7 +9,7 @@
 
 using namespace TinyOAL;
 
-int __cdecl main()
+int main()
 {
   cTinyOAL engine;
   cAudioResource* songref = cAudioResource::Create("..\\media\\mono.ogg",0,0);

@@ -13,17 +13,17 @@
 struct HINSTANCE__;
 
 namespace TinyOAL {
-  typedef int (__cdecl *LPLDDECODEINIT)(void);
-  typedef int (__cdecl *LPLDDECODE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
-  typedef int (__cdecl *LPLDDECODEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
-  typedef int (__cdecl *LPLDDECODEONE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
-  typedef int (__cdecl *LPLDDECODEONEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
-  typedef int (__cdecl *LPLDDECODEONEHEADERSB)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data, int* enc_delay, int* enc_padding);
-  typedef int (__cdecl *LPLDDECODEEXIT)(void);
-  typedef unsigned int (__cdecl *LPLDGETID3V2TAG)(lame_global_flags * gfp, unsigned char* buffer, size_t size);
-  typedef lame_global_flags* (__cdecl *LPLDLAMEINIT)(void);
-  typedef int (__cdecl *LPLDSETDECODEONLY)(lame_global_flags*, int);
-  typedef int (__cdecl *LPLDLAMEEXIT)(lame_global_flags*);
+  typedef int (*LPLDDECODEINIT)(void);
+  typedef int (*LPLDDECODE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
+  typedef int (*LPLDDECODEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
+  typedef int (*LPLDDECODEONE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
+  typedef int (*LPLDDECODEONEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
+  typedef int (*LPLDDECODEONEHEADERSB)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data, int* enc_delay, int* enc_padding);
+  typedef int (*LPLDDECODEEXIT)(void);
+  typedef unsigned int (*LPLDGETID3V2TAG)(lame_global_flags * gfp, unsigned char* buffer, size_t size);
+  typedef lame_global_flags* (*LPLDLAMEINIT)(void);
+  typedef int (*LPLDSETDECODEONLY)(lame_global_flags*, int);
+  typedef int (*LPLDLAMEEXIT)(lame_global_flags*);
 
 //lame_global_flags * CDECL lame_init(void);
 //int  CDECL lame_close (lame_global_flags *);

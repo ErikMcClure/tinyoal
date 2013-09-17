@@ -10,7 +10,7 @@
 
 using namespace TinyOAL;
 
-int __cdecl main()
+int main()
 {
   //Initialize the engine with default number of buffers
   cTinyOAL* engine = new cTinyOAL();

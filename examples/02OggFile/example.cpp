@@ -18,7 +18,7 @@
 using namespace TinyOAL;
 using namespace bss_util;
 
-int __cdecl main()
+int main()
 {
   cTinyOAL engine(4); // Initialize the engine with default number of buffers
 
