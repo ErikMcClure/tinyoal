@@ -49,8 +49,8 @@ namespace TinyOAL {
     void SetVolume(float range);
 		// Sets the pitch (which is actually just the sample playback rate) - 1.0 means no change in pitch, 2.0 double the pitch, etc. 
     void SetPitch(float range);
-		// This sets the position of the sound in a 3D space. This function's parameters are RELATIVE - that means if you set Y and Z to 0, the X value will become meaningless. By default Z is 1.0, so nearly all the way to the left is -1.0 and nearly all the way to the right is 1.0, and centered is 0.0 
-    void SetPosition(float X, float Y=0.0f, float Z=1.0f);
+		// This sets the position of the sound in a 3D space. This function's parameters are RELATIVE - that means if you set Y and Z to 0, the X value will become meaningless. By default Z is 0.5, so nearly all the way to the left is -10.0 and nearly all the way to the right is 10.0, and centered is 0.0 
+    void SetPosition(float X, float Y=0.0f, float Z=0.5f);
     // Sets loop point in seconds, or samples 
     void SetLoopPointSeconds(double seconds);
     void SetLoopPoint(unsigned __int64 sample);

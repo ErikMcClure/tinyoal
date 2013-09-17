@@ -22,8 +22,8 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
   uiSource(-1), pDecodeBuffer(0),_stream(0),_source(ref), userdata(_userdata), ONDESTROY(0), _bufsize(0)
 {
   _pos[0] = 0.0f;
-  _pos[1] = 1.0f;
-  _pos[2] = 1.0f;
+  _pos[1] = 0.0f;
+  _pos[2] = 0.5f;
   uiBuffers = (ALuint*)cTinyOAL::Instance()->_bufalloc.alloc(1);
   unsigned char nbuffers=cTinyOAL::Instance()->defNumBuf;
   memset(uiBuffers,0,sizeof(ALuint)*nbuffers);
