@@ -50,7 +50,7 @@ namespace TinyOAL {
     inline cAudio* PlaySound(cAudioResource* resource, TINYOAL_FLAG flags) { return !resource?0:resource->Play(flags|TINYOAL_ISPLAYING); }
     inline cAudio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,flags),flags); }
     inline cAudio* PlaySound(void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(data,len,flags),flags); }
-    inline cAudio* PlaySound(_iobuf* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,len,flags),flags); }
+    inline cAudio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,len,flags),flags); }
     // Gets the formatted error out stream 
     std::ostream& BSS_FASTCALL FormatLog(const char* FILE, unsigned int LINE);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
