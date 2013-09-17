@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="01 WavFile"
-	ProjectGUID="{2DC8A03F-1C93-43C8-AD0A-DED48922A864}"
-	RootNamespace="My01WavFile"
+	Name="03Properties"
+	ProjectGUID="{565E11A9-7842-4028-9E12-D0390277D19C}"
+	RootNamespace="My03VolumePanningandPitch"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
