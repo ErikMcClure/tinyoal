@@ -65,6 +65,7 @@ cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, uns
 {
   FILE* f;
   FOPEN(f,file,"rb");
+  if(!f) return 0;
   fseek(f,0,SEEK_END);
   long len=ftell(f);
   fseek(f,0,SEEK_SET);

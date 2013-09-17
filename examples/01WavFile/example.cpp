@@ -27,6 +27,7 @@ int main()
   // sounds benefit from being loaded into memory, but longer sounds, such as music, should not (if the
   // LOADINTOMEMORY flag is not specified, it is streamed from the disk).
   cAudioResource* songref = cAudioResource::Create("..\\media\\wave.wav",TINYOAL_COPYINTOMEMORY);
+  if(!songref) return 0;
   songref->SetMaxActive(2);
 
   int count=0;
