@@ -8,8 +8,6 @@
 #include <ostream>
 #include "TinyOAL_dlldef.h"
 
-struct HINSTANCE__;
-
 namespace TinyOAL {
   typedef int (*LPOVCLEAR)(OggVorbis_File *vf);
   typedef long (*LPOVREAD)(OggVorbis_File *vf,char *buffer,int length,int bigendianp,int word,int sgned,int *bitstream);
@@ -48,6 +46,6 @@ namespace TinyOAL {
     //static TINYOAL_DLLEXPORT bool WriteLoopStartToFile(const wchar_t* file, OggVorbis_File *vf, ogg_int64_t sample);
 
   protected:
-    HINSTANCE__* g_hVorbisFileDLL;
+    void* g_hVorbisFileDLL;
   };
 }

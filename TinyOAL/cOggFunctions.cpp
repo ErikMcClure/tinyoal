@@ -12,29 +12,33 @@
 
 #ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
+#define LOADDYNLIB() LoadLibraryW(L"vorbisfile.dll")
+#define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
 #else
-
+#include <dlfcn.h>
+#define LOADDYNLIB() dlopen("libvorbisfile.so", RTLD_LAZY)
+#define GETDYNFUNC(p,s) dlsym(p,s)
 #endif
 
 using namespace TinyOAL;
 
 cOggFunctions::cOggFunctions(std::ostream* errout)
 {
-  g_hVorbisFileDLL = LoadLibraryW(L"vorbisfile.dll");
+  g_hVorbisFileDLL = LOADDYNLIB();
 	if (g_hVorbisFileDLL)
 	{
-		fn_ov_clear = (LPOVCLEAR)GetProcAddress(g_hVorbisFileDLL, "ov_clear");
-		fn_ov_read = (LPOVREAD)GetProcAddress(g_hVorbisFileDLL, "ov_read");
-		fn_ov_pcm_total = (LPOVPCMTOTAL)GetProcAddress(g_hVorbisFileDLL, "ov_pcm_total");
-		fn_ov_info = (LPOVINFO)GetProcAddress(g_hVorbisFileDLL, "ov_info");
-		fn_ov_comment = (LPOVCOMMENT)GetProcAddress(g_hVorbisFileDLL, "ov_comment");
-		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GetProcAddress(g_hVorbisFileDLL, "ov_open_callbacks");
-		fn_ov_time_seek = (LPOVTIMESEEK)GetProcAddress(g_hVorbisFileDLL, "ov_time_seek");
-		fn_ov_time_seek_page = (LPOVTIMESEEKPAGE)GetProcAddress(g_hVorbisFileDLL, "ov_time_seek_page");
-		fn_ov_raw_seek = (LPOVRAWSEEK)GetProcAddress(g_hVorbisFileDLL, "ov_raw_seek");
-		fn_ov_pcm_seek = (LPOVPCMSEEK)GetProcAddress(g_hVorbisFileDLL, "ov_pcm_seek");
-		fn_ov_raw_tell = (LPOVRAWTELL)GetProcAddress(g_hVorbisFileDLL, "ov_raw_tell");
-		fn_ov_pcm_tell = (LPOVPCMTELL)GetProcAddress(g_hVorbisFileDLL, "ov_pcm_tell");
+		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(g_hVorbisFileDLL, "ov_clear");
+		fn_ov_read = (LPOVREAD)GETDYNFUNC(g_hVorbisFileDLL, "ov_read");
+		fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_total");
+		fn_ov_info = (LPOVINFO)GETDYNFUNC(g_hVorbisFileDLL, "ov_info");
+		fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(g_hVorbisFileDLL, "ov_comment");
+		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(g_hVorbisFileDLL, "ov_open_callbacks");
+		fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_time_seek");
+		fn_ov_time_seek_page = (LPOVTIMESEEKPAGE)GETDYNFUNC(g_hVorbisFileDLL, "ov_time_seek_page");
+		fn_ov_raw_seek = (LPOVRAWSEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_raw_seek");
+		fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_seek");
+		fn_ov_raw_tell = (LPOVRAWTELL)GETDYNFUNC(g_hVorbisFileDLL, "ov_raw_tell");
+		fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_tell");
 
 		if(!(fn_ov_clear && fn_ov_read && fn_ov_pcm_total && fn_ov_info && fn_ov_comment && fn_ov_open_callbacks && fn_ov_time_seek
       && fn_ov_time_seek_page && fn_ov_raw_seek && fn_ov_pcm_seek && fn_ov_raw_tell && fn_ov_pcm_tell))
@@ -116,7 +120,7 @@ ogg_int64_t cOggFunctions::GetLoopStart(OggVorbis_File *vf)
       const char* pos=(const char*)memchr(comment.c_str(),'=',length);
       if(pos!=0)
       {
-        if(!_strnicmp(comment.c_str(),"LOOPSTART",9))
+        if(!STRNICMP(comment.c_str(),"LOOPSTART",9))
         {
           retval=atol(++pos);
           break;

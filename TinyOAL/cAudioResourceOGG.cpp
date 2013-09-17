@@ -52,12 +52,12 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 			_bufsize -= (_bufsize % 4);
       break;
     case 4: // "quad" output
-			_format = cTinyOAL::oalFuncs->alGetEnumValue("AL_FORMAT_QUAD16");
+			_format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_QUAD16");
 			_bufsize = _freq * 2; // Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 8);
       break;
     case 6: // 5.1 output (probably)
-      _format = cTinyOAL::oalFuncs->alGetEnumValue("AL_FORMAT_51CHN16");
+      _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_51CHN16");
 			_bufsize = _freq * 3; // Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 12);
       break;
