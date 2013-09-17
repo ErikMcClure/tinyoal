@@ -18,7 +18,7 @@ using namespace TinyOAL;
 
 #pragma comment(lib, "tag.lib")
 
-int __cdecl main()
+int main()
 {
   //Initialize the engine with default number of buffers
   cTinyOAL engine;
