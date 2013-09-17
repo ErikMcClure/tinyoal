@@ -1,5 +1,8 @@
-#include <openAL/al.h>
-#include <openAL/alc.h>
+#ifndef __LOAD_OAL_H__
+#define __LOAD_OAL_H__
+
+#include "al.h"
+#include "alc.h"
 
 // Open AL Function table definition
 
@@ -162,3 +165,5 @@ struct OPENALFNTABLE
 
 ALboolean LoadOAL10Library(const char *szOALFullPathName, OPENALFNTABLE* lpOALFnTable);
 ALvoid UnloadOAL10Library();
+
+#endif

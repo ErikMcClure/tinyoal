@@ -34,8 +34,6 @@ namespace TinyOAL {
 
     cAudioResourceMP3(const cAudioResourceMP3& copy);
     cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags);
-    cAudioResourceMP3(const char* file, TINYOAL_FLAG flags);
-    cAudioResourceMP3(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags);
     ~cAudioResourceMP3();
 
 	  bool _buildstream(bool file);
