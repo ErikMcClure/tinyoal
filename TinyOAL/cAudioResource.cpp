@@ -6,7 +6,6 @@
 #include "cAudioResourceWAV.h"
 #include "cAudioResourceMP3.h"
 #include "cTinyOAL.h"
-#include <stdio.h>
 
 using namespace TinyOAL;
 bss_util::cKhash_StringIns<cAudioResource*> cAudioResource::_audiohash;
@@ -73,7 +72,7 @@ cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, uns
   if(flags&TINYOAL_COPYINTOMEMORY) fclose(f);
   return r;
 }
-cAudioResource* cAudioResource::Create(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+cAudioResource* cAudioResource::Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
 {
   return cAudioResource::_fcreate(file,datalength,flags|TINYOAL_COPYINTOMEMORY,cStrF("%p",file),loop);
 }
@@ -98,7 +97,7 @@ cAudioResource* cAudioResource::Create(void* data, unsigned int datalength, TINY
   return _create(data,datalength,flags,cStrF("%p",data),loop);
 }
 
-cAudioResource* cAudioResource::_fcreate(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)
+cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)
 {
   if(!file || datalength < 4) //bad file pointer
   {

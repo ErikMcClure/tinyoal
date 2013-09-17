@@ -17,23 +17,6 @@ cAudioResourceMP3::cAudioResourceMP3(const cAudioResourceMP3 &copy) : cAudioReso
 {
   _functions = cTinyOAL::Instance()->getMP3();
 }
-
-// "Reading from an already opened file for x number of bytes"
-// Constructor that takes a file pointer, a length of data to copy, and a set of flags.
-// It appears to pull the data off the file and then calls a constructor with a flag to load the file into memory.
-// The constructor it calls then loads the file into memory regardless of whether that flag is set or not.
-cAudioResourceMP3::cAudioResourceMP3(_iobuf *file, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(file, datalength, flags|TINYOAL_LOADINTOMEMORY), _filebuf(0)
-{
-  _functions = cTinyOAL::Instance()->getMP3();
-}
-
-// "Reading from a file path"
-// Constructor takes a file name and flags. Most of the work is done in the base class's constructor.
-cAudioResourceMP3::cAudioResourceMP3(const char *file, TINYOAL_FLAG flags) : cAudioResource(file, flags), _filebuf(0)
-{
-  _functions = cTinyOAL::Instance()->getMP3();
-}
-
 // "Reading from an arbitrary point in memory for x number of bytes."
 // Constructor that takes a data pointer, a length of data, and flags.
 cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags) : cAudioResource(data, datalength, flags), _filebuf(0)
