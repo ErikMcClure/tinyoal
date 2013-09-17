@@ -30,6 +30,7 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 
   // Open an initial stream and read in static information from the file
   OggVorbis_FileEx* f=(OggVorbis_FileEx*)OpenStream();
+  if(!f) return;
 
 	// Get some information about the file (Channels, Format, and Frequency)
   cOggFunctions* ogg = cTinyOAL::Instance()->oggFuncs;
@@ -39,6 +40,7 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 		_freq = psVorbisInfo->rate;
 		_channels = psVorbisInfo->channels;
 		
+    
     switch(psVorbisInfo->channels)
     {
     case 1:
@@ -52,12 +54,14 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 			_bufsize -= (_bufsize % 4);
       break;
     case 4: // "quad" output
-			_format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_QUAD16");
+			if(cTinyOAL::Instance()->oalFuncs!=0) 
+        _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_QUAD16");
 			_bufsize = _freq * 2; // Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 8);
       break;
     case 6: // 5.1 output (probably)
-      _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_51CHN16");
+      if(cTinyOAL::Instance()->oalFuncs!=0) 
+        _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_51CHN16");
 			_bufsize = _freq * 3; // Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 12);
       break;

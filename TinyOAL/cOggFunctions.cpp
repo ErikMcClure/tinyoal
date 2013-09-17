@@ -25,6 +25,7 @@ using namespace TinyOAL;
 cOggFunctions::cOggFunctions(std::ostream* errout)
 {
   g_hVorbisFileDLL = LOADDYNLIB();
+  
 	if (g_hVorbisFileDLL)
 	{
 		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(g_hVorbisFileDLL, "ov_clear");
