@@ -59,7 +59,7 @@ ALboolean LoadOAL10Library(const char *szOALFullPathName, OPENALFNTABLE* lpOALFn
 		g_hOpenALDLL = LOADDYNLIB(szOALFullPathName);
 	else
 		g_hOpenALDLL = LOADDYNLIB(DEFAULT_OAL_DLLPATH);
-	
+  
 	if (!g_hOpenALDLL)
   {
 		TINYOAL_LOG("ERROR") << "Failed to load " << (!szOALFullPathName?DEFAULT_OAL_DLLPATH:szOALFullPathName) << " library!" << std::endl;

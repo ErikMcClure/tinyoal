@@ -6,9 +6,14 @@
  */
 
 #include "cTinyOAL.h"
-#include <process.h>
-#include <time.h>
 #include <iostream>
+
+#ifdef BSS_PLATFORM_WIN32
+#define SLEEP(n) _sleep(n)
+#else
+#include <unistd.h>
+#define SLEEP(n) usleep(n*1000) //translate milliseconds to microseconds
+#endif
 
 using namespace TinyOAL;
 using namespace bss_util;
@@ -41,10 +46,9 @@ int __cdecl main()
   time_t seconds;
   time_t start=time(NULL);
   time_t last=time(NULL);
-  while(true)
+  while(engine.Update())
   {
-    engine.Update();
-    _sleep(1);
+    SLEEP(1);
     seconds = time(NULL);
     if(seconds!=last)
     {

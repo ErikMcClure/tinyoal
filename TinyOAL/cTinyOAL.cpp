@@ -114,6 +114,36 @@ typedef struct
 	bool			bSelected;
 } ALDEVICEINFO, *LPALDEVICEINFO;
 
+const char* cTinyOAL::GetDevices()
+{
+  if(!oalFuncs) return 0;
+  return oalFuncs->alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+}
+const char* cTinyOAL::GetDefaultDevice()
+{
+  if(!oalFuncs) return 0;
+  return oalFuncs->alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+}
+bool cTinyOAL::SetDevice(const char* device)
+{
+  ALCdevice* pDevice = oalFuncs->alcOpenDevice(device);
+	if (!pDevice)
+	{
+    TINYOAL_LOG("ERROR") << "Failed to open device: " << device;
+    return false;
+  }
+	ALCcontext* pContext = oalFuncs->alcCreateContext(pDevice, NULL);
+	if(pContext)
+	{
+    TINYOAL_LOG("INFO") << "Opened Device: " << device << std::endl;
+		oalFuncs->alcMakeContextCurrent(pContext);
+    return true;
+	}
+	oalFuncs->alcCloseDevice(pDevice);
+  TINYOAL_LOG("ERROR") << "Failed to create context for " << device << std::endl;
+  return false;
+}
+
 void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
 {
   if(!errout) //if errout is zero, produce a default filestream to write to
@@ -131,7 +161,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
   //OpenAL initialization code
 	const char *actualDeviceName;
   OPENALFNTABLE& ALFunction=*functmp;
-  std::vector<ALDEVICEINFO> vDeviceInfo(5);
+  std::vector<ALDEVICEINFO> vDeviceInfo;
 	size_t defaultDeviceIndex = 0;
 
 	// grab function pointers for 1.0-API functions, and if successful proceed to enumerate all devices
@@ -185,33 +215,14 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
 			}
 		}
 	}
-
-	if(vDeviceInfo.size())
-	{
-    ALCdevice* pDevice = functmp->alcOpenDevice(vDeviceInfo[defaultDeviceIndex].strDeviceName.c_str());
-		if (pDevice)
-		{
-			ALCcontext* pContext = functmp->alcCreateContext(pDevice, NULL);
-			if (pContext)
-			{
-        TINYOAL_LOG("INFO") << "Opened Device: " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-				functmp->alcMakeContextCurrent(pContext);
-		    oalFuncs = functmp;
-        functmp=0;
-			}
-			else
-      {
-				functmp->alcCloseDevice(pDevice);
-        TINYOAL_LOG("ERROR") << "Failed to create context for " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-      }
-		}
-    else
-      TINYOAL_LOG("ERROR") << "Failed to open device: " << functmp->alcGetString(pDevice, ALC_DEVICE_SPECIFIER) << std::endl;
-	}
-  else
-    TINYOAL_LOG("ERROR") << "No devices in device list!" << std::endl;
   
-  if(functmp) delete functmp; // If functmp is nonzero, something blew up, so delete it
+  oalFuncs = functmp;
+	if(!vDeviceInfo.size())
+    TINYOAL_LOG("ERROR") << "No devices in device list!" << std::endl;
+  else if(SetDevice(vDeviceInfo[defaultDeviceIndex].strDeviceName.c_str()))
+    functmp=0;
+  
+  if(functmp) { oalFuncs=0; delete functmp; } // If functmp is nonzero, something blew up, so delete it
 
   waveFuncs = new cWaveFunctions();
   oggFuncs = new cOggFunctions(_errout);

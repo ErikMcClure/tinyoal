@@ -20,6 +20,7 @@ int main()
 {
   //We initialize the engine here with the default number of buffers. You can also specify the error log file.
   cTinyOAL engine(4);
+  std::vector<cStr> devices = cStr::Explode(0,engine.GetDevices());
 
   // Here, we are going to play a "sound" by loading up a resource reference. We tell the resource that
   // any audio created using it should immediately start playing, and should be loaded into memory. Short

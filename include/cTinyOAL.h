@@ -55,6 +55,12 @@ namespace TinyOAL {
     std::ostream& BSS_FASTCALL FormatLog(const char* FILE, unsigned int LINE);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
     static cTinyOAL* Instance();
+    // Gets the name of the default device
+    const char* GetDefaultDevice();
+    // Sets current device to the given device
+    bool SetDevice(const char* device);
+    // Gets a null-seperated list of all available devices, terminated by a double null character.
+    const char* GetDevices();
 
     OPENALFNTABLE* oalFuncs;
     cOggFunctions* oggFuncs;

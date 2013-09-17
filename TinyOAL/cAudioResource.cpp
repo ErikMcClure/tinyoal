@@ -124,8 +124,6 @@ cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TI
 
 cAudioResource* cAudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)
 {
-  if(!cTinyOAL::Instance()->oalFuncs) return 0;
-
   const char* hash=(flags&TINYOAL_COPYINTOMEMORY)?"":path;
   cAudioResource* r = _audiohash[hash];
   if(r!=0) { r->Grab(); return r; }

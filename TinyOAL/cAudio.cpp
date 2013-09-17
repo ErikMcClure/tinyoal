@@ -18,40 +18,37 @@ cAudio::cAudio(cAudio&& mov)
   mov.uiSource=-1;
   mov._source=0;
 }
-cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _looptime(-1LL), _flags(addflags),
+cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _looptime(-1LL), _flags(addflags), _pitch(1.0f), _vol(1.0f),
   uiSource(-1), pDecodeBuffer(0),_stream(0),_source(ref), userdata(_userdata), ONDESTROY(0), _bufsize(0)
 {
-  if(!cTinyOAL::Instance()->oalFuncs) ref=0;
+  _pos[0] = 0.0f;
+  _pos[1] = 1.0f;
+  _pos[2] = 1.0f;
+  uiBuffers = (ALuint*)cTinyOAL::Instance()->_bufalloc.alloc(1);
+  unsigned char nbuffers=cTinyOAL::Instance()->defNumBuf;
+  memset(uiBuffers,0,sizeof(ALuint)*nbuffers);
+  prev = 0;
+  next = 0;
+
   if(!ref) return;
   ref->Grab();
   _looptime=ref->GetLoopPoint();
   _flags+=ref->GetFlags();
-  bss_util::LLAdd<cAudio>(this,_source->_inactivelist);
-  unsigned char nbuffers=cTinyOAL::Instance()->defNumBuf;
-  prev = 0;
-  next = 0;
-  uiBuffers = (ALuint*)cTinyOAL::Instance()->_bufalloc.alloc(1);
-  memset(uiBuffers,0,sizeof(ALuint)*nbuffers);
-  _pos[0] = 0.0f;
-  _pos[1] = 1.0f;
-  _pos[2] = 1.0f;
-  _vol = 1.0f;
-  _pitch = 1.0f;
+  bss_util::LLAdd<cAudio>(this,ref->_inactivelist);
 
-  _stream = ref->OpenStream();
-  if(!_stream) return; //bad source
+  _stream = (!cTinyOAL::Instance()->oalFuncs)?0:ref->OpenStream(); // If we don't have oalFuncs, force stream to 0
+  if(_stream!=0)
+  { // Allocate a buffer to be used to store decoded data for all Buffers
+    pDecodeBuffer = cTinyOAL::Instance()->_allocdecoder(_bufsize=ref->GetBufSize());
 
-  // Allocate a buffer to be used to store decoded data for all Buffers
-  pDecodeBuffer = cTinyOAL::Instance()->_allocdecoder(_bufsize=ref->GetBufSize());
-	if (!pDecodeBuffer)
-	{
-    TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
-    return;
+	  if(pDecodeBuffer!=0)
+    { // Generate some AL Buffers for streaming
+      cTinyOAL::Instance()->oalFuncs->alGenBuffers(nbuffers, uiBuffers);
+      _fillbuffers(); // Fill all the Buffers with decoded audio data
+    }
+    else
+      TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
   }
-
-  // Generate some AL Buffers for streaming
-  cTinyOAL::Instance()->oalFuncs->alGenBuffers(nbuffers, uiBuffers);
-  _fillbuffers(); // Fill all the Buffers with decoded audio data
 
   if(_flags&TINYOAL_ISPLAYING) {
     _flags-=TINYOAL_ISPLAYING;
@@ -131,7 +128,7 @@ bool cAudio::SkipSeconds(double seconds)
 }
 bool cAudio::Skip(unsigned __int64 sample)
 {
-  if(!_source) return false;
+  if(!_source || !_stream) return false;
   if(!_source->Skip(_stream,sample)) return false;
   if(_streaming())
   {

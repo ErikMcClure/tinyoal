@@ -6,7 +6,7 @@ C_SRCS := $(wildcard $(SRCDIR)/*.c)
 CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp)
 INCLUDE_DIRS := include
 LIBRARY_DIRS := 
-LIBRARIES := tinyoal
+LIBRARIES := dl tinyoal
 
 CPPFLAGS += -w -std=gnu++0x
 LDFLAGS += -L./bin/
