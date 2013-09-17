@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="02 OggFile"
-	ProjectGUID="{BE37B60D-A4A5-4C98-8A4C-FD313C8FFFE2}"
-	RootNamespace="My02OggFile"
+	Name="01WavFile"
+	ProjectGUID="{2DC8A03F-1C93-43C8-AD0A-DED48922A864}"
+	RootNamespace="My01WavFile"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -63,7 +63,6 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)\$(ProjectName)_d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
