@@ -1,5 +1,5 @@
-#include <openAL\al.h>
-#include <openAL\alc.h>
+#include <openAL/al.h>
+#include <openAL/alc.h>
 
 // Open AL Function table definition
 

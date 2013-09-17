@@ -52,7 +52,7 @@ void cAudioResource::_destruct()
   for(cAudio* cur=_inactivelist; cur!=0; cur=cur->next) cur->Invalidate();
 }
 //This function does NOT check to see if fileheader is 4 characters long
-unsigned char __fastcall cAudioResource::_getfiletype(const char* fileheader)
+unsigned char BSS_FASTCALL cAudioResource::_getfiletype(const char* fileheader)
 { 
 	if(!strncmp(fileheader, "OggS", 4)) return TINYOAL_FILETYPE_OGG;
 	if(!strncmp(fileheader, "fLaC", 4)) return TINYOAL_FILETYPE_FLAC; // We don't support FLAC yet
