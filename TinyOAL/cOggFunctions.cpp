@@ -6,7 +6,7 @@
 #include "bss_util/bss_util.h"
 #include "bss_util/cStr.h"
 #include "bss_util/bss_deprecated.h"
-#include "openAL\vorbisfile.h"
+#include "openAL/vorbisfile.h"
 #include "cTinyOAL.h"
 #include <ostream>
 

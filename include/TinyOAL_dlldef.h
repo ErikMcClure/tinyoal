@@ -5,7 +5,7 @@
 #ifndef __TINYOAL_DLLDEF_H__TOAL__
 #define __TINYOAL_DLLDEF_H__TOAL__
 
-#include "bss_util\bss_compiler.h"
+#include "bss_util/bss_compiler.h"
 
 #ifdef TINYOAL_EXPORTS
 #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLEXPORT

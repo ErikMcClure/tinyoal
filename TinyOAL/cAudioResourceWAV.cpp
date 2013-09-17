@@ -4,7 +4,7 @@
 
 #include "cAudioResourceWAV.h"
 #include "cTinyOAL.h"
-#include "openAL\loadoal.h"
+#include "openAL/loadoal.h"
 
 using namespace TinyOAL;
 bss_util::cFixedAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);

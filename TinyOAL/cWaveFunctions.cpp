@@ -23,7 +23,7 @@
  */
 
 #include "cWaveFunctions.h"
-#include "bss_util\bss_deprecated.h"
+#include "bss_util/bss_deprecated.h"
 #include <string.h> //STRNICMP
 
 using namespace TinyOAL;
