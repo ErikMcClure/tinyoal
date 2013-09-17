@@ -9,6 +9,7 @@
 #include "openAL/loadoal.h"
 
 using namespace TinyOAL;
+bss_util::cFixedAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
 
 cAudioResourceOGG::cAudioResourceOGG(const cAudioResourceOGG &copy) : cAudioResource(copy) {}
 
@@ -78,9 +79,9 @@ cAudioResourceOGG::~cAudioResourceOGG()
 
 void* cAudioResourceOGG::OpenStream()
 {
-  OggVorbis_FileEx* r = new OggVorbis_FileEx();
+  OggVorbis_FileEx* r = _allocogg.alloc(1);
   if(_openstream(r)) return r;
-  delete r;
+  _allocogg.dealloc(r);
   return 0;
 }
 
@@ -101,7 +102,7 @@ void cAudioResourceOGG::CloseStream(void* stream)
 {
   OggVorbis_FileEx* data = (OggVorbis_FileEx*)stream;
   cTinyOAL::Instance()->oggFuncs->fn_ov_clear(&data->ogg);
-  delete data;
+  _allocogg.dealloc(data);
 }
 
 // This is the important function. Using the stream given to us, we know that it must be an OGG stream, and thus will
@@ -163,17 +164,4 @@ bool cAudioResourceOGG::Skip(void* stream, unsigned __int64 samples)
   if(!cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream,(ogg_int64_t)samples)) return true;
   if(!samples) return Reset(stream); // If we fail to seek, but we want to loop to the start, attempt to reset the stream instead.
   return false;
-}
-unsigned __int64 cAudioResourceOGG::ToSample(void* stream, double seconds)
-{
-  if(!stream) return false;
-  cOggFunctions* ogg = cTinyOAL::Instance()->oggFuncs;
-  ogg_int64_t prev = ogg->fn_ov_raw_tell((OggVorbis_File*)stream);
-  unsigned __int64 ret=0;
-
-  if(!ogg->fn_ov_time_seek((OggVorbis_File*)stream,seconds))
-    ret = (unsigned __int64)ogg->fn_ov_pcm_tell((OggVorbis_File*)stream);
-
-  ogg->fn_ov_raw_seek((OggVorbis_File*)stream,prev);
-  return ret;
 }

@@ -10,6 +10,7 @@
 
 using namespace TinyOAL;
 bss_util::cKhash_StringIns<cAudioResource*> cAudioResource::_audiohash;
+bss_util::cFixedAlloc<cAudio> cAudioResource::_allocaudio(5);
 
 cAudioResource::cAudioResource(const cAudioResource& copy) { assert(false); }
 cAudioResource::cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned __int64 loop) : _data(data), _datalength(len),
@@ -33,17 +34,15 @@ cAudioResource::~cAudioResource()
 void cAudioResource::DestroyThis() { delete this; }
 cAudio* cAudioResource::Play(TINYOAL_FLAG flags)
 { 
-  if(!_maxactive || _numactive<_maxactive) return new cAudio(this,flags|TINYOAL_MANAGED); 
   cAudio* r = _activelistend;
-  r->Skip(0);
-  if(flags&TINYOAL_ISPLAYING)
-  {
-    bss_util::LLRemove(r,_activelist,_activelistend);
-    bss_util::LLAdd(r,_activelist,_activelistend);
+  if(!_maxactive || _numactive<_maxactive) {
+    r = _allocaudio.alloc(1);
+    flags|=TINYOAL_MANAGED;
+  } else {
+    flags=((flags&(~TINYOAL_MANAGED))|(r->GetFlags()&TINYOAL_MANAGED));
+    r->~cAudio();
   }
-  else
-    r->Pause();
-
+  new(r) cAudio(this,flags);
   return r;
 }
 

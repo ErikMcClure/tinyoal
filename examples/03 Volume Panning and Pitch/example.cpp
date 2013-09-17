@@ -13,6 +13,7 @@ int __cdecl main()
 {
   cTinyOAL engine;
   cAudioResource* songref = cAudioResource::Create("..\\media\\mono.ogg",0,0);
+  assert(songref==cAudioResource::Create("..\\media\\mono.ogg",0,0));
   cAudio song(songref,TINYOAL_ISPLAYING); // We can initialize an audio instance from any resource reference.
   
   song.SetPitch(2.0f);
