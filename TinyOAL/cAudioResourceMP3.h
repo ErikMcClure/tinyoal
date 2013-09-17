@@ -25,8 +25,6 @@ namespace TinyOAL {
     virtual bool Reset(AUDIOSTREAM* stream);
     // This closes a stream and destroys any associated data (not the actual audio source itself). Stream will be an invalid pointer after this function is called. 
     virtual void CloseStream(AUDIOSTREAM* stream);
-    // Gets sample point of given time 
-    virtual unsigned __int64 ToSample(AUDIOSTREAM* stream, double seconds);
     // Sets stream to given sample 
     virtual bool Skip(AUDIOSTREAM* stream, unsigned __int64 samples);
 

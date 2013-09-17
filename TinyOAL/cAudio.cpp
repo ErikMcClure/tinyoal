@@ -18,16 +18,19 @@ cAudio::cAudio(cAudio&& mov)
   mov.uiSource=-1;
   mov._source=0;
 }
-cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _looptime(ref->GetLoopPoint()), _flags(ref->GetFlags()|addflags),
-  uiSource(-1), pDecodeBuffer(0),_stream(0),_source(ref), userdata(_userdata), ONDESTROY(0)
+cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _looptime(-1LL), _flags(addflags),
+  uiSource(-1), pDecodeBuffer(0),_stream(0),_source(ref), userdata(_userdata), ONDESTROY(0), _bufsize(0)
 {
+  if(!cTinyOAL::oalFuncs) ref=0;
   if(!ref) return;
   ref->Grab();
-  cTinyOAL::Instance()->_in_addaudio(this,_source);
+  _looptime=ref->GetLoopPoint();
+  _flags+=ref->GetFlags();
+  bss_util::LLAdd<cAudio>(this,_source->_inactivelist);
   unsigned char nbuffers=cTinyOAL::Instance()->defNumBuf;
   prev = 0;
   next = 0;
-	uiBuffers = (unsigned int*)malloc(nbuffers*sizeof(ALuint));
+  uiBuffers = (ALuint*)cTinyOAL::Instance()->_bufalloc.alloc(1);
   memset(uiBuffers,0,sizeof(ALuint)*nbuffers);
   _pos[0] = 0.0f;
   _pos[1] = 1.0f;
@@ -39,7 +42,7 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
   if(!_stream) return; //bad source
 
   // Allocate a buffer to be used to store decoded data for all Buffers
-  pDecodeBuffer = (char*)malloc(ref->GetBufSize());
+  pDecodeBuffer = cTinyOAL::Instance()->_allocdecoder(_bufsize=ref->GetBufSize());
 	if (!pDecodeBuffer)
 	{
     TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
@@ -59,6 +62,7 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
 cAudio::~cAudio()
 {
   if(ONDESTROY) (*ONDESTROY)(this);
+  _flags-=TINYOAL_MANAGED; // Remove the flag first, which prevents us from going into an infinite loop
   Stop(); // Stop destroys the source for us and ensures we are in the inactive list
 
   if(_stream) 
@@ -67,11 +71,11 @@ cAudio::~cAudio()
     _source->CloseStream(_stream);
   }
 
-  if(pDecodeBuffer) free(pDecodeBuffer);
-  free(uiBuffers);
+  if(pDecodeBuffer) cTinyOAL::Instance()->_deallocdecoder(pDecodeBuffer, _bufsize);
+  cTinyOAL::Instance()->_bufalloc.dealloc(uiBuffers);
   if(_source)
   {
-    cTinyOAL::Instance()->_in_removeaudio(this,_source);
+    bss_util::LLRemove<cAudio>(this,_source->_inactivelist);
     _source->Drop();
   }
 }
@@ -99,6 +103,7 @@ void cAudio::Stop()
   {
     cTinyOAL::oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
 	  cTinyOAL::oalFuncs->alDeleteSources(1, &uiSource);
+    uiSource=(unsigned int)-1;
   }
   if(_stream!=0) 
   {
@@ -107,8 +112,8 @@ void cAudio::Stop()
   }
   _stop();
   if(_flags&TINYOAL_MANAGED) { // If we're managed and we stopped playing, destroy ourselves.
-    _flags-=TINYOAL_MANAGED; // Remove the flag first, which prevents us from going into an infinite loop
-    delete this;
+    this->~cAudio();
+    if(_source) _source->_allocaudio.dealloc(this);
   }
 }
 
@@ -121,25 +126,28 @@ void cAudio::Pause()
 
 bool cAudio::SkipSeconds(double seconds)
 {
-  if(!_stream) return false;
-  return Skip(_source->ToSample(_stream,seconds));
+  if(!_source) return false;
+  return Skip(_source->ToSample(seconds));
 }
 bool cAudio::Skip(unsigned __int64 sample)
 {
-  if(!_stream) return false;
+  if(!_source) return false;
   if(!_source->Skip(_stream,sample)) return false;
-  if(_flags&TINYOAL_ISPLAYING)
+  if(_streaming())
   {
+    cTinyOAL::oalFuncs->alSourceStop(uiSource);
     cTinyOAL::oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
     _fillbuffers(); //Refill all buffers
     _queuebuffers(); //requeue everything, which forces the audio to immediately skip.
+    cTinyOAL::oalFuncs->alSourcePlay(uiSource);
   }
   return true;
 }
 
 void cAudio::SetLoopPointSeconds(double seconds)
 {
-  _looptime = _source->ToSample(_stream,seconds);
+  if(_source!=0)
+    _looptime = _source->ToSample(seconds);
 }
 
 void cAudio::SetLoopPoint(unsigned __int64 samples)
@@ -149,7 +157,7 @@ void cAudio::SetLoopPoint(unsigned __int64 samples)
 
 bool cAudio::Update()
 {
-  if(!_stream) //Do we have a valid stream
+  if(!_source) //Do we have a valid stream
     return false;
 
   _processbuffers(); //this must be first

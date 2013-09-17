@@ -7,6 +7,7 @@
 #include "openAL\loadoal.h"
 
 using namespace TinyOAL;
+bss_util::cFixedAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
 
 cAudioResourceWAV::cAudioResourceWAV(const cAudioResourceWAV& copy) : cAudioResource(copy) {}
 cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
@@ -53,7 +54,7 @@ void* cAudioResourceWAV::OpenStream()
 {
   if(!_sentinel.source) return 0; // Indicates a failure on file load
   if(_flags&TINYOAL_ISFILE) cTinyOAL::Instance()->waveFuncs->Seek(_sentinel,0);
-  WAVEFILEINFO* r = new WAVEFILEINFO();
+  WAVEFILEINFO* r = _allocwav.alloc(1);
   memcpy(r,&_sentinel,sizeof(WAVEFILEINFO));
   r->source=(_flags&TINYOAL_ISFILE)?_data:&r->stream;
   return r;
@@ -63,7 +64,7 @@ void cAudioResourceWAV::CloseStream(void* stream)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   cTinyOAL::Instance()->waveFuncs->Close(*r);
-  delete r;
+  _allocwav.dealloc(r);
 }
 unsigned long cAudioResourceWAV::Read(void* stream, char* buffer)
 {
@@ -83,10 +84,4 @@ bool cAudioResourceWAV::Skip(void* stream, unsigned __int64 samples)
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
   return !cTinyOAL::Instance()->waveFuncs->Seek(*r, samples*(bits>>3));
-}
-unsigned __int64 cAudioResourceWAV::ToSample(void* stream, double seconds)
-{
-  WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
-  unsigned int freq=r->wfEXT.Format.nSamplesPerSec;
-  return (unsigned __int64)(freq*seconds);
 }

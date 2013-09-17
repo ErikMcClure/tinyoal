@@ -80,10 +80,9 @@ namespace TinyOAL {
     float _pitch;
     bss_util::cBitField<TINYOAL_FLAG> _flags;
     unsigned __int64 _looptime;
-
-  private:
     unsigned int uiSource;
     unsigned int* uiBuffers;
+    unsigned int _bufsize;
     char _bufstart;
     char _queuebuflen;
     char* pDecodeBuffer;

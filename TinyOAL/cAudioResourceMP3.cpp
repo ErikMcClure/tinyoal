@@ -98,7 +98,7 @@ AUDIOSTREAM* cAudioResourceMP3::OpenStream()
   ulBufferSize = (sizeof(short) * ulChannels) * _header.framesize; //Each sample is 2 bytes multiplied by the number of channels (because technically there's only one sample per channel, but mp3 treats all channels as one sample becuase its stupid)
   
   if(_filebuf) delete [] _filebuf;
-  _filebuf = new unsigned char[_framesize];
+  _filebuf = (unsigned char*)malloc(_framesize);
   return 0;
 }
 // This reads the next chunk of MP3 specific data. pDecodeBuffer must be at least GetBufSize() long 

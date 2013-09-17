@@ -5,11 +5,10 @@
  * Copyright ©2013 Erik McClure
  */
 
-#include "TinyOAL.h"
+#include "cTinyOAL.h"
 #include <iostream>
 #include "bss_util\cStr.h"
 #include "cOggFunctions.h"
-#include "cAudioResource.h"
 #include "taginclude/fileref.h"
 #include "taginclude/vorbisfile.h"
 #include "taginclude/xiphcomment.h"
@@ -19,44 +18,36 @@ using namespace TinyOAL;
 
 #pragma comment(lib, "tag.lib")
 
-class InheritAudio : public cAudio {
-public:
-  InheritAudio(const char* file) : cAudio(file,TINYOAL_LOOP) {}
-  AUDIOSTREAM* GetStream() { return _stream; }
-  cAudioResource* GetSource() { return _source; }
-};
-
 int __cdecl main()
 {
   //Initialize the engine with default number of buffers
-  cTinyOAL* engine = new cTinyOAL();
+  cTinyOAL engine;
   std::cout << "TinyOAL Loop Utility" << std::endl << std::endl;
 
-  cStr file(256);
+  char file[256]={0};
   FILE* ftest=0;
   while(!ftest)
   {
     std::cout << "OGG file name: ";
-    std::cin >> file.UnsafeString();
-    file.RecalcSize();
-    if(!file.length()) return 0; // quit
+    std::cin >> file;
+    if(!file[0]) return 0; // quit
     FOPEN(ftest,file,"rb");
     if(!ftest) std::cout << "Invalid file path" << std::endl << std::endl;
   }
   fclose(ftest);
 
-  InheritAudio* song = new InheritAudio(file);
+  cAudio song(cAudioResource::Create(file));
 
   std::cout << "Do you want to play this OGG file? [y/n]: ";
   char c;
   cin >> c;
   if(c == 'y' || c == 'Y')
   {
-    song->Play();
+    song.Play();
     time_t seconds;
     time_t start=time(NULL);
     time_t last=time(NULL);
-    while(engine->Update())
+    while(engine.Update())
     {
       seconds = time(NULL);
       if(seconds!=last)
@@ -91,12 +82,9 @@ int __cdecl main()
     std::cin >> seconds;
   }
 
-  ogg_int64_t samples = song->GetSource()->ToSample(song->GetStream(),seconds);
-  
-  delete song;
-  delete engine;
+  ogg_int64_t samples = song.GetResource()->ToSample(seconds);
 
-  TagLib::FileRef g(file.c_str());
+  TagLib::FileRef g(file);
   ((TagLib::Ogg::XiphComment*)g.tag())->addField("LOOPSTART",cStrF("%il",samples).c_str());
   g.save();
   system("PAUSE");

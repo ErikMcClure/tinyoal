@@ -1,4 +1,4 @@
-/* TinyOAL - An OpenAL Audio engine
+/* TinyOAL - An OpenAL-Soft Audio engine
    Copyright ©2013 Erik McClure
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
 
 #include "cAudioResource.h"
 #include "bss_util/cSingleton.h"
-#include "bss_util/bss_alloc_fixed.h"
+#include "bss_util/cAVLtree.h"
 
 #define TINYOAL_LOG(level)(TinyOAL::cTinyOAL::Instance()->FormatLog(__FILE__,__LINE__) << (level) << ": ")
 #define TINYOAL_LOGM(level,message) (TINYOAL_LOG(level) << (message) << std::endl)
@@ -60,7 +60,7 @@ namespace TinyOAL {
     cOggFunctions* oggFuncs;
     cMp3Functions* mp3Funcs;
     cWaveFunctions* waveFuncs;
-    unsigned char defNumBuf;
+    const unsigned char defNumBuf;
 
   protected:
     friend class cAudio;
@@ -69,13 +69,15 @@ namespace TinyOAL {
     void BSS_FASTCALL _construct(std::ostream* errout,const char* logfile);
     void BSS_FASTCALL _addaudio(cAudio* ref, cAudioResource* res);
     void BSS_FASTCALL _removeaudio(cAudio* ref, cAudioResource* res);
-    void BSS_FASTCALL _in_addaudio(cAudio* ref, cAudioResource* res);
-    void BSS_FASTCALL _in_removeaudio(cAudio* ref, cAudioResource* res);
+    char* BSS_FASTCALL _allocdecoder(unsigned int sz);
+    void BSS_FASTCALL _deallocdecoder(char* p, unsigned int sz);
 
     std::ostream* _errout; //outstream that controls where the errors go
     std::filebuf* _errbuf; //used as backup
     cAudioResource* _activereslist;
     cAudioResource* _reslist;
+    bss_util::cFixedAllocVoid _bufalloc;
+    bss_util::cAVLtree<unsigned int,std::unique_ptr<bss_util::cFixedAllocVoid>> _treealloc;
   };
 }
 

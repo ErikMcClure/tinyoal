@@ -36,12 +36,12 @@ extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, char* output, size_
 #endif
 
 cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf)
+  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5)
 {
   _construct(errout,"TinyOAL_log.txt");
 }
 cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf)
+  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5)
 {
   _construct(0,!logfile?"TinyOAL_log.txt":logfile);
 }
@@ -142,6 +142,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
 		if (ALFunction.alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
 			char* devices = (char *)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 			const char* defaultDeviceName = (char *)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+      TINYOAL_LOG("INFO") << "Default device name is: " << defaultDeviceName << std::endl;
 			size_t index = 0;
 			// go through device list (each device terminated with a single NULL, list terminated with double NULL)
 			while (*devices != NULL) {
@@ -244,11 +245,22 @@ void BSS_FASTCALL cTinyOAL::_removeaudio(cAudio* ref, cAudioResource* res)
     bss_util::LLAdd(res,_reslist);
   }
 }
-void BSS_FASTCALL cTinyOAL::_in_addaudio(cAudio* ref, cAudioResource* res)
+
+char* BSS_FASTCALL cTinyOAL::_allocdecoder(unsigned int sz)
 {
-  bss_util::LLAdd<cAudio>(ref,res->_inactivelist);
+  auto p = _treealloc.GetRef(sz);
+  if(!p)
+  {
+    TINYOAL_LOG("INFO") << "Created allocation pool of size " << sz << std::endl;
+    _treealloc.Insert(sz,std::unique_ptr<bss_util::cFixedAllocVoid>(new cFixedAllocVoid(sz,3)));
+    p = _treealloc.GetRef(sz);
+  }
+  assert(p);
+  return (char*)(*p)->alloc(1);
 }
-void BSS_FASTCALL cTinyOAL::_in_removeaudio(cAudio* ref, cAudioResource* res)
+void BSS_FASTCALL cTinyOAL::_deallocdecoder(char* s, unsigned int sz)
 {
-  bss_util::LLRemove<cAudio>(ref,res->_inactivelist);
+  auto p = _treealloc.GetRef(sz);
+  if(p) (*p)->dealloc(s);
+  else TINYOAL_LOG("WARNING") << "decoder buffer deallocation failure." << std::endl;
 }
