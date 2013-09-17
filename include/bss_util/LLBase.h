@@ -6,7 +6,7 @@
 
 #include "bss_defines.h"
 #include <iterator>
-#include <list>
+#include <stddef.h>
 
 namespace bss_util {
   // A base node for a doubly-linked list. The given parameter T may be any class that publically inherits LLBase
