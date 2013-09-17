@@ -21,7 +21,7 @@ cAudio::cAudio(cAudio&& mov)
 cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _looptime(-1LL), _flags(addflags),
   uiSource(-1), pDecodeBuffer(0),_stream(0),_source(ref), userdata(_userdata), ONDESTROY(0), _bufsize(0)
 {
-  if(!cTinyOAL::oalFuncs) ref=0;
+  if(!cTinyOAL::Instance()->oalFuncs) ref=0;
   if(!ref) return;
   ref->Grab();
   _looptime=ref->GetLoopPoint();
@@ -50,7 +50,7 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
   }
 
   // Generate some AL Buffers for streaming
-  cTinyOAL::oalFuncs->alGenBuffers(nbuffers, uiBuffers);
+  cTinyOAL::Instance()->oalFuncs->alGenBuffers(nbuffers, uiBuffers);
   _fillbuffers(); // Fill all the Buffers with decoded audio data
 
   if(_flags&TINYOAL_ISPLAYING) {
@@ -67,7 +67,7 @@ cAudio::~cAudio()
 
   if(_stream) 
   {
-    cTinyOAL::oalFuncs->alDeleteBuffers(cTinyOAL::Instance()->defNumBuf, uiBuffers);
+    cTinyOAL::Instance()->oalFuncs->alDeleteBuffers(cTinyOAL::Instance()->defNumBuf, uiBuffers);
     _source->CloseStream(_stream);
   }
 
@@ -86,7 +86,7 @@ bool cAudio::Play()
   _getsource();
 
   if(!_streaming())
-    cTinyOAL::oalFuncs->alSourcePlay(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourcePlay(uiSource);
   
   if(!(_flags&TINYOAL_ISPLAYING) && _source!=0)
     cTinyOAL::Instance()->_addaudio(this,_source);
@@ -98,11 +98,11 @@ bool cAudio::Play()
 void cAudio::Stop()
 {
   if(_streaming())
-    cTinyOAL::oalFuncs->alSourceStop(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourceStop(uiSource);
   if(uiSource!=(unsigned int)-1)
   {
-    cTinyOAL::oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
-	  cTinyOAL::oalFuncs->alDeleteSources(1, &uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
+	  cTinyOAL::Instance()->oalFuncs->alDeleteSources(1, &uiSource);
     uiSource=(unsigned int)-1;
   }
   if(_stream!=0) 
@@ -120,7 +120,7 @@ void cAudio::Stop()
 void cAudio::Pause()
 {
   if(_streaming())
-    cTinyOAL::oalFuncs->alSourcePause(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourcePause(uiSource);
   _stop();
 }
 
@@ -135,11 +135,11 @@ bool cAudio::Skip(unsigned __int64 sample)
   if(!_source->Skip(_stream,sample)) return false;
   if(_streaming())
   {
-    cTinyOAL::oalFuncs->alSourceStop(uiSource);
-    cTinyOAL::oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
+    cTinyOAL::Instance()->oalFuncs->alSourceStop(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
     _fillbuffers(); //Refill all buffers
     _queuebuffers(); //requeue everything, which forces the audio to immediately skip.
-    cTinyOAL::oalFuncs->alSourcePlay(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourcePlay(uiSource);
   }
   return true;
 }
@@ -165,14 +165,14 @@ bool cAudio::Update()
   if(!_streaming() && (_flags&TINYOAL_ISPLAYING)) // If we aren't playing but should be uiSource *must* be valid because Play() was called.
   {
     ALint iQueuedBuffers;
-    cTinyOAL::oalFuncs->alGetSourcei(uiSource, AL_BUFFERS_QUEUED, &iQueuedBuffers);
+    cTinyOAL::Instance()->oalFuncs->alGetSourcei(uiSource, AL_BUFFERS_QUEUED, &iQueuedBuffers);
     if(!iQueuedBuffers)
     {
       Stop();
       return false;
     }
 
-    cTinyOAL::oalFuncs->alSourcePlay(uiSource); //The audio device was starved for data so we need to restart it
+    cTinyOAL::Instance()->oalFuncs->alSourcePlay(uiSource); //The audio device was starved for data so we need to restart it
   }
 
   return true;
@@ -195,9 +195,9 @@ void cAudio::_getsource()
 {
   if(uiSource==(unsigned int)-1) // if uiSource is invalid we need to grab a new one.
   {
-    cTinyOAL::oalFuncs->alGetError(); // Clear last error
-    cTinyOAL::oalFuncs->alGenSources(1, &uiSource);
-    if(cTinyOAL::oalFuncs->alGetError() != AL_NO_ERROR)
+    cTinyOAL::Instance()->oalFuncs->alGetError(); // Clear last error
+    cTinyOAL::Instance()->oalFuncs->alGenSources(1, &uiSource);
+    if(cTinyOAL::Instance()->oalFuncs->alGetError() != AL_NO_ERROR)
     {
       TINYOAL_LOGM("ERROR","Failed to generate source!");
       //TODO steal source from other audio instead
@@ -213,7 +213,7 @@ void cAudio::_queuebuffers()
   unsigned char nbuffers=cTinyOAL::Instance()->defNumBuf; // Queue everything
   _queuebuflen+=_bufstart;
   for(ALint i = _bufstart; i < _queuebuflen; ++i) // Queues all waiting buffers in the correct order.
-    cTinyOAL::oalFuncs->alSourceQueueBuffers(uiSource, 1, &uiBuffers[i%nbuffers]);
+    cTinyOAL::Instance()->oalFuncs->alSourceQueueBuffers(uiSource, 1, &uiBuffers[i%nbuffers]);
   _queuebuflen=0;
 }
 void cAudio::_fillbuffers()
@@ -226,7 +226,7 @@ void cAudio::_fillbuffers()
   {
     ulBytesWritten = _source->Read(_stream, pDecodeBuffer);
 	  if (ulBytesWritten)
-      cTinyOAL::oalFuncs->alBufferData(uiBuffers[_queuebuflen++], _source->GetFormat(), pDecodeBuffer, ulBytesWritten, _source->GetFreq());
+      cTinyOAL::Instance()->oalFuncs->alBufferData(uiBuffers[_queuebuflen++], _source->GetFormat(), pDecodeBuffer, ulBytesWritten, _source->GetFreq());
   }
 }
 
@@ -234,7 +234,7 @@ void cAudio::_processbuffers()
 {
   // Request the number of OpenAL Buffers have been processed (played) on the Source
 	ALint iBuffersProcessed = 0;
-	cTinyOAL::oalFuncs->alGetSourcei(uiSource, AL_BUFFERS_PROCESSED, &iBuffersProcessed);
+	cTinyOAL::Instance()->oalFuncs->alGetSourcei(uiSource, AL_BUFFERS_PROCESSED, &iBuffersProcessed);
   bool loop = _looptime!=(unsigned __int64)-1;
   ALuint uiBuffer;
   unsigned long ulBytesWritten;
@@ -245,7 +245,7 @@ void cAudio::_processbuffers()
 	{
 		// Remove the Buffer from the Queue.  (uiBuffer contains the Buffer ID for the unqueued Buffer)
 		uiBuffer = 0;
-		cTinyOAL::oalFuncs->alSourceUnqueueBuffers(uiSource, 1, &uiBuffer);
+		cTinyOAL::Instance()->oalFuncs->alSourceUnqueueBuffers(uiSource, 1, &uiBuffer);
 
 		// Read more audio data (if there is any)
 		ulBytesWritten = _source->Read(_stream, pDecodeBuffer);
@@ -257,8 +257,8 @@ void cAudio::_processbuffers()
     
 		if(ulBytesWritten)
 		{
-      cTinyOAL::oalFuncs->alBufferData(uiBuffer, _source->GetFormat(), pDecodeBuffer, ulBytesWritten, _source->GetFreq());
-			cTinyOAL::oalFuncs->alSourceQueueBuffers(uiSource, 1, &uiBuffer);
+      cTinyOAL::Instance()->oalFuncs->alBufferData(uiBuffer, _source->GetFormat(), pDecodeBuffer, ulBytesWritten, _source->GetFreq());
+			cTinyOAL::Instance()->oalFuncs->alSourceQueueBuffers(uiSource, 1, &uiBuffer);
 		}
 
     iBuffersProcessed--;
@@ -267,9 +267,9 @@ void cAudio::_processbuffers()
 
 bool cAudio::_streaming()
 {
-  if(!cTinyOAL::oalFuncs) return false;
+  if(!cTinyOAL::Instance()->oalFuncs) return false;
   int iState=0;
-	cTinyOAL::oalFuncs->alGetSourcei(uiSource, AL_SOURCE_STATE, &iState); // if uiSource is invalid or this fails for any reason, iState will remain at 0
+	cTinyOAL::Instance()->oalFuncs->alGetSourcei(uiSource, AL_SOURCE_STATE, &iState); // if uiSource is invalid or this fails for any reason, iState will remain at 0
 	return iState == AL_PLAYING;
 }
 
@@ -282,8 +282,8 @@ void cAudio::SetVolume(float range)
 {
   if(range >= 0.0f)
     _vol = range;
-  if(uiSource != -1) 
-    cTinyOAL::oalFuncs->alSourcef(uiSource, AL_GAIN, _vol);
+  if(uiSource != (unsigned int)-1) 
+    cTinyOAL::Instance()->oalFuncs->alSourcef(uiSource, AL_GAIN, _vol);
 }
 
 void cAudio::SetPitch(float range)
@@ -291,7 +291,7 @@ void cAudio::SetPitch(float range)
   if(range >= 0.5f && range <= 2.0f)
     _pitch = range;
   if(uiSource != -1) 
-    cTinyOAL::oalFuncs->alSourcef(uiSource, AL_PITCH, _pitch);
+    cTinyOAL::Instance()->oalFuncs->alSourcef(uiSource, AL_PITCH, _pitch);
 }
 
 void cAudio::SetPosition(float X, float Y, float Z)
@@ -299,16 +299,16 @@ void cAudio::SetPosition(float X, float Y, float Z)
   _pos[0] = X;
   _pos[1] = Y;
   _pos[2] = Z;
-  if(uiSource != -1)
-    cTinyOAL::oalFuncs->alSourcefv(uiSource, AL_POSITION, _pos);
+  if(uiSource != (unsigned int)-1)
+    cTinyOAL::Instance()->oalFuncs->alSourcefv(uiSource, AL_POSITION, _pos);
 }
 
 void cAudio::_applyall()
 {
-  if(uiSource != -1)
+  if(uiSource != (unsigned int)-1)
   {
-    cTinyOAL::oalFuncs->alSourcefv(uiSource, AL_POSITION, _pos);
-    cTinyOAL::oalFuncs->alSourcef(uiSource, AL_PITCH, _pitch);
-    cTinyOAL::oalFuncs->alSourcef(uiSource, AL_GAIN, _vol);
+    cTinyOAL::Instance()->oalFuncs->alSourcefv(uiSource, AL_POSITION, _pos);
+    cTinyOAL::Instance()->oalFuncs->alSourcef(uiSource, AL_PITCH, _pitch);
+    cTinyOAL::Instance()->oalFuncs->alSourcef(uiSource, AL_GAIN, _vol);
   }
 }
