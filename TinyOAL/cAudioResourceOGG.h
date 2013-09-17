@@ -27,10 +27,10 @@ namespace TinyOAL {
     virtual unsigned long Read(void* stream, char* buffer); // Reads next chunk of data - buffer must be at least GetBufSize() long 
     virtual bool Reset(void* stream); // This resets a stream to the beginning 
     virtual bool Skip(void* stream, unsigned __int64 samples); // Sets a stream to given sample 
-    virtual unsigned __int64 ToSample(void* stream, double seconds); // Converts given time to sample point
 
   protected:
     bool _openstream(OggVorbis_FileEx* target);
+    static bss_util::cFixedAlloc<OggVorbis_FileEx> _allocogg;
 
     ov_callbacks _callbacks;
   };

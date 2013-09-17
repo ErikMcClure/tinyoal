@@ -4,7 +4,20 @@
 
 0.9.93
 ------
-- Completely rewrote entire architecture.
+- Completely rewrote the engine's internals; only changes to the external interface will be listed.
+- cAudioResource::Create is now used to load resources, and PlaySound is just a wrapper around cAudioResource::Play()
+- TinyOAL.h was removed; just include cTinyOAL.h now
+- cAudio can only be constructed from a cAudioResource now.
+- Skipping now works properly while the sound is playing
+- Sources are now properly requested and released on Play() and Stop()
+- TINYOAL_LOADINTOMEMORY is now TINYOAL_COPYINTOMEMORY
+- TINYOAL_AUTOPLAY has been replaced by simply specifying TINYOAL_ISPLAYING upon construction
+- TINYOAL_NODOUBLEPLAY has been removed. Play() will never restart the stream because it's inconsistent with Pause()
+- cAudioResource now stores a loop point that is copied to all cAudio's upon construction.
+- cAudioResource also has a loop point argument in its Create() functions, but this will be overriden if the file being loaded has a loop point.
+- You can now manually specify the file format by passing in a file format parameter into the cAudioResource flags.
+- You can set a cAudioResource to have a maximum number of instances. Attempting to play more than _maxactive instances of a sound will result in the one that's been playing the longest to be destroyed and replaced with the new instance.
+- cAudioResource::ToSample is no longer virtual and takes only a double argument now.
 
 0.9.92
 ------

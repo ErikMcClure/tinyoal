@@ -8,6 +8,7 @@
 #include "bss_util/cKhash.h"
 #include "bss_util/cRefCounter.h"
 #include "bss_util/cStr.h"
+#include "bss_util/bss_alloc_fixed.h"
 #include "cAudio.h"
 
 struct _iobuf; //FILE*
@@ -22,15 +23,15 @@ namespace TinyOAL {
     virtual unsigned long Read(void* stream, char* buffer)=0; // Reads next chunk of data - buffer must be at least GetBufSize() long 
     virtual bool Reset(void* stream)=0; // This resets a stream to the beginning 
     virtual bool Skip(void* stream, unsigned __int64 samples)=0; // Sets a stream to given sample 
-    virtual unsigned __int64 ToSample(void* stream, double seconds)=0; // Converts given time to sample point 
+    inline unsigned __int64 ToSample(double seconds) { return (unsigned __int64)(seconds*_freq); } // Converts given time to sample point 
     inline unsigned __int64 GetLoopPoint() const { return _loop; }
     inline void SetLoopPoint(unsigned __int64 loop) { _loop=loop; }
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
     inline void SetFlags(TINYOAL_FLAG flags) { _flags=flags; }
-    inline unsigned long GetFreq() const { return _freq; }
-    inline unsigned long GetChannels() const { return _channels; }
-    inline unsigned long GetFormat() const { return _format; }
-    inline unsigned long GetBufSize() const { return _bufsize; }
+    inline unsigned int GetFreq() const { return _freq; }
+    inline unsigned int GetChannels() const { return _channels; }
+    inline unsigned int GetFormat() const { return _format; }
+    inline unsigned int GetBufSize() const { return _bufsize; }
     inline cAudio* GetActiveInstances() const { return _activelist; }
     inline cAudio* GetInactiveInstances() const { return _inactivelist; }
     inline unsigned int GetNumActive() const { return _numactive; }
@@ -54,6 +55,7 @@ namespace TinyOAL {
 	  };
 
   protected:
+    friend class cAudio;
     friend class cTinyOAL;
 
     cAudioResource(const cAudioResource& copy); // These are protected ensure we can ONLY be created inside this DLL
@@ -65,14 +67,15 @@ namespace TinyOAL {
     static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
 		static unsigned char __fastcall _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss_util::cKhash_StringIns<cAudioResource*> _audiohash;
-    
+    static bss_util::cFixedAlloc<cAudio> _allocaudio;
+
     void* _data;
     size_t _datalength;
     bss_util::cBitField<TINYOAL_FLAG> _flags;
-    unsigned long	_freq;
-	  unsigned long	_channels;
-    unsigned long _format;
-    unsigned long _bufsize;
+    unsigned int _freq;
+	  unsigned int _channels;
+    unsigned int _format;
+    unsigned int _bufsize;
     unsigned __int64 _loop;
     cStr _hash;
     cAudio* _activelist;
