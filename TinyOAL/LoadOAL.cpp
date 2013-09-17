@@ -23,7 +23,7 @@
  */
 
 #include "bss_util/bss_win32_includes.h"
-#include "openAL\loadoal.h"
+#include "openAL/loadoal.h"
 #include "cTinyOAL.h"
 #include <ostream>
 

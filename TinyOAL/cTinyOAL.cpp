@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "cTinyOAL.h"
-#include "openAL\al.h"
-#include "openAL\alc.h"
-#include "openAL\loadoal.h"
+#include "openAL/al.h"
+#include "openAL/alc.h"
+#include "openAL/loadoal.h"
 #include "cAudioResource.h"
 #include "cAudio.h"
 #include "cOggFunctions.h"
@@ -17,7 +17,7 @@ using namespace TinyOAL;
 using namespace bss_util;
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss_util\bss_win32_includes.h"
+#include "bss_util/bss_win32_includes.h"
 
 OPENALFNTABLE* cTinyOAL::oalFuncs=0;
 
