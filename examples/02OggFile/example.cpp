@@ -40,8 +40,6 @@ int main()
   music.Stop();
   music.Pause();
   music.Play();
-  music.GetResource()->SetMaxActive(1);
-  music.GetResource()->Play();
 
   time_t seconds;
   time_t start=time(NULL);
