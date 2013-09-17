@@ -34,7 +34,7 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
 
   _channels=_sentinel.wfEXT.Format.nChannels;
 	_freq=_sentinel.wfEXT.Format.nSamplesPerSec;
-  _format=cTinyOAL::oalFuncs->alGetEnumValue(cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel));
+  _format=cTinyOAL::Instance()->oalFuncs->alGetEnumValue(cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel));
 
 	// Queue 250ms of audio data
   _bufsize = _sentinel.wfEXT.Format.nAvgBytesPerSec >> 2;

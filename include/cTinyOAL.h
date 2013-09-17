@@ -56,7 +56,7 @@ namespace TinyOAL {
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
     static cTinyOAL* Instance();
 
-    static OPENALFNTABLE* oalFuncs;
+    OPENALFNTABLE* oalFuncs;
     cOggFunctions* oggFuncs;
     cMp3Functions* mp3Funcs;
     cWaveFunctions* waveFuncs;

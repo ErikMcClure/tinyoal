@@ -7,9 +7,16 @@
 
 #include "cTinyOAL.h"
 
+#ifdef BSS_PLATFORM_WIN32
+#define SLEEP(n) _sleep(n)
+#else
+#include <unistd.h>
+#define SLEEP(n) usleep(n*1000) //translate milliseconds to microseconds
+#endif
+
 using namespace TinyOAL;
 
-int __cdecl main()
+int main()
 {
   //We initialize the engine here with the default number of buffers. You can also specify the error log file.
   cTinyOAL engine(4);
@@ -35,7 +42,7 @@ int __cdecl main()
   // is calling it before a single buffer runs out. This is usually somewhere around 200 ms, but it varies.
   while(engine.Update()) 
   {
-    _sleep(100);
+    SLEEP(100);
     //if(++count > 100000)
     //{
     //  count=0;

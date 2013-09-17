@@ -4,7 +4,16 @@
 
 #ifdef __INCLUDE_MP3
 #include "cMp3Functions.h"
+
+#ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
+#define LOADDYNLIB(s) LoadLibraryW(L##s)
+#define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
+#else
+#include <dlfcn.h>
+#define LOADDYNLIB(s) dlopen(s, RTLD_LAZY);
+#define GETDYNFUNC(p,s) dlsym(p,s);
+#endif
 
 using namespace TinyOAL;
 

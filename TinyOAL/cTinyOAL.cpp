@@ -19,8 +19,6 @@ using namespace bss_util;
 #ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
 
-OPENALFNTABLE* cTinyOAL::oalFuncs=0;
-
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.
 extern size_t BSS_FASTCALL UTF8toUTF16(const char* input,wchar_t* output, size_t buflen)
 {
@@ -36,12 +34,12 @@ extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, char* output, size_
 #endif
 
 cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5)
+  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0)
 {
   _construct(errout,"TinyOAL_log.txt");
 }
 cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5)
+  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0)
 {
   _construct(0,!logfile?"TinyOAL_log.txt":logfile);
 }
@@ -71,7 +69,6 @@ cTinyOAL::~cTinyOAL()
 	  oalFuncs->alcCloseDevice(pDevice);
     UnloadOAL10Library();
     delete oalFuncs;
-    oalFuncs=0;
   }
 
   if(waveFuncs) delete waveFuncs;
@@ -85,10 +82,10 @@ unsigned int cTinyOAL::Update()
   cAudioResource* hold = _activereslist; // Theoretically an audioresource CAN get destroyed by an update() indirectly.
   cAudio* x;
   cAudio* t;
-  while(cur=hold) {
+  while((cur=hold)!=0) {
     hold=cur->next;
     t=cur->_activelist;
-    while(x=t) {
+    while((x=t)!=0) {
       t=x->next;
       a+=(char)x->Update();
     }
@@ -123,7 +120,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
   {
     _errbuf = new std::filebuf();
     _errout = new std::ostream(_errbuf);
-    _errbuf->open(logfile, std::ios_base::trunc+std::ios_base::out); //clear and open file for writing
+    _errbuf->open(logfile, std::ios_base::trunc|std::ios_base::out); //clear and open file for writing
   }
   else
     _errout = errout;
@@ -138,14 +135,14 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
 	size_t defaultDeviceIndex = 0;
 
 	// grab function pointers for 1.0-API functions, and if successful proceed to enumerate all devices
-	if (LoadOAL10Library(NULL, &ALFunction) == TRUE) {
+	if (LoadOAL10Library(NULL, &ALFunction)!=0) {
 		if (ALFunction.alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
 			char* devices = (char *)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 			const char* defaultDeviceName = (char *)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
       TINYOAL_LOG("INFO") << "Default device name is: " << defaultDeviceName << std::endl;
 			size_t index = 0;
 			// go through device list (each device terminated with a single NULL, list terminated with double NULL)
-			while (*devices != NULL) {
+			while ((*devices) != NULL) {
 				if(!strcmp(defaultDeviceName, devices)) {
 					defaultDeviceIndex = index;
 				}

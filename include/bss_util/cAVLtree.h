@@ -75,11 +75,12 @@ namespace bss_util {
 	class BSS_COMPILER_DLLEXPORT cAVLtree : protected cAllocTracker<Alloc>, public _AVL_TREE_DATAFIELD<Key,Data>
   {
   protected:
-    typedef typename _AVL_TREE_DATAFIELD<Key,Data>::KeyData KeyData;
-    typedef typename _AVL_TREE_DATAFIELD<Key,Data>::AVLNode AVLNode;
-    typedef typename _AVL_TREE_DATAFIELD<Key,Data>::KEYGET KEYGET;
-    typedef typename _AVL_TREE_DATAFIELD<Key,Data>::DATAGET DATAGET;
-
+    typedef _AVL_TREE_DATAFIELD<Key,Data> BASE;
+    typedef typename BASE::KeyData KeyData;
+    typedef typename BASE::AVLNode AVLNode;
+    typedef typename BASE::KEYGET KEYGET;
+    typedef typename BASE::DATAGET DATAGET;
+    
   public:
     inline cAVLtree(const cAVLtree& copy) : cAllocTracker<Alloc>(copy), _root(0) {}
     inline cAVLtree(cAVLtree&& mov) : cAllocTracker<Alloc>(std::move(mov)), _root(mov._root) { mov._root=0; }
@@ -92,14 +93,14 @@ namespace bss_util {
     {
       char change=0;
       AVLNode* cur=_insert(key,&_root,change);
-      _setraw<const DATAGET&>(data,cur);
+      BASE::template _setraw<const DATAGET&>(data,cur); // WHO COMES UP WITH THIS SYNTAX?!
       return cur!=0;
     }
     BSS_FORCEINLINE bool BSS_FASTCALL Insert(Key key, DATAGET&& data)
     {
       char change=0;
       AVLNode* cur=_insert(key,&_root,change);
-      _setraw<DATAGET&&>(std::move(data),cur);
+      BASE::template _setraw<DATAGET&&>(std::move(data),cur);
       return cur!=0;
     }
     BSS_FORCEINLINE bool BSS_FASTCALL Insert(Key key)
@@ -111,12 +112,12 @@ namespace bss_util {
     BSS_FORCEINLINE KEYGET BSS_FASTCALL Get(const Key key, const KEYGET& INVALID) const
     {
       AVLNode* retval=_find(key);
-      return !retval?INVALID:_getdata(retval->_key);
+      return !retval?INVALID:BASE::_getdata(retval->_key);
     }
     BSS_FORCEINLINE KEYGET* BSS_FASTCALL GetRef(const Key key) const
     {
       AVLNode* retval=_find(key);
-      return !retval?0:&_getdata(retval->_key);
+      return !retval?0:&BASE::_getdata(retval->_key);
     }
     inline bool BSS_FASTCALL Remove(const Key key)
     {
@@ -137,7 +138,7 @@ namespace bss_util {
       AVLNode* cur = _insert(newkey,&_root,change);
       if(old!=0)
       {
-        _setdata(old,cur);
+        BASE::_setdata(old,cur);
         old->~AVLNode();
 			  cAllocTracker<Alloc>::_deallocate(old, 1);
       }
@@ -198,12 +199,12 @@ namespace bss_util {
 				root=cAllocTracker<Alloc>::_allocate(1);
         *proot=root;
         new(root) AVLNode();
-        _getkey(root->_key)=key;
+        BASE::_getkey(root->_key)=key;
         change=1;
         return root;
       }
 
-      char result=CFunc(_getkey(root->_key),key);
+      char result=CFunc(BASE::_getkey(root->_key),key);
       AVLNode* retval=0;
       if(result<0)
         retval= _insert(key,&root->_left,change);
@@ -225,7 +226,7 @@ namespace bss_util {
       AVLNode* cur=_root;
       while(cur)
       {
-        switch(CFunc(_getkey(cur->_key),key)) //This is faster then if/else statements because FUCK IF I KNOW!
+        switch(CFunc(BASE::_getkey(cur->_key),key)) //This is faster then if/else statements because FUCK IF I KNOW!
         {
         case -1: cur=cur->_left; break;
         case 1: cur=cur->_right; break;
@@ -274,7 +275,7 @@ namespace bss_util {
         return 0;
       }
    
-      char result=CFunc(_getkey(root->_key),key);
+      char result=CFunc(BASE::_getkey(root->_key),key);
       AVLNode* retval=0;
       if(result<0) {
         retval= _remove(key,&root->_left,change);
@@ -297,9 +298,9 @@ namespace bss_util {
 					while(successor->_left)
 						successor = successor->_left;
 
-					_getkey(root->_key)=_getkey(successor->_key);
-          retval=_remove(_getkey(successor->_key),&root->_right,result); //this works because we're always removing something from the right side, which means we should always subtract 1 or 0.
-          _swapdata(retval,root);
+					BASE::_getkey(root->_key)=BASE::_getkey(successor->_key);
+          retval=_remove(BASE::_getkey(successor->_key),&root->_right,result); //this works because we're always removing something from the right side, which means we should always subtract 1 or 0.
+          BASE::_swapdata(retval,root);
 
 					change=1;
 				}
