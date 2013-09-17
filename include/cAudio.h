@@ -6,8 +6,8 @@
 #define __C_AUDIO_H__TOAL__
 
 #include "TinyOAL_dlldef.h"
-#include "bss_util\LLBase.h"
-#include "bss_util\cBitField.h"
+#include "bss_util/LLBase.h"
+#include "bss_util/cBitField.h"
 
 namespace TinyOAL {
   typedef unsigned char TINYOAL_FLAG;
