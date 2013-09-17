@@ -12,7 +12,10 @@ namespace bss_util {
   struct BSS_COMPILER_DLLEXPORT AVL_Node
   {
     inline AVL_Node() : _key(),_left(0), _right(0), _balance(0) {} // Empty constructor is important so we initialize the data as empty if it exists.
+#pragma warning(push)
+#pragma warning(disable:4251)
     KeyData _key;
+#pragma warning(pop)
     AVL_Node<KeyData>* _left;
     AVL_Node<KeyData>* _right;
     int _balance;

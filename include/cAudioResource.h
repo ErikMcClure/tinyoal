@@ -10,8 +10,7 @@
 #include "bss_util/cStr.h"
 #include "bss_util/bss_alloc_fixed.h"
 #include "cAudio.h"
-
-struct _iobuf; //FILE*
+#include <stdio.h>
 
 namespace TinyOAL {
   // Holds information about a given audio resource. An audio resource is different from an actual cAudio instance, in that it holds the raw audio information, which is then ACCESSED by any number of cAudio instances. This prevents memory wasting. 
@@ -43,7 +42,7 @@ namespace TinyOAL {
     // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
     static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     static cAudioResource* Create(void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
-    static cAudioResource* Create(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     
 	  enum TINYOAL_FILETYPE : unsigned char
 	  {
@@ -63,7 +62,7 @@ namespace TinyOAL {
     virtual ~cAudioResource();
     void _destruct();
 
-    static cAudioResource* _fcreate(_iobuf* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
+    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss_util::cKhash_StringIns<cAudioResource*> _audiohash;
