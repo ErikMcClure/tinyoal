@@ -16,7 +16,7 @@
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
 #else
 #include <dlfcn.h>
-#define LOADDYNLIB() dlopen("libvorbisfile.so", RTLD_LAZY)
+#define LOADDYNLIB() dlopen("libvorbisfile.so.3", RTLD_LAZY)
 #define GETDYNFUNC(p,s) dlsym(p,s)
 #endif
 
@@ -30,35 +30,35 @@ cOggFunctions::cOggFunctions(std::ostream* errout)
 	{
 		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(g_hVorbisFileDLL, "ov_clear");
 		fn_ov_read = (LPOVREAD)GETDYNFUNC(g_hVorbisFileDLL, "ov_read");
-		fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_total");
 		fn_ov_info = (LPOVINFO)GETDYNFUNC(g_hVorbisFileDLL, "ov_info");
-		fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(g_hVorbisFileDLL, "ov_comment");
 		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(g_hVorbisFileDLL, "ov_open_callbacks");
 		fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_time_seek");
-		fn_ov_time_seek_page = (LPOVTIMESEEKPAGE)GETDYNFUNC(g_hVorbisFileDLL, "ov_time_seek_page");
-		fn_ov_raw_seek = (LPOVRAWSEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_raw_seek");
 		fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_seek");
-		fn_ov_raw_tell = (LPOVRAWTELL)GETDYNFUNC(g_hVorbisFileDLL, "ov_raw_tell");
 		fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_tell");
+		//fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_total");
+		//fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(g_hVorbisFileDLL, "ov_comment");
 
-		if(!(fn_ov_clear && fn_ov_read && fn_ov_pcm_total && fn_ov_info && fn_ov_comment && fn_ov_open_callbacks && fn_ov_time_seek
-      && fn_ov_time_seek_page && fn_ov_raw_seek && fn_ov_pcm_seek && fn_ov_raw_tell && fn_ov_pcm_tell))
-      TINYOAL_LOGM("ERROR","Could not load all nessacary OGG vorbis callbacks.");
+		if(!fn_ov_clear) TINYOAL_LOGM("ERROR","Could not load fn_ov_clear");
+		if(!fn_ov_read) TINYOAL_LOGM("ERROR","Could not load fn_ov_read");
+		if(!fn_ov_info) TINYOAL_LOGM("ERROR","Could not load fn_ov_info");
+		if(!fn_ov_open_callbacks) TINYOAL_LOGM("ERROR","Could not load fn_ov_open_callbacks");
+		if(!fn_ov_time_seek) TINYOAL_LOGM("ERROR","Could not load fn_ov_time_seek");
+		if(!fn_ov_pcm_seek) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_seek");
+		if(!fn_ov_pcm_tell) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_tell");
+		//if(!fn_ov_pcm_total) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_total");
+		//if(!fn_ov_comment) TINYOAL_LOGM("ERROR","Could not load fn_ov_comment");
 	}
   else
   {
 		fn_ov_clear = 0;
 		fn_ov_read = 0;
-		fn_ov_pcm_total = 0;
 		fn_ov_info = 0;
-		fn_ov_comment = 0;
 		fn_ov_open_callbacks = 0;
 		fn_ov_time_seek = 0;
-		fn_ov_time_seek_page = 0;
-		fn_ov_raw_seek = 0;
 		fn_ov_pcm_seek = 0;
-		fn_ov_raw_tell = 0;
 		fn_ov_pcm_tell = 0;
+		//fn_ov_pcm_total = 0;
+		//fn_ov_comment = 0;
     TINYOAL_LOGM("ERROR","Could not find vorbisfile.dll (or it may be missing one of its dependencies)");
   }
 }

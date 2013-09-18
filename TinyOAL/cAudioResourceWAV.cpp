@@ -34,6 +34,7 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
 
   _channels=_sentinel.wfEXT.Format.nChannels;
 	_freq=_sentinel.wfEXT.Format.nSamplesPerSec;
+  _samplebits=_sentinel.wfEXT.Format.wBitsPerSample;
   if(cTinyOAL::Instance()->oalFuncs!=0)
     _format=cTinyOAL::Instance()->oalFuncs->alGetEnumValue(cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel));
 
@@ -67,11 +68,11 @@ void cAudioResourceWAV::CloseStream(void* stream)
   cTinyOAL::Instance()->waveFuncs->Close(*r);
   _allocwav.dealloc(r);
 }
-unsigned long cAudioResourceWAV::Read(void* stream, char* buffer)
+unsigned long cAudioResourceWAV::Read(void* stream, char* buffer, unsigned int len)
 {
   size_t retval;
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
-  cTinyOAL::Instance()->waveFuncs->Read(*r, buffer, _bufsize, &retval);
+  cTinyOAL::Instance()->waveFuncs->Read(*r, buffer, len, &retval);
   return retval;
 }
 bool cAudioResourceWAV::Reset(void* stream)
@@ -85,4 +86,10 @@ bool cAudioResourceWAV::Skip(void* stream, unsigned __int64 samples)
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
   return !cTinyOAL::Instance()->waveFuncs->Seek(*r, samples*(bits>>3));
+}
+unsigned __int64 cAudioResourceWAV::Tell(void* stream)
+{
+  WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
+  unsigned short bits=r->wfEXT.Format.wBitsPerSample;
+  return cTinyOAL::Instance()->waveFuncs->Tell(*r)/(bits>>3);
 }

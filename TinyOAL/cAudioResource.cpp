@@ -13,7 +13,7 @@ bss_util::cFixedAlloc<cAudio> cAudioResource::_allocaudio(5);
 
 cAudioResource::cAudioResource(const cAudioResource& copy) { assert(false); }
 cAudioResource::cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned __int64 loop) : _data(data), _datalength(len),
-  _flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0), 
+  _flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0),
   _inactivelist(0), _maxactive(0)
 {
   bss_util::LLAdd<cAudioResource>(this,cTinyOAL::Instance()->_reslist);
@@ -64,7 +64,11 @@ unsigned char BSS_FASTCALL cAudioResource::_getfiletype(const char* fileheader)
 cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, unsigned __int64 loop)
 {
   FILE* f;
+#ifdef BSS_PLATFORM_WIN32
+  _wfopen_s(&f,cStrW(file).c_str(),L"rb");
+#else
   FOPEN(f,file,"rb");
+#endif
   if(!f) return 0;
   fseek(f,0,SEEK_END);
   long len=ftell(f);
@@ -78,7 +82,7 @@ cAudioResource* cAudioResource::Create(FILE* file, unsigned int datalength, TINY
   return cAudioResource::_fcreate(file,datalength,flags|TINYOAL_COPYINTOMEMORY,cStrF("%p",file),loop);
 }
 
-cAudioResource* cAudioResource::Create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
 {
   if(!data || datalength < 4) //bad file pointer
   {
@@ -94,8 +98,8 @@ cAudioResource* cAudioResource::Create(void* data, unsigned int datalength, TINY
     void* ndata = malloc(datalength);
     memcpy(ndata,data,datalength);
     data=ndata;
-  }
-  return _create(data,datalength,flags,cStrF("%p",data),loop);
+  } // We do a const cast here because data must be stored as void* in case it needs to be deleted. Otherwise, we don't touch it.
+  return _create(const_cast<void*>(data),datalength,flags,cStrF("%p",data),loop);
 }
 
 cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)

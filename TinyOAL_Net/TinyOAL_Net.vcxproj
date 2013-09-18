@@ -169,10 +169,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="clr_Audio.cpp" />
+    <ClCompile Include="clr_AudioResource.cpp" />
     <ClCompile Include="clr_TinyOAL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="clr_Audio.h" />
+    <ClInclude Include="clr_AudioResource.h" />
     <ClInclude Include="clr_TinyOAL.h" />
     <ClInclude Include="TOCHAR.h" />
   </ItemGroup>

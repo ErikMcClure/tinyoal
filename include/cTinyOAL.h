@@ -49,7 +49,7 @@ namespace TinyOAL {
     // Creates an instance of a sound either from an existing resource or by creating a new resource
     inline cAudio* PlaySound(cAudioResource* resource, TINYOAL_FLAG flags) { return !resource?0:resource->Play(flags|TINYOAL_ISPLAYING); }
     inline cAudio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,flags),flags); }
-    inline cAudio* PlaySound(void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(data,len,flags),flags); }
+    inline cAudio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(data,len,flags),flags); }
     inline cAudio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,len,flags),flags); }
     // Gets the formatted error out stream 
     std::ostream& BSS_FASTCALL FormatLog(const char* FILE, unsigned int LINE);

@@ -21,6 +21,9 @@
     <ClCompile Include="clr_TinyOAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="clr_AudioResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="clr_Audio.h">
@@ -30,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TOCHAR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clr_AudioResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

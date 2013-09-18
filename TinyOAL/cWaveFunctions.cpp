@@ -102,6 +102,10 @@ cWaveFunctions::WAVERESULT cWaveFunctions::Close(WAVEFILEINFO& wave)
   wave.callbacks.close_func(wave.source);
   return WR_OK;
 }
+unsigned __int64 cWaveFunctions::Tell(WAVEFILEINFO& wave)
+{
+  return wave.callbacks.tell_func(wave.source) - wave.offset;
+}
 
 // WAVE file speaker masks (taken from the ksmedia.h windows file)
 #define SPEAKER_FRONT_LEFT              0x1

@@ -5,31 +5,33 @@
 #ifndef __CLR_TINYOAL_H__
 #define __CLR_TINYOAL_H__
 
-namespace TinyOAL {
-  class cTinyOAL;
-}
+#include "clr_AudioResource.h"
+
+namespace TinyOAL { class cTinyOAL; }
 
 namespace TinyOAL_net {
-  ref class clr_Audio;
-
 	// Managed wrapper for cTinyOAL class 
   public ref class clr_TinyOAL
   {
   public:
-		/* Constructor - Default */
     clr_TinyOAL();
-		/* Constructor - takes a defaultbuffers value. The default value for this argument is 4 */
     clr_TinyOAL(int defaultbuffers);
-		/* Constructor - takes a defaultbuffers value and a logfile. */
     clr_TinyOAL(int defaultbuffers, System::String^ logfile);
-		// Destructor 
     ~clr_TinyOAL();
-    int getDefaultBuffer();
-    void setDefaultBuffer(int defaultbuffer);
-		/* This updates any currently playing samples and returns the number that are still playing after the update. The time between calls to this update function can never exceed the length of a buffer, or the sound will cut out. */
+    !clr_TinyOAL();
+		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
+    // to this update function can never exceed the length of a buffer, or the sound will cut out.
     unsigned int Update();
-    // Creates an audio sample that is automatically deleted after it finishes playing 
-    clr_Audio^ ManagedLoad(clr_AudioRef^ ref);
+    // Creates an instance of a sound either from an existing resource or by creating a new resource
+    inline clr_Audio^ PlaySound(clr_AudioResource^ resource, CLR_TINYOAL_FLAG flags) { return resource->Play(flags|clr_Audio::TINYOAL_ISPLAYING); }
+    inline clr_Audio^ PlaySound(System::String^ file, CLR_TINYOAL_FLAG flags) { return PlaySound(gcnew clr_AudioResource(file,flags),flags); }
+    inline clr_Audio^ PlaySound(cli::array<System::Byte>^ data, CLR_TINYOAL_FLAG flags) { return PlaySound(gcnew clr_AudioResource(data,flags),flags); }
+    // Gets the name of the default device
+    System::String^ GetDefaultDevice();
+    // Sets current device to the given device
+    bool SetDevice(System::String^ device);
+    // Gets a null-seperated list of all available devices, terminated by a double null character.
+    cli::array<System::String^>^ GetDevices();
 
   private:
     TinyOAL::cTinyOAL* _ref; //pointer to unmanaged instance

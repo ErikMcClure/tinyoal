@@ -263,8 +263,7 @@ char* BSS_FASTCALL cTinyOAL::_allocdecoder(unsigned int sz)
     _treealloc.Insert(sz,std::unique_ptr<bss_util::cFixedAllocVoid>(new cFixedAllocVoid(sz,3)));
     p = _treealloc.GetRef(sz);
   }
-  assert(p);
-  return (char*)(*p)->alloc(1);
+  return !p?0:(char*)(*p)->alloc(1);
 }
 void BSS_FASTCALL cTinyOAL::_deallocdecoder(char* s, unsigned int sz)
 {
