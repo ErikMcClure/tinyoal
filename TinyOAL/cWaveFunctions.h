@@ -65,6 +65,7 @@ namespace TinyOAL {
 	  WAVERESULT Open(void* source, WAVEFILEINFO* wave, wav_callbacks& callbacks);
 	  WAVERESULT Read(WAVEFILEINFO& wave, void* data, size_t len, size_t* pBytesWritten);
 	  WAVERESULT Seek(WAVEFILEINFO& wave, __int64 offset);
+	  unsigned __int64 Tell(WAVEFILEINFO& wave);
 	  WAVERESULT Close(WAVEFILEINFO& wave);
     const char* GetALFormat(WAVEFILEINFO& wave); // Returns a character string you should pass into alGetEnumValue
   };

@@ -19,9 +19,10 @@ namespace TinyOAL {
   public:
     virtual void* OpenStream()=0; // This returns a pointer to the internal stream on success, or NULL on failure 
     virtual void CloseStream(void* stream)=0; //This closes an AUDIOSTREAM pointer
-    virtual unsigned long Read(void* stream, char* buffer)=0; // Reads next chunk of data - buffer must be at least GetBufSize() long 
+    virtual unsigned long Read(void* stream, char* buffer, unsigned int len)=0; // Reads next chunk of data - buffer must be at least bufsize long 
     virtual bool Reset(void* stream)=0; // This resets a stream to the beginning 
     virtual bool Skip(void* stream, unsigned __int64 samples)=0; // Sets a stream to given sample 
+    virtual unsigned __int64 Tell(void* stream)=0; // Gets what sample a stream is currently on
     inline unsigned __int64 ToSample(double seconds) { return (unsigned __int64)(seconds*_freq); } // Converts given time to sample point 
     inline unsigned __int64 GetLoopPoint() const { return _loop; }
     inline void SetLoopPoint(unsigned __int64 loop) { _loop=loop; }
@@ -31,6 +32,7 @@ namespace TinyOAL {
     inline unsigned int GetChannels() const { return _channels; }
     inline unsigned int GetFormat() const { return _format; }
     inline unsigned int GetBufSize() const { return _bufsize; }
+    inline unsigned short GetBitsPerSample() const { return _samplebits; }
     inline cAudio* GetActiveInstances() const { return _activelist; }
     inline cAudio* GetInactiveInstances() const { return _inactivelist; }
     inline unsigned int GetNumActive() const { return _numactive; }
@@ -41,7 +43,7 @@ namespace TinyOAL {
 
     // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
     static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
-    static cAudioResource* Create(void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     
 	  enum TINYOAL_FILETYPE : unsigned char
@@ -75,6 +77,7 @@ namespace TinyOAL {
 	  unsigned int _channels;
     unsigned int _format;
     unsigned int _bufsize;
+    unsigned short _samplebits;
     unsigned __int64 _loop;
     cStr _hash;
     cAudio* _activelist;

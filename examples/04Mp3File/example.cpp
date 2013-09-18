@@ -6,7 +6,7 @@
  * Copyright ©2013 Erik McClure
  */
 
-#include "TinyOAL.h"
+#include "cTinyOAL.h"
 
 using namespace TinyOAL;
 

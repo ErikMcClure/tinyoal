@@ -45,23 +45,27 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
     {
     case 1:
 			_format = AL_FORMAT_MONO16; // mono output
+      _samplebits=16;
 			_bufsize = _freq >> 1; // Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 2);
       break;
     case 2:
 			_format = AL_FORMAT_STEREO16; //stereo output
+      _samplebits=16;
 			_bufsize = _freq; // Set BufferSize to 250ms (Frequency * 4 (16bit stereo) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 4);
       break;
     case 4: // "quad" output
 			if(cTinyOAL::Instance()->oalFuncs!=0) 
         _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_QUAD16");
+      _samplebits=16;
 			_bufsize = _freq * 2; // Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 8);
       break;
     case 6: // 5.1 output (probably)
       if(cTinyOAL::Instance()->oalFuncs!=0) 
         _format = cTinyOAL::Instance()->oalFuncs->alGetEnumValue("AL_FORMAT_51CHN16");
+      _samplebits=16;
 			_bufsize = _freq * 3; // Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
 			_bufsize -= (_bufsize % 12);
       break;
@@ -113,7 +117,7 @@ void cAudioResourceOGG::CloseStream(void* stream)
 // have the information we need contained in the pointer. We use this information to decode a chunk of the audio info
 // and put it inside the given decodebuffer (which is the same for all audio formats, since its decoded). It then
 // returns how many bytes were read.
-unsigned long cAudioResourceOGG::Read(void* stream, char* buffer)
+unsigned long cAudioResourceOGG::Read(void* stream, char* buffer, unsigned int len)
 {
   if(!stream) return 0;
   int current_section;
@@ -124,11 +128,11 @@ unsigned long cAudioResourceOGG::Read(void* stream, char* buffer)
 	unsigned long ulBytesDone = 0;
 	while(1)
 	{
-    lDecodeSize = cTinyOAL::Instance()->oggFuncs->fn_ov_read((OggVorbis_File*)stream, buffer + ulBytesDone, _bufsize - ulBytesDone, 0, 2, 1, &current_section);
+    lDecodeSize = cTinyOAL::Instance()->oggFuncs->fn_ov_read((OggVorbis_File*)stream, buffer + ulBytesDone, len - ulBytesDone, 0, 2, 1, &current_section);
 		if (lDecodeSize > 0)
 		{
 			ulBytesDone += lDecodeSize;
-			if (ulBytesDone >= _bufsize) break;
+			if (ulBytesDone >= len) break;
 		}
 		else
       break;
@@ -139,7 +143,7 @@ unsigned long cAudioResourceOGG::Read(void* stream, char* buffer)
 	if (_channels == 6)
 	{		
 		pSamples = (short*)buffer;
-		for (ulSamples = 0; ulSamples < (_bufsize>>1); ulSamples+=6)
+		for (ulSamples = 0; ulSamples < (len>>1); ulSamples+=6)
 		{
 			// WAVEFORMATEXTENSIBLE Order : FL, FR, FC, LFE, RL, RR
 			// OggVorbis Order            : FL, FC, FR,  RL, RR, LFE
@@ -168,4 +172,10 @@ bool cAudioResourceOGG::Skip(void* stream, unsigned __int64 samples)
   if(!cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream,(ogg_int64_t)samples)) return true;
   if(!samples) return Reset(stream); // If we fail to seek, but we want to loop to the start, attempt to reset the stream instead.
   return false;
+}
+
+unsigned __int64 cAudioResourceOGG::Tell(void* stream) // Gets what sample a stream is currently on
+{
+  if(!stream) return false;
+  return cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_tell((OggVorbis_File*)stream);
 }
