@@ -41,10 +41,12 @@ namespace TinyOAL {
 		// This pauses an audio stream. Calling Play() will resume playing the stream from where it left off.
     void Pause();
 		// This returns whether the sample is (supposed) to be playing. Whether a sample is actually playing can differ due to starved audio sources and other things. 
-    bool IsPlaying();
+    bool IsPlaying() const;
     // Attempts to skip to the given song time (in seconds or samples) 
     bool SkipSeconds(double seconds);
     bool Skip(unsigned __int64 sample);
+    // Gets the current sample location of the stream
+    unsigned __int64 IsWhere() const;
 		// Sets the volume - 1.0 signifies 100% volume, 0.5 is 50%, 1.5 is 150%, etc. 
     void SetVolume(float range);
 		// Sets the pitch (which is actually just the sample playback rate) - 1.0 means no change in pitch, 2.0 double the pitch, etc. 
@@ -67,11 +69,12 @@ namespace TinyOAL {
   protected:
     void _stop();
     void _processbuffers();
-    bool _streaming();
+    bool _streaming() const;
     void _applyall(); //In case we have to reset our openAL source, this reapplies all volume/pitch/location modifications
     void _fillbuffers();
     void _getsource();
     void _queuebuffers();
+    unsigned long _readbuf();
 
     cAudioResource* _source;
     void* _stream;

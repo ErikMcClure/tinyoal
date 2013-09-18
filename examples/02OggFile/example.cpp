@@ -28,6 +28,7 @@ int main()
   // instance from any audio resource reference, too. We specify the LOOP flag to tell the engine to 
   // simply keep looping the song until we call Stop() on the instance.
   cAudio music(cAudioResource::Create("..\\media\\du.ogg",0,136048),TINYOAL_ISPLAYING);
+
   // Songs can have loop points in the middle of them. These can be set manually, or embedded in the OGG
   // metadata. LoopUtility is a utility program included in this SDK to help you do that.
   //music.SetLoopPointSeconds(4.36); 

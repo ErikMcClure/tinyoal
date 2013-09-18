@@ -19,9 +19,10 @@ namespace TinyOAL {
     ~cAudioResourceWAV();
     virtual void* OpenStream(); // This returns a pointer to the internal stream on success, or NULL on failure 
     virtual void CloseStream(void* stream); //This closes an AUDIOSTREAM pointer
-    virtual unsigned long Read(void* stream, char* buffer); // Reads next chunk of data - buffer must be at least GetBufSize() long 
+    virtual unsigned long Read(void* stream, char* buffer, unsigned int len); // Reads next chunk of data - buffer must be at least GetBufSize() long 
     virtual bool Reset(void* stream); // This resets a stream to the beginning 
     virtual bool Skip(void* stream, unsigned __int64 samples); // Sets a stream to given sample 
+    virtual unsigned __int64 Tell(void* stream); // Gets what sample a stream is currently on
 
   protected:
     WAVEFILEINFO _sentinel; // stored wave file information state at the beginning of the file

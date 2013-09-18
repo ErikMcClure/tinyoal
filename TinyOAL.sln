@@ -1,19 +1,21 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TinyOAL", "TinyOAL\TinyOAL.vcxproj", "{0894447C-C38C-4119-84E4-695144584082}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02 OggFile", "examples\02OggFile\02OggFile.vcxproj", "{BE37B60D-A4A5-4C98-8A4C-FD313C8FFFE2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02OggFile", "examples\02OggFile\02OggFile.vcxproj", "{BE37B60D-A4A5-4C98-8A4C-FD313C8FFFE2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01 WavFile", "examples\01WavFile\01WavFile.vcxproj", "{2DC8A03F-1C93-43C8-AD0A-DED48922A864}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01WavFile", "examples\01WavFile\01WavFile.vcxproj", "{2DC8A03F-1C93-43C8-AD0A-DED48922A864}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03 Properties", "examples\03Properties\03Properties.vcxproj", "{565E11A9-7842-4028-9E12-D0390277D19C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03Properties", "examples\03Properties\03Properties.vcxproj", "{565E11A9-7842-4028-9E12-D0390277D19C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TinyOAL_Net", "TinyOAL_Net\TinyOAL_Net.vcxproj", "{D1EFDE3F-3336-494F-9732-47A0F84BE22F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04Mp3File", "examples\04Mp3File\04Mp3File.vcxproj", "{A1F7C22D-9491-4614-8EDB-609784C8EC5F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoopUtility", "examples\LoopUtility\LoopUtility.vcxproj", "{EC996101-E15D-4744-BCD3-2370A0BDD21A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "05Managed", "examples\05Managed\05Managed.csproj", "{15D93BEF-2F4E-4CAB-92B0-373E70072681}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{EC996101-E15D-4744-BCD3-2370A0BDD21A}.Release|Win32.Build.0 = Release|Win32
 		{EC996101-E15D-4744-BCD3-2370A0BDD21A}.Release|x64.ActiveCfg = Release|x64
 		{EC996101-E15D-4744-BCD3-2370A0BDD21A}.Release|x64.Build.0 = Release|x64
+		{15D93BEF-2F4E-4CAB-92B0-373E70072681}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{15D93BEF-2F4E-4CAB-92B0-373E70072681}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{15D93BEF-2F4E-4CAB-92B0-373E70072681}.Release|Win32.ActiveCfg = Release|Any CPU
+		{15D93BEF-2F4E-4CAB-92B0-373E70072681}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
