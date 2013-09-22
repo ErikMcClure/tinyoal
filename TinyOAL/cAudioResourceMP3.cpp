@@ -2,158 +2,201 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#ifdef __INCLUDE_MP3
 #include "cAudioResourceMP3.h"
-#include "cMp3Functions.h"
+#include "cWaveFunctions.h"
 #include "cTinyOAL.h"
 
 using namespace TinyOAL;
 
-//////////////////
-// Constructors //
-//////////////////
+ bss_util::cFixedAlloc<DatStream> cAudioResourceMP3::_datalloc;
 
-cAudioResourceMP3::cAudioResourceMP3(const cAudioResourceMP3 &copy) : cAudioResource(copy), _filebuf(0)
+cAudioResourceMP3::cAudioResourceMP3(const cAudioResourceMP3& copy) : cAudioResource(copy) {}
+cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data,datalength,flags,loop)
 {
-  _functions = cTinyOAL::Instance()->getMP3();
+  mpg123_handle* h = (mpg123_handle*)OpenStream();
+  if(!h) return;
+  int enc=0;
+  long freq=_freq;
+  int err=cTinyOAL::Instance()->mp3Funcs->fn_mpgGetFormat(h, &freq, (int*)&_channels, &enc);
+  if(!err)
+    err=cTinyOAL::Instance()->mp3Funcs->fn_mpgFormatNone(h); // Lock format so it doesn't change
+  if(!err)
+    err=cTinyOAL::Instance()->mp3Funcs->fn_mpgFormat(h, freq,(int)_channels,enc);
+  _freq=freq;
+  if(err!=MPG123_OK)
+    TINYOAL_LOGM("ERROR","Failed to get format information from MP3");
+  else
+  {
+    _samplebits=(enc==MPG123_ENC_SIGNED_16)?16:32;
+    _format=cTinyOAL::GetFormat(_channels,_samplebits,false);
+    _bufsize = (_freq * _channels * (_samplebits>>3))>>2; // Sets buffer size to 250 ms, which is freq * bytes per sample / 4 (quarter of a second) 
+    _bufsize -= (_bufsize % (_channels*(_samplebits>>3)));
+  }
+  CloseStream(h);
 }
-// "Reading from an arbitrary point in memory for x number of bytes."
-// Constructor that takes a data pointer, a length of data, and flags.
-cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags) : cAudioResource(data, datalength, flags), _filebuf(0)
-{
-  _functions = cTinyOAL::Instance()->getMP3();
-}
-
-// Destructor that doesn't do anything
 cAudioResourceMP3::~cAudioResourceMP3()
 {
   _destruct();
 }
-
-//////////////////////////
-//Method Implementations//
-//////////////////////////
-
-struct id3v2header
+void* cAudioResourceMP3::OpenStream()
 {
- char id[3];
- unsigned char majVer;
- unsigned char minVer;
- unsigned char flags;
- unsigned char flags2;
- unsigned char flags3;
- unsigned char size;
-};
-
-// This returns an AUDIOSTREAM on success, or NULL on failure 
-AUDIOSTREAM* cAudioResourceMP3::OpenStream()
-{
-  AUDIOSTREAM* retval = cAudioResource::OpenStream();
-	if(!retval || !_functions->fn_lameDecode1Headers) return 0;
-
-  short left[256];
-  short right[256];
-  char head[4000];
-  id3v2header id3head;
-
-  _readstream(retval, (char*)&id3head, sizeof(id3v2header)); //first we must get past the ID3 header
-  
-  if(retval->isfile)
-    fseek(retval->file, id3head.size, SEEK_SET); //7th byte in the ID3 header tells us howbig it is
-  else
-    retval->data->seek(id3head.size, SEEK_SET);
-
-  _readstream(retval, (char*)head, 4000);
-  //_functions->fn_lameDecode1HeadersB((unsigned char*)&head, 4, left, right, &_header, &_enc_delay, &_enc_padding);
-  _functions->fn_lameDecodeHeaders((unsigned char*)head, 4000, left, right, &_header);
-  Reset(retval); //And go back so we don't miss the first frame
-
-  if(_header.header_parsed!=1)
-  {
-    CloseStream(retval);
+  auto fn = cTinyOAL::Instance()->mp3Funcs;
+  if(!fn) return 0;
+  int err;
+  mpg123_handle* h = fn->fn_mpgNew(0,&err);
+  if(!h || err!=MPG123_OK) {
+    TINYOAL_LOGM("ERROR","Failed to create new mpg instance");
     return 0;
   }
 
-  ulFormat = _header.mode;
-  ulChannels = _header.stereo;
-  ulFrequency = _header.samplerate;
-  _framesize= (unsigned long)((144*_header.bitrate) / (double)(ulFrequency + (head[2]&(1<<6)))); //this gets the 22nd bit in the header, which should be the padding bit
-  ulBufferSize = (sizeof(short) * ulChannels) * _header.framesize; //Each sample is 2 bytes multiplied by the number of channels (because technically there's only one sample per channel, but mp3 treats all channels as one sample becuase its stupid)
-  
-  if(_filebuf) delete [] _filebuf;
-  _filebuf = (unsigned char*)malloc(_framesize);
-  return 0;
-}
-// This reads the next chunk of MP3 specific data. pDecodeBuffer must be at least GetBufSize() long 
-unsigned long cAudioResourceMP3::Read(AUDIOSTREAM* stream, char* pDecodeBuffer)
-{
-  short* left=0; //This will cause a runtime error but since we dont' even get this far yet i don't care
-  short* right=0;
-  short* sDecodeBuf=(short*)pDecodeBuffer; //this lets us treat the decode buffer as an array because we know it has to be the right size
-  unsigned long retval;
-
-  retval=_readstream(stream, (char*)_filebuf, _framesize);
-  if((retval=_functions->fn_lameDecode1(_filebuf, retval, left, right)) <= 0)
-    return 0; //Decoding error
-
-  if(ulChannels==2)
+  if(_flags&TINYOAL_ISFILE)
   {
-    unsigned long counter=-1;
-    for(unsigned long i = 0; i < retval; ++i)
+    fseek((FILE*)_data,0,SEEK_SET); // If we're a file, reset the pointer
+    fn->fn_mpgReplaceReader(h,&cb_fileread,&cb_fileseek,0);
+    err=fn->fn_mpgOpenHandle(h,_data);
+  }
+  else
+  {
+    DatStream* dat=_datalloc.alloc(1);
+    dat->data=dat->streampos=(char*)_data;
+    dat->datalength=_datalength;
+    fn->fn_mpgReplaceReader(h,&cb_datread,&cb_datseek,&cb_cleanup);
+    err=fn->fn_mpgOpenHandle(h,dat);
+  }
+  if(err!=MPG123_OK) { 
+    TINYOAL_LOGM("ERROR","Failed to open mpg handle");
+    fn->fn_mpgClose(h); 
+    fn->fn_mpgDelete(h); 
+    return 0; 
+  }
+  fn->fn_mpgScan(h);
+  return h;
+}
+void cAudioResourceMP3::CloseStream(void* stream)
+{
+  auto fn = cTinyOAL::Instance()->mp3Funcs;
+  mpg123_handle* h = (mpg123_handle*)stream;
+  fn->fn_mpgClose(h);
+  fn->fn_mpgDelete(h);
+}
+unsigned long cAudioResourceMP3::_read(void* stream, char* buffer, unsigned int len, bool& eof)
+{
+  size_t done=0;
+  unsigned int total=0;
+  int err=0;
+  while(total<len && !err)
+  {
+    err = cTinyOAL::Instance()->mp3Funcs->fn_mpgRead((mpg123_handle*)stream,(unsigned char*)buffer+total,(size_t)len-total,&done);
+    total+=done;
+    if(err==MPG123_NEW_FORMAT)
     {
-      sDecodeBuf[++counter] = left[i];
-      sDecodeBuf[++counter] = right[i];
+      long a;
+      int b,c;
+      cTinyOAL::Instance()->mp3Funcs->fn_mpgGetFormat((mpg123_handle*)stream,&a,&b,&c); // older versions insist we call this, so we do, just in case.
+      err=0;
     }
   }
-  else if(ulChannels==1)
-  {
-    for(unsigned long i = 0; i < retval; ++i)
-      sDecodeBuf[i] = left[i];
-  }
-
-  return retval;
+  eof=(err==MPG123_DONE);
+  if(err!=MPG123_DONE && err!=0)
+    TINYOAL_LOGM("Warning", "Error while decoding mp3");
+  return done;
 }
-// This resets the stream to the beginning. 
-bool cAudioResourceMP3::Reset(AUDIOSTREAM* stream)
+unsigned long cAudioResourceMP3::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {
-  if(stream->isfile)
-    fseek(stream->file, 0, SEEK_SET);
-  else
-    stream->data->seek(0, SEEK_SET);
-
+  return _read(stream,buffer,len,eof);
+}
+bool cAudioResourceMP3::Reset(void* stream)
+{
+  return Skip(stream,0);
+}
+bool cAudioResourceMP3::Skip(void* stream, unsigned __int64 samples)
+{
+  off_t err = cTinyOAL::Instance()->mp3Funcs->fn_mpgSeek((mpg123_handle*)stream,samples,SEEK_SET);
+  if(err>=0) return true;
+  TINYOAL_LOG("WARNING") << "fn_mpgSeek failed with error code " << err << std::endl;
   return false;
 }
-// This closes a stream and destroys any associated data (not the actual audio source itself) 
-void cAudioResourceMP3::CloseStream(AUDIOSTREAM* stream)
+unsigned __int64 cAudioResourceMP3::Tell(void* stream)
 {
-  cAudioResource::CloseStream(stream);
+  return cTinyOAL::Instance()->mp3Funcs->fn_mpgTell((mpg123_handle*)stream);
 }
-
-unsigned __int64 cAudioResourceMP3::ToSample(AUDIOSTREAM* stream, double seconds)
+std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
-  return (unsigned __int64)(seconds*_header.samplerate);
-}
+  auto fn = cTinyOAL::Instance()->mp3Funcs;
+  int err;
+  mpg123_handle* h;
+  if(!fn || !(h = fn->fn_mpgNew(0,&err)) || err!=MPG123_OK) {
+    TINYOAL_LOGM("ERROR","Failed to create new mpg instance");
+    return std::pair<void*,unsigned int>((void*)0,0);
+  }
 
-bool cAudioResourceMP3::Skip(AUDIOSTREAM* stream, unsigned __int64 samples)
-{
-  long bytes = (long)(samples*(sizeof(short) * ulChannels));
-  if(stream->isfile)
-    fseek(stream->file, bytes, SEEK_SET);
+  DatStream dat;
+  if(flags&TINYOAL_ISFILE)
+  {
+    fseek((FILE*)data,0,SEEK_SET); // If we're a file, reset the pointer
+    fn->fn_mpgReplaceReader(h,&cb_fileread,&cb_fileseek,0);
+    err=fn->fn_mpgOpenHandle(h,data);
+  }
   else
-    stream->data->seek(bytes, SEEK_SET);
-  return true;
+  {
+    dat.data=dat.streampos=(char*)data;
+    dat.datalength=datalength;
+    fn->fn_mpgReplaceReader(h,&cb_datread,&cb_datseek,0); // Don't do cleanup because Datstream is on the stack
+    err=fn->fn_mpgOpenHandle(h,&dat);
+  }
+  if(err!=MPG123_OK) { 
+    TINYOAL_LOGM("ERROR","Failed to open mpg handle");
+    fn->fn_mpgClose(h); 
+    fn->fn_mpgDelete(h); 
+    return std::pair<void*,unsigned int>((void*)0,0); 
+  }
+  
+  err=fn->fn_mpgScan(h);
+  off_t len = fn->fn_mpgLength(h);
+  if(err!=MPG123_OK || len<0) { TINYOAL_LOGM("ERROR","Failed to scan mp3"); fn->fn_mpgClose(h); fn->fn_mpgDelete(h); return std::pair<void*,unsigned int>((void*)0,0); }
+  
+  long freq;
+  int channels,enc;
+  err=fn->fn_mpgGetFormat(h, &freq, &channels, &enc);
+  if(!err) err=fn->fn_mpgFormatNone(h);
+  if(!err) err=fn->fn_mpgFormat(h, freq,channels,enc);
+  if(err!=0) { TINYOAL_LOGM("WARNING","Failed to get or set format");  fn->fn_mpgClose(h); fn->fn_mpgDelete(h); return std::pair<void*,unsigned int>((void*)0,0); }
+
+  unsigned char bits=(enc==MPG123_ENC_SIGNED_16)?16:32;
+  unsigned int total=len*(bits>>3)*channels;
+  unsigned int header = cTinyOAL::Instance()->waveFuncs->WriteHeader(0,0,0,0,0);
+  char* buffer = (char*)malloc(total+header);
+  bool eof;
+  total=_read(h,buffer+header,total,eof);
+  cTinyOAL::Instance()->waveFuncs->WriteHeader(buffer,total+header,channels,bits,freq);
+
+  fn->fn_mpgClose(h);
+  fn->fn_mpgDelete(h);
+  return std::pair<void*,unsigned int>(buffer,total+header);
 }
 
-////////////////////
-// Helper Methods //
-////////////////////
-
-unsigned int cAudioResourceMP3::_readstream(AUDIOSTREAM* stream, char* buf, int num)
+void cAudioResourceMP3::cb_cleanup(void* dat)
 {
-  if(stream->isfile)
-    return fread(buf, 1, num, stream->file);
-  else
-    return stream->data->read(buf, 1, num);
+  _datalloc.dealloc(dat);
 }
-
-#endif
+ssize_t cAudioResourceMP3::cb_datread(void* stream,void* dst,size_t n)
+{
+  return dat_read_func(dst,1,n,stream);
+}
+off_t cAudioResourceMP3::cb_datseek(void* stream,off_t off,int loc)
+{
+  if(!dat_seek_func(stream,off,loc))
+    return dat_tell_func(stream);
+  dat_seek_func(stream,off,loc);
+  return -1;
+}
+ssize_t cAudioResourceMP3::cb_fileread(void* stream,void* dst,size_t n)
+{
+  return fread(dst,1,n,(FILE*)stream);
+}
+off_t cAudioResourceMP3::cb_fileseek(void* stream,off_t off,int loc)
+{
+  if(!fseek((FILE*)stream,off,loc))
+    return ftell((FILE*)stream);
+  return -1;
+}

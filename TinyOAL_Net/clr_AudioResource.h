@@ -21,17 +21,14 @@ namespace TinyOAL_net {
     ~clr_AudioResource();
     !clr_AudioResource();
     unsigned __int64 ToSample(double seconds); // Converts given time to sample point 
-    unsigned __int64 GetLoopPoint();
-    void SetLoopPoint(unsigned __int64 loop);
-    CLR_TINYOAL_FLAG GetFlags();
-    void SetFlags(CLR_TINYOAL_FLAG flags);
-    unsigned int GetFreq();
-    unsigned int GetChannels();
-    unsigned int GetFormat();
+    property unsigned __int64 LoopPoint { unsigned __int64 get(); void set(unsigned __int64 looppoint); }
+    property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); void set(CLR_TINYOAL_FLAG flags); }
+    property unsigned int Frequency { unsigned int get(); }
+    property unsigned int Channels { unsigned int get(); }
+    property unsigned int Format { unsigned int get(); }
+    property unsigned int NumActive { unsigned int get(); }
+    property unsigned int MaxActive { unsigned int get(); void set(unsigned int max); }
     unsigned int GetBufSize();
-    unsigned int GetNumActive();
-    unsigned int GetMaxActive();
-    void SetMaxActive(unsigned int max);
     clr_Audio^ Play(CLR_TINYOAL_FLAG flags);
     clr_Audio^ Play();
     inline bool IsValid() { return _ref!=0; }

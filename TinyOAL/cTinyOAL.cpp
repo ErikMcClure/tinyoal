@@ -5,12 +5,14 @@
 #include "cTinyOAL.h"
 #include "openAL/al.h"
 #include "openAL/alc.h"
+#include "openAL/alext.h"
 #include "openAL/loadoal.h"
 #include "cAudioResource.h"
 #include "cAudio.h"
 #include "cOggFunctions.h"
 #include "cMp3Functions.h"
 #include "cWaveFunctions.h"
+#include "cFlacFunctions.h"
 #include <fstream>
 
 using namespace TinyOAL;
@@ -18,6 +20,7 @@ using namespace bss_util;
 
 #ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
+#include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.
 extern size_t BSS_FASTCALL UTF8toUTF16(const char* input,wchar_t* output, size_t buflen)
@@ -33,15 +36,17 @@ extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, char* output, size_
 
 #endif
 
-cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0)
+cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
+  cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
+  oalFuncs(0)
 {
-  _construct(errout,"TinyOAL_log.txt");
+  _construct(errout,"TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
 }
-cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf) : cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0),
-  defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0)
+cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
+  cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
+  oalFuncs(0)
 {
-  _construct(0,!logfile?"TinyOAL_log.txt":logfile);
+  _construct(0,!logfile?"TinyOAL_log.txt":logfile,forceOAL,forceOGG,forceFLAC,forceMP3);
 }
 
 cTinyOAL::~cTinyOAL()
@@ -74,6 +79,7 @@ cTinyOAL::~cTinyOAL()
   if(waveFuncs) delete waveFuncs;
   if(oggFuncs) delete oggFuncs;
   if(mp3Funcs) delete mp3Funcs;
+  if(flacFuncs) delete flacFuncs;
 }
 unsigned int cTinyOAL::Update()
 {
@@ -144,7 +150,7 @@ bool cTinyOAL::SetDevice(const char* device)
   return false;
 }
 
-void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
+void cTinyOAL::_construct(std::ostream* errout,const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3)
 {
   if(!errout) //if errout is zero, produce a default filestream to write to
   {
@@ -165,7 +171,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
 	size_t defaultDeviceIndex = 0;
 
 	// grab function pointers for 1.0-API functions, and if successful proceed to enumerate all devices
-	if (LoadOAL10Library(NULL, &ALFunction)!=0) {
+	if (LoadOAL10Library(forceOAL, &ALFunction)!=0) {
 		if (ALFunction.alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
 			char* devices = (char *)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 			const char* defaultDeviceName = (char *)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -225,12 +231,42 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile)
   if(functmp) { oalFuncs=0; delete functmp; } // If functmp is nonzero, something blew up, so delete it
 
   waveFuncs = new cWaveFunctions();
-  oggFuncs = new cOggFunctions(_errout);
-  mp3Funcs = 0;
-#ifdef __INCLUDE_MP3
-  mp3funcs = new cMp3Functions(_errout);
-#endif
+  oggFuncs = new cOggFunctions(forceOGG);
+  flacFuncs = new cFlacFunctions(forceFLAC);
+  mp3Funcs = new cMp3Functions(forceMP3);
+  if(oggFuncs->Failure()) { delete oggFuncs; oggFuncs=0; }
+  if(flacFuncs->Failure()) { delete flacFuncs; flacFuncs=0; }
+  if(mp3Funcs->Failure()) { delete mp3Funcs; mp3Funcs=0; }
 }
+unsigned int cTinyOAL::GetFormat(unsigned short channels, unsigned short bits, bool rear)
+{
+  unsigned short hash = (channels<<8)|bits;
+  switch(hash)
+  {
+  case ((1<<8)|8): return AL_FORMAT_MONO8;
+  case ((1<<8)|16): return AL_FORMAT_MONO16;
+  case ((1<<8)|32): return AL_FORMAT_MONO_FLOAT32;
+  case ((1<<8)|64): return AL_FORMAT_MONO_DOUBLE_EXT;
+  case ((2<<8)|8): return rear?AL_FORMAT_REAR8:AL_FORMAT_STEREO8;
+  case ((2<<8)|16): return rear?AL_FORMAT_REAR16:AL_FORMAT_STEREO16;
+  case ((2<<8)|32): return rear?AL_FORMAT_REAR32:AL_FORMAT_STEREO_FLOAT32;
+  case ((2<<8)|64): return AL_FORMAT_STEREO_DOUBLE_EXT;
+  case ((4<<8)|8): return AL_FORMAT_QUAD8;
+  case ((4<<8)|16): return AL_FORMAT_QUAD16;
+  case ((4<<8)|32): return AL_FORMAT_QUAD32;
+  case ((6<<8)|8): return AL_FORMAT_51CHN8;
+  case ((6<<8)|16): return AL_FORMAT_51CHN16;
+  case ((6<<8)|32): return AL_FORMAT_51CHN32;
+  case ((7<<8)|8): return AL_FORMAT_61CHN8;
+  case ((7<<8)|16): return AL_FORMAT_61CHN16;
+  case ((7<<8)|32): return AL_FORMAT_61CHN32;
+  case ((8<<8)|8): return AL_FORMAT_71CHN8;
+  case ((8<<8)|16): return AL_FORMAT_71CHN16;
+  case ((8<<8)|32): return AL_FORMAT_71CHN32;
+  }
+  return 0;
+}
+
 void BSS_FASTCALL cTinyOAL::_addaudio(cAudio* ref, cAudioResource* res)
 {
   if(!res->_activelist) // If true we need to move it
@@ -271,3 +307,109 @@ void BSS_FASTCALL cTinyOAL::_deallocdecoder(char* s, unsigned int sz)
   if(p) (*p)->dealloc(s);
   else TINYOAL_LOG("WARNING") << "decoder buffer deallocation failure." << std::endl;
 }
+
+void cTinyOAL::SetSettings(const char* file)
+{
+  FILE* f;
+  FOPEN(f,file,"rb");
+  if(!f) { TINYOAL_LOG("WARNING") << "Failed to open source config file for reading" << std::endl; return; }
+  fseek(f,0,SEEK_END);
+  long len=ftell(f);
+  fseek(f,0,SEEK_SET);
+  char* buf=(char*)malloc(len);
+  fread(buf,1,len,f);
+  fclose(f);
+  SetSettingsStream(buf);
+}
+void cTinyOAL::SetSettingsStream(const char* data)
+{
+  const char* magic; //stores the location of the openAL config file, usually buried in %APPDATA% or other dark corners of the abyss.
+  cStr path;
+#ifdef BSS_PLATFORM_WIN32
+  path.resize(MAX_PATH); // We have to resize here, putting numbers into the constructor just reserves things instead
+  if(SHGetSpecialFolderPathA(NULL, path.UnsafeString(), CSIDL_APPDATA, FALSE) != FALSE)
+  {
+    path.RecalcSize();
+    path+="\\alsoft.ini";
+  }
+  magic=path;
+#else
+  if((magic=getenv("HOME")) != NULL && *magic)
+  {
+    path=magic;
+    path+="/.alsoftrc";
+    magic=path;
+  }
+  else
+    magic="/etc/openal/alsoft.conf";
+#endif
+  FILE* f;
+  FOPEN(f,magic,"wb");
+  if(!f) { TINYOAL_LOG("WARNING") << "Failed to open destination config file for writing" << std::endl; return; }
+  if(data) fwrite(data,1,strlen(data),f);
+  fclose(f);
+}
+   
+// I ultimately decided against putting this in the engine because it was easier to just write the config files and move them
+/*
+
+  struct ALSoftSettings { // Explanations of all these options can be found in alsoftrc.sample
+    enum : unsigned char { DISABLE_CPU_SSE=1, DISABLE_CPU_NEON=2 } disable_cpu_exts; //disable-cpu-exts;
+    enum : unsigned char { CHANNELS_MONO, CHANNELS_STEREO, CHANNELS_QUAD, CHANNELS_SURROUND51, CHANNELS_SURROUND61, CHANNELS_SURROUND71 } channels;
+    enum : unsigned char { SAMPLETYPE_INT8,SAMPLETYPE_UINT8,SAMPLETYPE_INT16,SAMPLETYPE_UINT16,SAMPLETYPE_INT32,SAMPLETYPE_UINT32,SAMPLETYPE_FLOAT32 } sample_type; //sample-type
+    bool hrtf;
+    cStr hrtf_tables;
+    unsigned char cf_level; //0-6
+    bool wide_stereo; //wide-stereo
+    unsigned int frequency;
+    enum : unsigned char { RESAMPLER_POINT,RESAMPLER_LINEAR,RESAMPLER_CUBIC } resampler;
+    bool rt_prio; //rt-prio
+    unsigned short period_size;
+    unsigned char periods;
+    unsigned short sources;
+    cStr drivers; //full list: pulse,alsa,core,oss,solaris,sndio,mmdevapi,dsound,winmm,port,opensl,null,wave
+    enum : unsigned char { EXCLUDE_EAXREVERB=1,EXCLUDE_REVERB=2,EXCLUDE_ECHO=4,EXCLUDE_MODULATOR=8,EXCLUDE_DEDICATED=16 } excludefx;
+    unsigned char slots;
+    unsigned char sends;
+    float layout[8]; //back-left(0), side-left(1), front-left(2), front-center(3), front-right(4), side-right(5), back-right(6), and back-center(7)
+    float layout_stereo[2]; // fl, fr
+    float layout_quad[4]; // fl, fr, bl, br
+    float layout_surround51[5]; //fl, fr, fc, bl, br
+    float layout_surround61[6]; //fl, fr, fc, sl, sr, bc
+    float layout_surround71[7]; //fl, fr, fc, sl, sr, bl, br
+    enum : unsigned char { REVERB_NONE,REVERB_GENERIC,REVERB_PADDEDCELL,REVERB_ROOM,REVERB_BATHROOM,REVERB_LIVINGROOM,REVERB_STONEROOM,
+      REVERB_AUDITORIUM,REVERB_CONCERTHALL,REVERB_CAVE,REVERB_ARENA,REVERB_HANGER,REVERB_CARPETHALLWAY,REVERB_HALLWAY,REVERB_STONECORRIDOR,
+      REVERB_ALLEY,REVERB_FOREST,REVERB_CITY,REVERB_MOUNTAINS,REVERB_QUARRY,REVERB_PLAIN,REVERB_PARKINGLOT,REVERB_SEWERPIPE,REVERB_UNDERWATER,
+      REVERB_DRUGGED,REVERB_DIZZY,REVERB_PSYCHOTIC } default_reverb; //default-reverb 
+    bool trap_alc_error; //trap-alc-error
+    bool trap_al_error; //trap-al-error
+    struct reverb {
+      float boost;
+      bool emulate_eax; // emulate-eax
+    };
+    struct alsa {
+      cStr device;
+      cStr device_prefix; //device-prefix
+      cStr capture;
+      cStr capture_prefix; //capture-prefix
+      bool mmap;
+    };
+    struct oss {
+      cStr device;
+      cStr capture;
+    };
+    struct solaris {
+      cStr device;
+    };
+    struct mmdevapi {};
+    struct dsound {};
+    struct winmm {};
+    struct port {
+      bool spawn_server; //spawn-server
+      bool allow_moves; //allow-moves
+    };
+    struct wave {
+      cStr file;
+    };
+  };
+  */

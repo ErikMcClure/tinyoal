@@ -6,63 +6,68 @@
 #include "bss_util/bss_util.h"
 #include "bss_util/cStr.h"
 #include "bss_util/bss_deprecated.h"
-#include "openAL/vorbisfile.h"
 #include "cTinyOAL.h"
 #include <ostream>
 
 #ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
-#define LOADDYNLIB() LoadLibraryW(L"vorbisfile.dll")
+
+#ifdef BSS_CPU_x86
+#define OGG_MODULE "vorbisfile.dll"
+#elif defined(BSS_CPU_x86_64)
+#define OGG_MODULE "vorbisfile64.dll"
+#endif
+
+#define LOADDYNLIB(s) LoadLibraryA(s)
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
+#define FREEDYNLIB(p) FreeLibrary((HMODULE)p)
 #else
 #include <dlfcn.h>
-#define LOADDYNLIB() dlopen("libvorbisfile.so.3", RTLD_LAZY)
+#define OGG_MODULE "libvorbisfile.so.3"
+#define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
 #define GETDYNFUNC(p,s) dlsym(p,s)
+#define FREEDYNLIB(p) dlclose(p)
 #endif
 
 using namespace TinyOAL;
 
-cOggFunctions::cOggFunctions(std::ostream* errout)
+cOggFunctions::cOggFunctions(const char* force)
 {
-  g_hVorbisFileDLL = LOADDYNLIB();
+  if(!force)
+    force=OGG_MODULE;
+  memset(this,0,sizeof(cOggFunctions));
+  _oggDLL = LOADDYNLIB(force);
   
-	if (g_hVorbisFileDLL)
+	if (_oggDLL)
 	{
-		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(g_hVorbisFileDLL, "ov_clear");
-		fn_ov_read = (LPOVREAD)GETDYNFUNC(g_hVorbisFileDLL, "ov_read");
-		fn_ov_info = (LPOVINFO)GETDYNFUNC(g_hVorbisFileDLL, "ov_info");
-		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(g_hVorbisFileDLL, "ov_open_callbacks");
-		fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_time_seek");
-		fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_seek");
-		fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_tell");
-		//fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(g_hVorbisFileDLL, "ov_pcm_total");
-		//fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(g_hVorbisFileDLL, "ov_comment");
+		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, "ov_clear");
+		fn_ov_read = (LPOVREAD)GETDYNFUNC(_oggDLL, "ov_read");
+		fn_ov_info = (LPOVINFO)GETDYNFUNC(_oggDLL, "ov_info");
+		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(_oggDLL, "ov_open_callbacks");
+		fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(_oggDLL, "ov_time_seek");
+		fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(_oggDLL, "ov_pcm_seek");
+		fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(_oggDLL, "ov_pcm_tell");
+		fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, "ov_pcm_total");
+		//fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, "ov_comment");
 
-		if(!fn_ov_clear) TINYOAL_LOGM("ERROR","Could not load fn_ov_clear");
-		if(!fn_ov_read) TINYOAL_LOGM("ERROR","Could not load fn_ov_read");
-		if(!fn_ov_info) TINYOAL_LOGM("ERROR","Could not load fn_ov_info");
-		if(!fn_ov_open_callbacks) TINYOAL_LOGM("ERROR","Could not load fn_ov_open_callbacks");
-		if(!fn_ov_time_seek) TINYOAL_LOGM("ERROR","Could not load fn_ov_time_seek");
-		if(!fn_ov_pcm_seek) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_seek");
-		if(!fn_ov_pcm_tell) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_tell");
-		//if(!fn_ov_pcm_total) TINYOAL_LOGM("ERROR","Could not load fn_ov_pcm_total");
-		//if(!fn_ov_comment) TINYOAL_LOGM("ERROR","Could not load fn_ov_comment");
+		if(!fn_ov_clear) TINYOAL_LOGM("ERROR","Could not load ov_clear");
+		if(!fn_ov_read) TINYOAL_LOGM("ERROR","Could not load ov_read");
+		if(!fn_ov_info) TINYOAL_LOGM("ERROR","Could not load ov_info");
+		if(!fn_ov_open_callbacks) TINYOAL_LOGM("ERROR","Could not load ov_open_callbacks");
+		if(!fn_ov_time_seek) TINYOAL_LOGM("ERROR","Could not load ov_time_seek");
+		if(!fn_ov_pcm_seek) TINYOAL_LOGM("ERROR","Could not load ov_pcm_seek");
+		if(!fn_ov_pcm_tell) TINYOAL_LOGM("ERROR","Could not load ov_pcm_tell");
+		if(!fn_ov_pcm_total) TINYOAL_LOGM("ERROR","Could not load ov_pcm_total");
+		//if(!fn_ov_comment) TINYOAL_LOGM("ERROR","Could not load ov_comment");
 	}
   else
-  {
-		fn_ov_clear = 0;
-		fn_ov_read = 0;
-		fn_ov_info = 0;
-		fn_ov_open_callbacks = 0;
-		fn_ov_time_seek = 0;
-		fn_ov_pcm_seek = 0;
-		fn_ov_pcm_tell = 0;
-		//fn_ov_pcm_total = 0;
-		//fn_ov_comment = 0;
-    TINYOAL_LOGM("ERROR","Could not find vorbisfile.dll (or it may be missing one of its dependencies)");
-  }
+    TINYOAL_LOGM("ERROR","Could not find the OGG Vorbis DLL (or it may be missing one of its dependencies)");
 }
 
+cOggFunctions::~cOggFunctions()
+{
+  if(_oggDLL) FREEDYNLIB(_oggDLL);
+}
 ogg_int64_t cOggFunctions::GetCommentSection(OggVorbis_File *vf)
 {
   const size_t BUFSIZE=128;
@@ -97,13 +102,13 @@ ogg_int64_t cOggFunctions::GetCommentSection(OggVorbis_File *vf)
 
 ogg_int64_t cOggFunctions::GetLoopStart(OggVorbis_File *vf)
 {
-  if(vf->seekable==0) return 0; //if not seekable, fail
+  if(vf->seekable==0) return -1; //if not seekable, fail
   long orig = vf->callbacks.tell_func(vf->datasource);
   vf->callbacks.seek_func(vf->datasource,0,SEEK_SET);
 
   ogg_int64_t index=GetCommentSection(vf);
   __int32 length;
-  ogg_int64_t retval=0;
+  ogg_int64_t retval=-1;
 
   vf->callbacks.seek_func(vf->datasource,index,SEEK_SET); //seek to the end of the vendor info
 

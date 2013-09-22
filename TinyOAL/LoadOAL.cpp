@@ -55,10 +55,9 @@ ALboolean LoadOAL10Library(const char *szOALFullPathName, OPENALFNTABLE* lpOALFn
 		TINYOAL_LOGM("ERROR","lpOALFnTable cannot be NULL");
 		return AL_FALSE;
   }
-	if (szOALFullPathName)
-		g_hOpenALDLL = LOADDYNLIB(szOALFullPathName);
-	else
-		g_hOpenALDLL = LOADDYNLIB(DEFAULT_OAL_DLLPATH);
+	if(!szOALFullPathName)
+    szOALFullPathName=DEFAULT_OAL_DLLPATH;
+	g_hOpenALDLL = LOADDYNLIB(szOALFullPathName);
   
 	if (!g_hOpenALDLL)
   {

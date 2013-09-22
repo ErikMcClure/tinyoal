@@ -1,6 +1,6 @@
 /* Example 02 - Ogg Files
  * -------------------------
- * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point
+ * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point.
  *
  * Copyright ©2013 Erik McClure
  */
@@ -22,25 +22,25 @@ int main()
 {
   cTinyOAL engine(4); // Initialize the engine with default number of buffers
 
-  // Here we are going to directly load the music into an audio instance so we have more control over
-  // it. This is usually done for music, but is sometimes done for certain sound effects that you want
-  // to retrigger instead of stacking on top of each other. We can also directly initialize any audio
-  // instance from any audio resource reference, too. We specify the LOOP flag to tell the engine to 
-  // simply keep looping the song until we call Stop() on the instance.
-  cAudio music(cAudioResource::Create("..\\media\\du.ogg",0,136048),TINYOAL_ISPLAYING);
+  // Here we load a resource, and then immediately load it into an audio instance. Because this audio instance 
+  // isn't managed, it won't be destroyed until we destroy it (in this case, when it goes out of scope). This
+  // time, we're loading an OGG file - TinyOAL automatically detects the filetype for both files and datastreams.
+  // We specify the TINYOAL_ISPLAYING flag when we create the cAudio instance, which causes it to immediately
+  // start playing. We also specify TINYOAL_COPYINTOMEMORY when we load the OGG file, which causes the entire
+  // OGG file to be copied into RAM and the file released. You can only have a single instance of a file-based
+  // resource playing at any time, so if you need multiple instances, copy it into memory.
+  cAudio music(cAudioResource::Create("..\\media\\idea803.ogg",TINYOAL_COPYINTOMEMORY),TINYOAL_ISPLAYING);
 
-  // Songs can have loop points in the middle of them. These can be set manually, or embedded in the OGG
-  // metadata. LoopUtility is a utility program included in this SDK to help you do that.
-  //music.SetLoopPointSeconds(4.36); 
-  //music.SetLoopPoint(136048); // loop points must be precise, so it's recommended you set a sample number
+  // Songs can have loop points in the middle of them. These can be set per-resource, per-instance, or
+  // embedded in the OGG metadata. LoopUtility is a utility program included in this SDK to help you do that.
+  music.SetLoopPoint(587974); // loop points must be precise, so it's recommended you set a sample number
   engine.Update();
-  music.Pause();
-  music.SetPitch(0.5);
-  engine.Update();
-  music.Play();
-  music.Stop();
-  music.Pause();
-  music.Play();
+  music.Pause(); // Audio instances support all the operations one would expect to find, Play, Pause, and Stop
+  music.Play(); // Pausing stops playback - when Play is called again, playback will resume where it left off.
+  music.SkipSeconds(2.0); // You can also skip to any point either while playing or while stopped or paused.
+  music.Stop(); // Stop stops playback and resets the stream back to the beginning, no matter what.
+  music.Pause(); // Pausing while stopped or playing while already playing have no effect
+  music.Play(); // Stop is essentially equivalent to Pause() followed by Skip(0)
 
   time_t seconds;
   time_t start=time(NULL);

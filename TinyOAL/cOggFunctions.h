@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 // Notice: This header file does not need to be included in binary distributions of the library
 
-#pragma once
+#ifndef __C_OGG_FUNCTIONS_H__TOAL__
+#define __C_OGG_FUNCTIONS_H__TOAL__
+
 #include "openAL/vorbisfile.h"
-#include <ostream>
-#include "TinyOAL_dlldef.h"
 
 namespace TinyOAL {
   typedef int (*LPOVCLEAR)(OggVorbis_File *vf);
@@ -16,15 +16,17 @@ namespace TinyOAL {
   typedef int (*LPOVTIMESEEK)(OggVorbis_File *vf,double pos);
   typedef int (*LPOVPCMSEEK)(OggVorbis_File *vf,ogg_int64_t pos);
   typedef ogg_int64_t (*LPOVPCMTELL)(OggVorbis_File *vf);
-  //typedef ogg_int64_t (*LPOVPCMTOTAL)(OggVorbis_File *vf,int i);
+  typedef ogg_int64_t (*LPOVPCMTOTAL)(OggVorbis_File *vf,int i);
   //typedef vorbis_comment * (*LPOVCOMMENT)(OggVorbis_File *vf,int link);
 
 	// This is a holder class for the OGG DLL specific functions 
   class cOggFunctions
   {
   public:
-    cOggFunctions(std::ostream* errout);
-    
+    cOggFunctions(const char* force);
+    ~cOggFunctions();
+    inline bool Failure() { return _oggDLL==0; }
+
     LPOVCLEAR			fn_ov_clear;
     LPOVREAD			fn_ov_read;
     LPOVINFO			fn_ov_info;
@@ -32,14 +34,16 @@ namespace TinyOAL {
     LPOVTIMESEEK fn_ov_time_seek;
     LPOVPCMSEEK fn_ov_pcm_seek;
     LPOVPCMTELL fn_ov_pcm_tell;
-    //LPOVPCMTOTAL		fn_ov_pcm_total;
-    //LPOVCOMMENT			fn_ov_comment;
+    LPOVPCMTOTAL fn_ov_pcm_total;
+    //LPOVCOMMENT fn_ov_comment;
 
     static ogg_int64_t GetLoopStart(OggVorbis_File *vf);
     static ogg_int64_t GetCommentSection(OggVorbis_File *vf);
     //static TINYOAL_DLLEXPORT bool WriteLoopStartToFile(const wchar_t* file, OggVorbis_File *vf, ogg_int64_t sample);
 
   protected:
-    void* g_hVorbisFileDLL;
+    void* _oggDLL;
   };
 }
+
+#endif

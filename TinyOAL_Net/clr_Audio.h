@@ -32,23 +32,21 @@ namespace TinyOAL_net {
 		// This pauses an audio stream. Calling Play() will resume playing the stream from where it left off.
     void Pause();
 		// This returns whether the sample is (supposed) to be playing. Whether a sample is actually playing can differ due to starved audio sources and other things. 
-    bool IsPlaying();
+    property bool Playing { bool get(); }
     // Attempts to skip to the given song time (in seconds or samples) 
+    property unsigned __int64 Time { unsigned __int64 get(); void set(unsigned __int64 sample); }
     bool SkipSeconds(double seconds);
-    bool Skip(unsigned __int64 sample);
-    // Gets the current sample location of the stream
-    unsigned __int64 IsWhere();
 		// Sets the volume - 1.0 signifies 100% volume, 0.5 is 50%, 1.5 is 150%, etc. 
-    void SetVolume(float range);
+    property float Volume { float get(); void set(float volume); }
 		// Sets the pitch (which is actually just the sample playback rate) - 1.0 means no change in pitch, 2.0 double the pitch, etc. 
-    void SetPitch(float range);
+    property float Pitch { float get(); void set(float pitch); }
 		// This sets the position of the sound in a 3D space. This function's parameters are RELATIVE - that means if you set Y and Z to 0, the X value will become meaningless. By default Z is 0.5, so nearly all the way to the left is -10.0 and nearly all the way to the right is 10.0, and centered is 0.0 
-    void SetPosition(float X, float Y, float Z);
+    property cli::array<float>^ Position { cli::array<float>^ get(); void set(cli::array<float>^ pos); }
     // Sets loop point in seconds, or samples 
+    property unsigned __int64 LoopPoint { unsigned __int64 get(); void set(unsigned __int64 looppoint); }
     void SetLoopPointSeconds(double seconds);
-    void SetLoopPoint(unsigned __int64 sample);
     // Get Flags 
-    CLR_TINYOAL_FLAG GetFlags();
+    property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); }
     // Grab reference to audio resource used by this cAudio instance 
     clr_AudioResource^ GetResource();
 

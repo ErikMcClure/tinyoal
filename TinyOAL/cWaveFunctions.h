@@ -67,7 +67,8 @@ namespace TinyOAL {
 	  WAVERESULT Seek(WAVEFILEINFO& wave, __int64 offset);
 	  unsigned __int64 Tell(WAVEFILEINFO& wave);
 	  WAVERESULT Close(WAVEFILEINFO& wave);
-    const char* GetALFormat(WAVEFILEINFO& wave); // Returns a character string you should pass into alGetEnumValue
+    unsigned int GetALFormat(WAVEFILEINFO& wave); // cast this to ALenum
+    unsigned int WriteHeader(char* buffer,unsigned int length,unsigned short channels, unsigned short bits, unsigned __int32 freq);
   };
 }
 
