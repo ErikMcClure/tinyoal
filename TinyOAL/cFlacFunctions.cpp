@@ -20,7 +20,7 @@
 #define FREEDYNLIB(p) FreeLibrary((HMODULE)p)
 #else
 #include <dlfcn.h>
-#define FLAC_MODULE L"libflac.so"
+#define FLAC_MODULE "libFLAC.so.8"
 #define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
 #define GETDYNFUNC(p,s) dlsym(p,s)
 #define FREEDYNLIB(p) dlclose(p)
