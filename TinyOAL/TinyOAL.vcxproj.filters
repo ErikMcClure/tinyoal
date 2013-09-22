@@ -48,6 +48,12 @@
     <ClCompile Include="cWaveFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cFlacFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cAudioResourceFLAC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cAudioResourceMP3.h">
@@ -78,6 +84,12 @@
       <Filter>Header Files\include</Filter>
     </ClInclude>
     <ClInclude Include="cWaveFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cFlacFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cAudioResourceFLAC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

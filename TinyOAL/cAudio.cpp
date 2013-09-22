@@ -22,7 +22,7 @@ cAudio::cAudio(const cAudio& copy)
   prev = 0;
   next = 0;
 
-  if(!_source) return;
+  if(!_source) { TINYOAL_LOGM("WARNING","NULL cAudioResource passed to cAudio"); return; }
   _source->Grab();
   bss_util::LLAdd<cAudio>(this,_source->_inactivelist);
   
@@ -74,7 +74,7 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
   prev = 0;
   next = 0;
 
-  if(!ref) return;
+  if(!ref) { TINYOAL_LOGM("WARNING","NULL cAudioResource passed to cAudio"); return; }
   ref->Grab();
   _looptime=ref->GetLoopPoint();
   _flags+=ref->GetFlags();
@@ -93,6 +93,9 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
     else
       TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
   }
+  else
+    TINYOAL_LOGM("WARNING","Stream request failed");
+
 
   if(_flags&TINYOAL_ISPLAYING) {
     _flags-=TINYOAL_ISPLAYING;
@@ -174,23 +177,26 @@ bool cAudio::Skip(unsigned __int64 sample)
 {
   if(!_source || !_stream) return false;
   if(!_source->Skip(_stream,sample)) return false;
-  if(_streaming())
+  if(uiSource!=(unsigned int)-1) // We have to check this instead of whether or not it's playing because it could be paused
   {
-    cTinyOAL::Instance()->oalFuncs->alSourceStop(uiSource);
+    cTinyOAL::Instance()->oalFuncs->alSourceStop(uiSource); // Stop no matter what in case it's paused, because we have to reset it.
     cTinyOAL::Instance()->oalFuncs->alSourcei(uiSource, AL_BUFFER, 0); // Detach buffer
     _fillbuffers(); //Refill all buffers
     _queuebuffers(); //requeue everything, which forces the audio to immediately skip.
-    cTinyOAL::Instance()->oalFuncs->alSourcePlay(uiSource);
+    if(_flags&TINYOAL_ISPLAYING) cTinyOAL::Instance()->oalFuncs->alSourcePlay(uiSource);
   }
+  else
+    _fillbuffers(); // If we don't have a source, just refill the buffers and don't do anything else
+
   return true;
 }
 
 unsigned __int64 cAudio::IsWhere() const
 {
   if(!_source || !_stream) return 0;
-  ALint offset;
+  ALint offset=0;
   cTinyOAL::Instance()->oalFuncs->alGetSourcei(uiSource, AL_SAMPLE_OFFSET, &offset);
-  return _source->Tell(_stream)-(cTinyOAL::Instance()->defNumBuf*(_bufsize/(_source->GetBitsPerSample()>>3)))+offset;
+  return _source->Tell(_stream)-(cTinyOAL::Instance()->defNumBuf*(_bufsize/(_source->GetChannels()*(_source->GetBitsPerSample()>>3))))+offset;
 }
 
 void cAudio::SetLoopPointSeconds(double seconds)
@@ -281,13 +287,17 @@ void cAudio::_fillbuffers()
 
 unsigned long cAudio::_readbuf()
 {
-	unsigned long ulBytesWritten = _source->Read(_stream, pDecodeBuffer, _bufsize);
-  if(_looptime!=(unsigned __int64)-1)
+  bool eof;
+  unsigned long hold;
+	unsigned long ulBytesWritten = _source->Read(_stream, pDecodeBuffer, _bufsize, eof);
+  if(eof && _looptime!=(unsigned __int64)-1)
   {
-    while(ulBytesWritten<_bufsize) // If we didn't completely fill up our buffer, we hit the end, so if we're looping, reset.
+    while(eof && ulBytesWritten<_bufsize) // If we didn't completely fill up our buffer, we hit the end, so if we're looping, reset.
     { // We reset the stream here for every loop, because we will only loop if we hit the end of the stream.
       _source->Skip(_stream,_looptime); // This is because if we didn't hit the end, Read will return _bufsize-ulBytesWritten,
-      ulBytesWritten += _source->Read(_stream, pDecodeBuffer+ulBytesWritten, _bufsize-ulBytesWritten); // which will make ulBytesWritten==_bufsize.
+      hold=_source->Read(_stream, pDecodeBuffer+ulBytesWritten, _bufsize-ulBytesWritten, eof); // which will make ulBytesWritten==_bufsize.
+      if(!hold) break; // If Read returns 0 AFTER we attempted to go back to the loop location, something is wrong, so bail out.
+      ulBytesWritten += hold;
     }
   }
   return ulBytesWritten;

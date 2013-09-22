@@ -24,9 +24,14 @@
 
 #include "cWaveFunctions.h"
 #include "bss_util/bss_deprecated.h"
+#include "bss_util/bss_sse.h"
 #include <string.h> //STRNICMP
+#include "openAL/alext.h"
+#include "cTinyOAL.h"
+#include "openAL/loadoal.h"
 
 using namespace TinyOAL;
+using namespace bss_util;
 
 #pragma pack(push, 4)
 struct WAVEFILEHEADER
@@ -42,9 +47,6 @@ struct RIFFCHUNK
 	unsigned __int32	size;
 };
 #pragma pack(pop)
-
-#define WAVE_FORMAT_PCM 1
-#define  WAVE_FORMAT_EXTENSIBLE 0xFFFE
 
 cWaveFunctions::cWaveFunctions() {}
 
@@ -75,20 +77,49 @@ cWaveFunctions::WAVERESULT cWaveFunctions::Open(void* source, WAVEFILEINFO* wave
 		  callbacks.seek_func(source, 1, SEEK_CUR); // If we're on an odd byte, bump the pointer forward one byte.
   }
 
-  if(!wave->offset || !wave->size || (wave->wfEXT.Format.wFormatTag!=WAVE_FORMAT_PCM && wave->wfEXT.Format.wFormatTag!=WAVE_FORMAT_EXTENSIBLE))
+  if(!wave->offset || !wave->size) // Don't worry about the wave file format. If it's illegal, we'll find out when we try to assign a format.
     return WR_BADWAVEFILE;
   return WR_OK;
 }
 cWaveFunctions::WAVERESULT cWaveFunctions::Read(WAVEFILEINFO& wave, void *data, size_t len, size_t*pBytesWritten)
 {
   if(!data || !len || !pBytesWritten) return WR_INVALIDPARAM;
-  
+
   unsigned long cur_offset = wave.callbacks.tell_func(wave.source);
+  
+  if(wave.wfEXT.Format.wBitsPerSample == 24)
+    len=(len>>2)*3; // change len to the number of bytes we will actually read.
 
   if ((cur_offset - wave.offset + len) > wave.size)
     len = wave.size - (cur_offset - wave.offset);
   *pBytesWritten = wave.callbacks.read_func(data, 1, len, wave.source);
 
+  if(wave.wfEXT.Format.wBitsPerSample == 24) // We tell the user 24 bit streams are 32-bit and convert them behind the scenes. Ninja conversions.
+  {
+    float* dest=(float*)data;
+    char* src=(char*)data;
+    len/=3; // Now len is the number of individual channel samples
+    for(size_t i = len; i-->0;) // We go backwards so we don't trip over ourselves
+    { // This whole thing can be SSE optimized to operate on 4 at a time but it'd be a total bitch to do
+      int a = *(int*)(src+(i*3));
+      a = (a&0x00FFFFFF)|(0xFF000000*((a&0x800000)!=0)); // Cut out top 8 bits and the set them all equal to 1 if it was negative or 0 if it wasn't
+      dest[i]=(float)a/8388607.0f; //max signed integer value. This is exactly FLT_EPS, so this should preserve all 24-bits of precision. Whether or not the FPU is set to a high enough precision for this to actually happen is up in the air.
+    }
+    *pBytesWritten=(len<<2); // We actually wrote 4*number of samples, not what we put in here earlier, so fix it
+  }
+
+  if(wave.wfEXT.Format.wBitsPerSample == 32 && wave.wfEXT.Format.wFormatTag!=3) // We can't read 32-bit integers, only floats, so convert.
+  { // If we're reading 32-bit ints, convert them to floats.
+    size_t i=4;
+    size_t sz=(*pBytesWritten)/4;
+    int* src=(int*)data; // Look at all this pointer aliasing!
+    float* dest=(float*)data;
+    for(; i<sz; i+=4) // SSE optimized conversions. We're losing about 8 bits of precision here, but we don't care because no one can hear past 20 bits anyway.
+      BSS_SSE_STORE_UPS(dest+(i-4),sseVec(sseVeci(BSS_UNALIGNED<const int>(src+(i-4))))/sseVec(2147483648.0f));
+    for(i-=4; i<sz; ++i) { // Traditional conversion for the last few
+      dest[i]=(float)src[i]/2147483648.0f;
+    }
+  }
 	return WR_OK;
 }
 cWaveFunctions::WAVERESULT cWaveFunctions::Seek(WAVEFILEINFO& wave, __int64 offset)
@@ -127,33 +158,86 @@ unsigned __int64 cWaveFunctions::Tell(WAVEFILEINFO& wave)
 #define SPEAKER_TOP_BACK_CENTER         0x10000
 #define SPEAKER_TOP_BACK_RIGHT          0x20000
 
-const char* cWaveFunctions::GetALFormat(WAVEFILEINFO& wave)
+#define WAVE_FORMAT_PCM 1
+#define WAVE_FORMAT_EXTENSIBLE 0xFFFE
+#define WAVE_FORMAT_IEEE_FLOAT		0x0003 /* IEEE Float */
+#define WAVE_FORMAT_ALAW		0x0006 /* ALAW */
+#define WAVE_FORMAT_MULAW		0x0007 /* MULAW */
+#define WAVE_FORMAT_IMA_ADPCM		0x0011 /* IMA ADPCM */
+
+unsigned int cWaveFunctions::GetALFormat(WAVEFILEINFO& wave)
 {
-  if(wave.wfEXT.Format.wFormatTag == WAVE_FORMAT_PCM)
+  unsigned short bits = wave.wfEXT.Format.wBitsPerSample;
+  switch(wave.wfEXT.Format.wFormatTag)
   {
-	  if (wave.wfEXT.Format.nChannels == 1)
-		  return wave.wfEXT.Format.wBitsPerSample == 16 ? "AL_FORMAT_MONO16" : "AL_FORMAT_MONO8";
-	  else if (wave.wfEXT.Format.nChannels == 2)
-		  return wave.wfEXT.Format.wBitsPerSample == 16 ? "AL_FORMAT_STEREO16" : "AL_FORMAT_STEREO8";
-	  else if ((wave.wfEXT.Format.nChannels == 4) && (wave.wfEXT.Format.wBitsPerSample == 16))
-		  return "AL_FORMAT_QUAD16";
-  }
-  else if(wave.wfEXT.Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE)
-  {
-	  if ((wave.wfEXT.Format.nChannels == 1) && (wave.wfEXT.dwChannelMask == SPEAKER_FRONT_CENTER))
-		  return wave.wfEXT.Format.wBitsPerSample == 16 ? "AL_FORMAT_MONO16" : "AL_FORMAT_MONO8";
-	  else if ((wave.wfEXT.Format.nChannels == 2) && (wave.wfEXT.dwChannelMask == (SPEAKER_FRONT_LEFT|SPEAKER_FRONT_RIGHT)))
-		  return wave.wfEXT.Format.wBitsPerSample == 16 ? "AL_FORMAT_STEREO16" : "AL_FORMAT_STEREO8";
-	  else if ((wave.wfEXT.Format.nChannels == 2) && (wave.wfEXT.Format.wBitsPerSample == 16) && (wave.wfEXT.dwChannelMask == (SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT)))
-		  return  "AL_FORMAT_REAR16";
-	  else if ((wave.wfEXT.Format.nChannels == 4) && (wave.wfEXT.Format.wBitsPerSample == 16) && (wave.wfEXT.dwChannelMask == (SPEAKER_FRONT_LEFT|SPEAKER_FRONT_RIGHT|SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT)))
-		  return "AL_FORMAT_QUAD16";
-	  else if ((wave.wfEXT.Format.nChannels == 6) && (wave.wfEXT.Format.wBitsPerSample == 16) && (wave.wfEXT.dwChannelMask == (SPEAKER_FRONT_LEFT|SPEAKER_FRONT_RIGHT|SPEAKER_FRONT_CENTER|SPEAKER_LOW_FREQUENCY|SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT)))
-		  return "AL_FORMAT_51CHN16";
-	  else if ((wave.wfEXT.Format.nChannels == 7) && (wave.wfEXT.Format.wBitsPerSample == 16) && (wave.wfEXT.dwChannelMask == (SPEAKER_FRONT_LEFT|SPEAKER_FRONT_RIGHT|SPEAKER_FRONT_CENTER|SPEAKER_LOW_FREQUENCY|SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT|SPEAKER_BACK_CENTER)))
-		  return "AL_FORMAT_61CHN16";
-	  else if ((wave.wfEXT.Format.nChannels == 8) && (wave.wfEXT.Format.wBitsPerSample == 16) && (wave.wfEXT.dwChannelMask == (SPEAKER_FRONT_LEFT|SPEAKER_FRONT_RIGHT|SPEAKER_FRONT_CENTER|SPEAKER_LOW_FREQUENCY|SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT|SPEAKER_SIDE_LEFT|SPEAKER_SIDE_RIGHT)))
-		  return "AL_FORMAT_71CHN16";
+  case WAVE_FORMAT_PCM:
+  case WAVE_FORMAT_IEEE_FLOAT:
+    return cTinyOAL::GetFormat(wave.wfEXT.Format.nChannels, (bits==24)?32:bits, false); // 24-bit gets converted to 32 bit
+  case WAVE_FORMAT_IMA_ADPCM:
+    if(!cTinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_LOKI_IMA_ADPCM_format")) break;
+    switch(wave.wfEXT.Format.nChannels)
+    {
+    case 1: return AL_FORMAT_IMA_ADPCM_MONO16_EXT;
+    case 2: return AL_FORMAT_IMA_ADPCM_STEREO16_EXT;
+    }
+    break;
+  case WAVE_FORMAT_ALAW:
+    if(!cTinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_EXT_ALAW")) break;
+    switch(wave.wfEXT.Format.nChannels)
+    {
+    case 1: return AL_FORMAT_MONO_ALAW_EXT;
+    case 2: return AL_FORMAT_STEREO_ALAW_EXT;
+    }
+    break;
+  case WAVE_FORMAT_MULAW:
+    if(!cTinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_EXT_MULAW")) break;
+    switch(wave.wfEXT.Format.nChannels)
+    {
+    case 1: return AL_FORMAT_MONO_MULAW;
+    case 2: return AL_FORMAT_STEREO_MULAW;
+    case 4: return AL_FORMAT_QUAD_MULAW;
+    case 6: return AL_FORMAT_51CHN_MULAW;
+    case 7: return AL_FORMAT_61CHN_MULAW;
+    case 8: return AL_FORMAT_71CHN_MULAW;
+    }
+    break;
+  case WAVE_FORMAT_EXTENSIBLE:
+    return cTinyOAL::GetFormat(wave.wfEXT.Format.nChannels, (bits==24)?32:bits, wave.wfEXT.dwChannelMask == (SPEAKER_BACK_LEFT|SPEAKER_BACK_RIGHT));
   }
   return 0;
 }
+
+unsigned int cWaveFunctions::WriteHeader(char* buffer,unsigned int length,unsigned short channels, unsigned short bits, unsigned __int32 freq)
+{
+  static const int FULL_HEADER_SIZE=sizeof(WAVEFILEHEADER)+sizeof(RIFFCHUNK)+sizeof(WAVEFORMATEX)-sizeof(unsigned short)+sizeof(RIFFCHUNK);
+  if(!buffer)
+    return FULL_HEADER_SIZE;
+  if(length<FULL_HEADER_SIZE)
+    return 0;
+
+  WAVEFILEHEADER& header = *(WAVEFILEHEADER*)buffer;
+  memcpy(header.RIFF,"RIFF",4);
+  header.sz=length-8; //don't include RIFF or sz itself in this count
+  memcpy(header.WAVE,"WAVE",4);
+
+  buffer+=sizeof(WAVEFILEHEADER);
+  RIFFCHUNK& fmt = *(RIFFCHUNK*)buffer;
+  memcpy(fmt.name,"fmt ",4);
+  fmt.size=sizeof(WAVEFORMATEX)-sizeof(unsigned short); //we aren't going to include cbsize
+
+  buffer+=sizeof(RIFFCHUNK);
+  WAVEFORMATEX& format = *(WAVEFORMATEX*)buffer;
+  format.wFormatTag=(bits==32)?WAVE_FORMAT_IEEE_FLOAT:WAVE_FORMAT_PCM;
+  format.nChannels=channels;
+  format.nSamplesPerSec=freq;
+  format.nAvgBytesPerSec=freq*(bits>>3)*channels;
+  format.nBlockAlign=(bits>>3)*channels;
+  format.wBitsPerSample=bits;
+
+  buffer+=fmt.size;
+  RIFFCHUNK& data = *(RIFFCHUNK*)buffer;
+  memcpy(data.name,"data",4);
+  data.size=length-FULL_HEADER_SIZE;
+  return data.size;
+}
+

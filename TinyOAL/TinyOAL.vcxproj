@@ -191,9 +191,11 @@
   <ItemGroup>
     <ClCompile Include="cAudio.cpp" />
     <ClCompile Include="cAudioResource.cpp" />
+    <ClCompile Include="cAudioResourceFLAC.cpp" />
     <ClCompile Include="cAudioResourceMP3.cpp" />
     <ClCompile Include="cAudioResourceOGG.cpp" />
     <ClCompile Include="cAudioResourceWAV.cpp" />
+    <ClCompile Include="cFlacFunctions.cpp" />
     <ClCompile Include="cMp3Functions.cpp" />
     <ClCompile Include="cOggFunctions.cpp" />
     <ClCompile Include="cTinyOAL.cpp" />
@@ -201,9 +203,11 @@
     <ClCompile Include="LoadOAL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cAudioResourceFLAC.h" />
     <ClInclude Include="cAudioResourceMP3.h" />
     <ClInclude Include="cAudioResourceOGG.h" />
     <ClInclude Include="cAudioResourceWAV.h" />
+    <ClInclude Include="cFlacFunctions.h" />
     <ClInclude Include="cMp3Functions.h" />
     <ClInclude Include="cOggFunctions.h" />
     <ClInclude Include="cWaveFunctions.h" />
