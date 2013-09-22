@@ -6,48 +6,35 @@
 #ifndef __C_AUDIO_RESOURCE_MP3_H__TOAL__
 #define __C_AUDIO_RESOURCE_MP3_H__TOAL__
 
-#ifdef __INCLUDE_MP3
 #include "cAudioResource.h"
-#include "mpg123.h"
+#include "cMp3Functions.h"
 
 namespace TinyOAL {
-  class cMp3Functions;
-
 	// This is a resource class for MP3 files, and handles all the IO operations from the given buffer 
   class cAudioResourceMP3 : public cAudioResource
   {
   public:
-    // This returns an AUDIOSTREAM on success, or NULL on failure 
-    virtual AUDIOSTREAM* OpenStream();
-    // This reads the next chunk of OGG specific data. pDecodeBuffer must be at least GetBufSize() long and AUDIOSTREAM must be non-null 
-    virtual unsigned long Read(AUDIOSTREAM* stream, char* pDecodeBuffer);
-    // This resets the stream to the beginning. 
-    virtual bool Reset(AUDIOSTREAM* stream);
-    // This closes a stream and destroys any associated data (not the actual audio source itself). Stream will be an invalid pointer after this function is called. 
-    virtual void CloseStream(AUDIOSTREAM* stream);
-    // Sets stream to given sample 
-    virtual bool Skip(AUDIOSTREAM* stream, unsigned __int64 samples);
+    cAudioResourceMP3(const cAudioResourceMP3& copy);
+    cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop);
+    ~cAudioResourceMP3();
+    virtual void* OpenStream(); // This returns a pointer to the internal stream on success, or NULL on failure 
+    virtual void CloseStream(void* stream); //This closes an AUDIOSTREAM pointer
+    virtual unsigned long Read(void* stream, char* buffer, unsigned int len, bool& eof); // Reads next chunk of data - buffer must be at least GetBufSize() long 
+    virtual bool Reset(void* stream); // This resets a stream to the beginning 
+    virtual bool Skip(void* stream, unsigned __int64 samples); // Sets a stream to given sample 
+    virtual unsigned __int64 Tell(void* stream); // Gets what sample a stream is currently on
+    
+    static std::pair<void*,unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
   protected:
-    friend class cAudioResourceMP3; //This, combined with protected constructors/destructors, ensures a client program cannot, under any circumstance, delete an audio resource without calling the appropriate function
-    friend class cAudioResource;
+    static void cb_cleanup(void* dat);
+    static unsigned long _read(void* stream, char* buffer, unsigned int len, bool& eof);
+    static ssize_t cb_datread(void* stream,void* dst,size_t n);
+    static off_t cb_datseek(void* stream,off_t off,int loc);
+    static ssize_t cb_fileread(void* stream,void* dst,size_t n);
+    static off_t cb_fileseek(void* stream,off_t off,int loc);
 
-    cAudioResourceMP3(const cAudioResourceMP3& copy);
-    cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags);
-    ~cAudioResourceMP3();
-
-	  bool _buildstream(bool file);
-    static unsigned int _readstream(AUDIOSTREAM* stream, char* buf, int num);
-
-    mp3data_struct _header;
-    cMp3Functions* _functions;
-    unsigned char* _filebuf;
-    bool _padding;
-    int _enc_delay;
-    int _enc_padding;
-    int _framesize; //size of mp3 frame in bytes
+    static bss_util::cFixedAlloc<DatStream> _datalloc;
   };
 }
-#endif
-
 #endif

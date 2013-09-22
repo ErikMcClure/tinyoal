@@ -35,12 +35,16 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
   _channels=_sentinel.wfEXT.Format.nChannels;
 	_freq=_sentinel.wfEXT.Format.nSamplesPerSec;
   _samplebits=_sentinel.wfEXT.Format.wBitsPerSample;
+
   if(cTinyOAL::Instance()->oalFuncs!=0)
-    _format=cTinyOAL::Instance()->oalFuncs->alGetEnumValue(cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel));
+    _format=cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel);
 
 	// Queue 250ms of audio data
-  _bufsize = _sentinel.wfEXT.Format.nAvgBytesPerSec >> 2;
+  _bufsize = (_samplebits==24)?(_sentinel.wfEXT.Format.nAvgBytesPerSec/3):(_sentinel.wfEXT.Format.nAvgBytesPerSec >> 2);
+  unsigned short align=_sentinel.wfEXT.Format.nBlockAlign;
+  if(_samplebits==24) align=((align/3)<<2);
 	_bufsize -= (_bufsize % _sentinel.wfEXT.Format.nBlockAlign); // IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment
+  if(_samplebits==24) _samplebits=32;
 
 	if(!_format)
   {
@@ -68,11 +72,12 @@ void cAudioResourceWAV::CloseStream(void* stream)
   cTinyOAL::Instance()->waveFuncs->Close(*r);
   _allocwav.dealloc(r);
 }
-unsigned long cAudioResourceWAV::Read(void* stream, char* buffer, unsigned int len)
+unsigned long cAudioResourceWAV::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {
   size_t retval;
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   cTinyOAL::Instance()->waveFuncs->Read(*r, buffer, len, &retval);
+  eof=(retval!=len); // If we didn't read len bytes we must have hit the end of the file
   return retval;
 }
 bool cAudioResourceWAV::Reset(void* stream)
@@ -85,11 +90,11 @@ bool cAudioResourceWAV::Skip(void* stream, unsigned __int64 samples)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
-  return !cTinyOAL::Instance()->waveFuncs->Seek(*r, samples*(bits>>3));
+  return !cTinyOAL::Instance()->waveFuncs->Seek(*r, samples*(bits>>3)*_channels);
 }
 unsigned __int64 cAudioResourceWAV::Tell(void* stream)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
-  return cTinyOAL::Instance()->waveFuncs->Tell(*r)/(bits>>3);
+  return cTinyOAL::Instance()->waveFuncs->Tell(*r)/((bits>>3)*_channels);
 }

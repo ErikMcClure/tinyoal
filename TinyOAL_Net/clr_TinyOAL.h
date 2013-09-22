@@ -17,6 +17,7 @@ namespace TinyOAL_net {
     clr_TinyOAL();
     clr_TinyOAL(int defaultbuffers);
     clr_TinyOAL(int defaultbuffers, System::String^ logfile);
+    clr_TinyOAL(int defaultbuffers, System::String^ logfile, System::String^ forceOAL, System::String^ forceOGG, System::String^ forceFLAC, System::String^ forceMP3);
     ~clr_TinyOAL();
     !clr_TinyOAL();
 		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
@@ -32,6 +33,11 @@ namespace TinyOAL_net {
     bool SetDevice(System::String^ device);
     // Gets a null-seperated list of all available devices, terminated by a double null character.
     cli::array<System::String^>^ GetDevices();
+    // Handy function for figuring out formats
+    static unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear);
+    // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on windows)
+    static void SetSettings(System::String^ file);
+    static void SetSettingsStream(System::String^ data);
 
   private:
     TinyOAL::cTinyOAL* _ref; //pointer to unmanaged instance

@@ -2,69 +2,78 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#ifdef __INCLUDE_MP3
 #include "cMp3Functions.h"
+#include "bss_util/bss_util.h"
+#include "cTinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
 #include "bss_util/bss_win32_includes.h"
-#define LOADDYNLIB(s) LoadLibraryW(L##s)
+
+#ifdef BSS_CPU_x86
+#define MP3_MODULE "libmpg123.dll"
+#elif defined(BSS_CPU_x86_64)
+#define MP3_MODULE "libmpg123_64.dll"
+#endif
+
+#define LOADDYNLIB(s) LoadLibraryA(s)
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
+#define FREEDYNLIB(p) FreeLibrary((HMODULE)p)
 #else
 #include <dlfcn.h>
-#define LOADDYNLIB(s) dlopen(s, RTLD_LAZY);
-#define GETDYNFUNC(p,s) dlsym(p,s);
+#define MP3_MODULE "libmpg123.so.0"
+#define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
+#define GETDYNFUNC(p,s) dlsym(p,s)
+#define FREEDYNLIB(p) dlclose(p)
 #endif
+
+#define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_mpgDLL, n); \
+		if(!v) TINYOAL_LOGM("ERROR","Could not load " n)
 
 using namespace TinyOAL;
 
-cMp3Functions::cMp3Functions(std::ostream* errout)
+cMp3Functions::cMp3Functions(const char* force)
 {
-	if(!(g_ldMp3DLL = LoadLibraryW(L"lame_enc.dll")))
-    g_ldMp3DLL = LoadLibraryW(L"libmp3lame.dll");
+	if(!force)
+    force=MP3_MODULE;
 
-	if(g_ldMp3DLL)
+  memset(this,0,sizeof(cMp3Functions));
+  _mpgDLL=LOADDYNLIB(force);
+
+	if(_mpgDLL)
 	{
-	  fn_lameInitDecoder=(LPLDDECODEINIT) GetProcAddress(g_ldMp3DLL, "lame_decode_init");
-	  fn_lameDecode=(LPLDDECODE) GetProcAddress(g_ldMp3DLL, "lame_decode");
-	  fn_lameDecodeHeaders=(LPLDDECODEHEADERS) GetProcAddress(g_ldMp3DLL, "lame_decode_headers");
-	  fn_lameDecode1=(LPLDDECODEONE) GetProcAddress(g_ldMp3DLL, "lame_decode1");
-	  fn_lameDecode1Headers=(LPLDDECODEONEHEADERS) GetProcAddress(g_ldMp3DLL, "lame_decode1_headers");
-	  fn_lameDecode1HeadersB=(LPLDDECODEONEHEADERSB) GetProcAddress(g_ldMp3DLL,"lame_decode1_headersB");
-	  fn_lameExitDecoder=(LPLDDECODEEXIT) GetProcAddress(g_ldMp3DLL,"lame_decode_exit");
-	  fn_lameGetId3v2Tag=(LPLDGETID3V2TAG) GetProcAddress(g_ldMp3DLL,"lame_get_id3v2_tag");
-
-		if(!(fn_lameInitDecoder && fn_lameDecode && fn_lameDecodeHeaders && fn_lameDecode1 && fn_lameDecode1Headers && fn_lameDecode1HeadersB))
-    {
-      _invalidate();
-      (*errout) << "Error: Could not load all nessacary LAME MP3 callbacks.";
-    }
-    else if(fn_lameInitDecoder()!=0) //Initialize the encoder
-    {
-      _invalidate();
-      (*errout) << "Error: Could not initalize LAME MP3 decoder.";
+    DYNFUNC(fn_mpgInit,LPMPGINIT,"mpg123_init");
+    DYNFUNC(fn_mpgExit,LPMPGEXIT,"mpg123_exit");
+    DYNFUNC(fn_mpgNew,LPMPGNEW,"mpg123_new");
+    DYNFUNC(fn_mpgDelete,LPMPGDELETE,"mpg123_delete");
+    DYNFUNC(fn_mpgStrError,LPMPGSTRERROR,"mpg123_strerror");
+    DYNFUNC(fn_mpgFormatNone,LPMPGFORMATNONE,"mpg123_format_none");
+    DYNFUNC(fn_mpgFormat,LPMPGFORMAT,"mpg123_format");
+    DYNFUNC(fn_mpgGetFormat,LPMPGGETFORMAT,"mpg123_getformat");
+    DYNFUNC(fn_mpgOpenFD,LPMPGOPENFD,"mpg123_open_fd");
+    DYNFUNC(fn_mpgOpenHandle,LPMPGOPENHANDLE,"mpg123_open_handle");
+    DYNFUNC(fn_mpgClose,LPMPGCLOSE,"mpg123_close");
+    DYNFUNC(fn_mpgRead,LPMPGREAD,"mpg123_read");
+    DYNFUNC(fn_mpgTell,LPMPGTELL,"mpg123_tell");
+    DYNFUNC(fn_mpgSeek,LPMPGSEEK,"mpg123_seek");
+    DYNFUNC(fn_mpgInfo,LPMPGINFO,"mpg123_info");
+    DYNFUNC(fn_mpgScan,LPMPGSCAN,"mpg123_scan");
+    DYNFUNC(fn_mpgLength,LPMPGLENGTH,"mpg123_length");
+    DYNFUNC(fn_mpgID3,LPMPGID3,"mpg123_id3");
+    DYNFUNC(fn_mpgReplaceReader,LPMPGREPLACEREADER,"mpg123_replace_reader_handle");
+    
+    if(!fn_mpgInit || fn_mpgInit()!=MPG123_OK) {
+      TINYOAL_LOGM("ERROR","Failed to initialize mpg123");
+      if(fn_mpgExit!=0) fn_mpgExit();
+      FREEDYNLIB(_mpgDLL);
+      memset(this,0,sizeof(cMp3Functions));
     }
   }
   else
-  {
-    _invalidate();
-    (*errout) << "Error: Could not find lame_enc.dll (or it may be missing one of its dependencies)";
-  }
+    TINYOAL_LOGM("ERROR","Could not find the mpg123 DLL (or it may be missing one of its dependencies)");
 }
 
 cMp3Functions::~cMp3Functions()
 {
-	if(g_ldMp3DLL!=0 && fn_lameExitDecoder!=0)
-    fn_lameExitDecoder(); //de-initialize the LAME MP3 Decoder
+  if(fn_mpgExit!=0) fn_mpgExit();
+  if(_mpgDLL) FREEDYNLIB(_mpgDLL);
 }
-
-void cMp3Functions::_invalidate()
-{
-  fn_lameInitDecoder=0;
-  fn_lameDecode=0;
-  fn_lameDecodeHeaders=0;
-  fn_lameDecode1=0;
-  fn_lameDecode1Headers=0;
-  fn_lameDecode1HeadersB=0;
-  fn_lameExitDecoder=0;   
-}
-#endif

@@ -2,7 +2,7 @@
 * TinyOAL Changelog *
 *********************
 
-0.9.93
+1.0.0
 ------
 - Completely rewrote the engine's internals; only changes to the external interface will be listed.
 - cAudioResource::Create is now used to load resources, and PlaySound is just a wrapper around cAudioResource::Play()
@@ -18,6 +18,14 @@
 - You can now manually specify the file format by passing in a file format parameter into the cAudioResource flags.
 - You can set a cAudioResource to have a maximum number of instances. Attempting to play more than _maxactive instances of a sound will result in the one that's been playing the longest to be destroyed and replaced with the new instance.
 - cAudioResource::ToSample is no longer virtual and takes only a double argument now.
+- Added MP3 file support (cTinyOAL supports mpg123's seamless looping, but it doesn't always work. See 04Mp3File for details)
+- Added FLAC file support (can't do seamless looping despite being lossless because the codec is bullshit)
+- Added TINYOAL_FORCETOWAVE
+- You can now override all dynamic DLL paths when creating the engine
+- You can now change the target audio device being used by openAL
+- TinyOAL_net is now stable and supports all new features
+- Added 04Mp3File (a working version, anyway), 05FlacFile, and 06Managed examples, plus a 00Testbed for stress-testing purposes.
+- The engine now includes an example of an openAL config file (alsoftrc.sample) and a function that will copy any config file you specify to the magical location that openAL reads it's config files from, depending on platform.
 
 0.9.92
 ------

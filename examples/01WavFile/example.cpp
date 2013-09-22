@@ -18,45 +18,32 @@ using namespace TinyOAL;
 
 int main()
 {
-  //We initialize the engine here with the default number of buffers. You can also specify the error log file.
+  // We initialize the engine here with the default number of buffers. You can also specify the error log file.
   cTinyOAL engine(4);
+  // The engine will use the default device at first, but you can get a null-seperated list of devices with 
+  // GetDevices(), and change the device to one of your choosing with SetDevice().
   std::vector<cStr> devices = cStr::Explode(0,engine.GetDevices());
 
-  // Here, we are going to play a "sound" by loading up a resource reference. We tell the resource that
-  // any audio created using it should immediately start playing, and should be loaded into memory. Short
-  // sounds benefit from being loaded into memory, but longer sounds, such as music, should not (if the
-  // LOADINTOMEMORY flag is not specified, it is streamed from the disk).
-  cAudioResource* songref = cAudioResource::Create("../media/wave.wav",TINYOAL_COPYINTOMEMORY);
-  if(!songref) return 0;
-  songref->SetMaxActive(2);
+  // Here, we load a sound resource. TinyOAL supports a wide range of formats, and this particular wave file is
+  // stored using the u-Law format to save space. The high frequency artifacts you might hear are a result of
+  // the u-Law algorithm. We didn't specify any flags, so by default this will be streamed from disk.
+  cAudioResource* songref = cAudioResource::Create("../media/idea549.wav",0);
+  if(!songref) return 0; // If the file failed to exist or wasn't a recognizable format, Create will return NULL
 
-  int count=0;
-  // Now we tell the engine to create a new instance of the sound and play it. The engine will delete the
-  // sound instance once it has finished playing. This is useful for one-shot sounds that need to overlap
-  // each other when being played multiple times, which is *usually* what you want.
+  // Now we tell the resource to create a new instance of this sound, and start playing it. The sound instance
+  // will be deleted for you once it stops playing, so only use the returned handle to make initial adjustments.
+  // This is useful for "fire and forget" sounds that you don't want to bother keeping track of.
   songref->Play();
-  songref->Play()->SkipSeconds(1.0);
-  songref->Play()->SkipSeconds(2.0);
-  songref->Play()->SkipSeconds(3.0);
-  cAudio* r = songref->Play();
-  r->SkipSeconds(4.0);
-  cAudio r2(*r);
-  cAudio r3(std::move(*r));
 
   // Update returns how many sounds are playing. You should call this every frame, but the absolute minimum
-  // is calling it before a single buffer runs out. This is usually somewhere around 200 ms, but it varies.
+  // is calling it before a single buffer runs out. This is usually somewhere around 200 ms, but it depends on
+  // the exact configuration openAL is using.
   while(engine.Update()) 
-  {
     SLEEP(100);
-    //if(++count > 100000)
-    //{
-    //  count=0;
-    //  song->Play();
-    //}
-  }
   
-  songref->Play();
+  songref->Play(); // We tell the resource to create another cAudio instance right before we exit. This won't
+                   // cause any problems, because the engine cleans up after itself. You don't need to worry
+                   // about any dangling references, because all sounds will simply stop playing.
   
-  // We let the stack delete our objects for us, because the engine cleans up after itself. Just be sure to
-  // destroy all audio objects BEFORE the engine object itself gets destroyed!
+  return 0;
 }

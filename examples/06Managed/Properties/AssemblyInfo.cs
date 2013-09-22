@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("05Managed")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Example for TinyOAL")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("05Managed")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCompany("Black Sphere Studios")]
+[assembly: AssemblyProduct("TinyOAL")]
+[assembly: AssemblyCopyright("Copyright ©2013 Black Sphere Studios")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

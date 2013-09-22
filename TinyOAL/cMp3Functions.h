@@ -6,49 +6,61 @@
 #ifndef __C_MP3_FUNCTIONS_H__TOAL__
 #define __C_MP3_FUNCTIONS_H__TOAL__
 
-#ifdef __INCLUDE_MP3
-#include <ostream>
-#include "mpg123.h"
-
-struct HINSTANCE__;
+#include <stddef.h> // for ptrdiff_t
+typedef ptrdiff_t ssize_t;
+#include "mpg123/mpg123.h"
 
 namespace TinyOAL {
-  typedef int (*LPLDDECODEINIT)(void);
-  typedef int (*LPLDDECODE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
-  typedef int (*LPLDDECODEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
-  typedef int (*LPLDDECODEONE)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[]);
-  typedef int (*LPLDDECODEONEHEADERS)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data);
-  typedef int (*LPLDDECODEONEHEADERSB)(unsigned char* mp3buf, int len, short pcm_l[], short pcm_r[], mp3data_struct* mp3data, int* enc_delay, int* enc_padding);
-  typedef int (*LPLDDECODEEXIT)(void);
-  typedef unsigned int (*LPLDGETID3V2TAG)(lame_global_flags * gfp, unsigned char* buffer, size_t size);
-  typedef lame_global_flags* (*LPLDLAMEINIT)(void);
-  typedef int (*LPLDSETDECODEONLY)(lame_global_flags*, int);
-  typedef int (*LPLDLAMEEXIT)(lame_global_flags*);
+  typedef int (*LPMPGINIT)(void);
+  typedef void (*LPMPGEXIT)(void);
+  typedef mpg123_handle* (*LPMPGNEW)(const char*, int*);
+  typedef void (*LPMPGDELETE)(mpg123_handle*);
+  typedef const char* (*LPMPGSTRERROR)(mpg123_handle*);
+  typedef int (*LPMPGFORMATNONE)(mpg123_handle*);
+  typedef int (*LPMPGFORMAT)(mpg123_handle*, long, int, int);
+  typedef int (*LPMPGGETFORMAT)(mpg123_handle*, long*, int*, int*);
+  typedef int (*LPMPGOPENFD)(mpg123_handle*, int);
+  typedef int (*LPMPGOPENHANDLE)(mpg123_handle*, void*);
+  typedef int (*LPMPGCLOSE)(mpg123_handle*);
+  typedef int (*LPMPGREAD)(mpg123_handle*, unsigned char*, size_t, size_t*);
+  typedef off_t (*LPMPGTELL)(mpg123_handle*);
+  typedef off_t (*LPMPGSEEK)(mpg123_handle*, off_t, int);
+  typedef int (*LPMPGINFO)(mpg123_handle*, struct mpg123_frameinfo*);
+  typedef int (*LPMPGSCAN)(mpg123_handle*);
+  typedef off_t (*LPMPGLENGTH)(mpg123_handle*);
+  typedef int (*LPMPGID3)(mpg123_handle*, mpg123_id3v1 **, mpg123_id3v2 **);
+  typedef int (*LPMPGREPLACEREADER)(mpg123_handle*, ssize_t (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*));
 
-//lame_global_flags * CDECL lame_init(void);
-//int  CDECL lame_close (lame_global_flags *);
-
-  // This class holds the lame_enc functions.
 	class cMp3Functions
 	{
 	public:
-		cMp3Functions(std::ostream* errout);
+		cMp3Functions(const char* force);
     ~cMp3Functions();
+    inline bool Failure() { return _mpgDLL==0; }
 
-    LPLDDECODEINIT		fn_lameInitDecoder;
-    LPLDDECODE		fn_lameDecode;
-    LPLDDECODEHEADERS		fn_lameDecodeHeaders;
-    LPLDDECODEONE		fn_lameDecode1;
-    LPLDDECODEONEHEADERS			fn_lameDecode1Headers;
-    LPLDDECODEONEHEADERSB	fn_lameDecode1HeadersB;
-    LPLDDECODEEXIT	fn_lameExitDecoder;
-    LPLDGETID3V2TAG fn_lameGetId3v2Tag;
+    LPMPGINIT fn_mpgInit;
+    LPMPGEXIT fn_mpgExit;
+    LPMPGNEW fn_mpgNew;
+    LPMPGDELETE fn_mpgDelete;
+    LPMPGSTRERROR fn_mpgStrError;
+    LPMPGFORMATNONE fn_mpgFormatNone;
+    LPMPGFORMAT fn_mpgFormat;
+    LPMPGGETFORMAT fn_mpgGetFormat;
+    LPMPGOPENFD fn_mpgOpenFD;
+    LPMPGOPENHANDLE fn_mpgOpenHandle;
+    LPMPGCLOSE fn_mpgClose;
+    LPMPGREAD fn_mpgRead;
+    LPMPGTELL fn_mpgTell;
+    LPMPGSEEK fn_mpgSeek;
+    LPMPGINFO fn_mpgInfo;
+    LPMPGSCAN fn_mpgScan;
+    LPMPGLENGTH fn_mpgLength;
+    LPMPGID3 fn_mpgID3;
+    LPMPGREPLACEREADER fn_mpgReplaceReader;
 
 	protected:
-    void _invalidate();
-		HINSTANCE__* g_ldMp3DLL;
+		void* _mpgDLL;
 	};
 }
 
-#endif
 #endif

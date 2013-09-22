@@ -5,6 +5,7 @@
 #include "cAudioResourceOGG.h"
 #include "cAudioResourceWAV.h"
 #include "cAudioResourceMP3.h"
+#include "cAudioResourceFLAC.h"
 #include "cTinyOAL.h"
 
 using namespace TinyOAL;
@@ -56,7 +57,7 @@ unsigned char BSS_FASTCALL cAudioResource::_getfiletype(const char* fileheader)
 	if(!strncmp(fileheader, "OggS", 4)) return TINYOAL_FILETYPE_OGG;
 	if(!strncmp(fileheader, "fLaC", 4)) return TINYOAL_FILETYPE_FLAC; // We don't support FLAC yet
   if(!strncmp(fileheader, "RIFF", 4) || !strncmp(fileheader, "RIFX", 4)) return TINYOAL_FILETYPE_WAV;
-  if(!strncmp(fileheader,"ID3",3) || 0x7FF==(0x7FF&(*(unsigned short*)fileheader))) return TINYOAL_FILETYPE_MP3;
+  if(!strncmp(fileheader,"ID3",3) || 0x3FF==(0x3FF&(*(unsigned short*)fileheader))) return TINYOAL_FILETYPE_MP3;
 
 	return TINYOAL_FILETYPE_UNKNOWN;
 }
@@ -93,7 +94,10 @@ cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength
 
   if(!(flags&TINYOAL_FILETYPEMASK))
     flags|=_getfiletype((const char*)data);
-  if(flags&TINYOAL_COPYINTOMEMORY)
+  
+  if((flags&TINYOAL_FORCETOWAVE)==TINYOAL_FORCETOWAVE)
+    return _force(const_cast<void*>(data),datalength,flags,cStrF("%p",data),loop);
+  else if(flags&TINYOAL_COPYINTOMEMORY)
   {
     void* ndata = malloc(datalength);
     memcpy(ndata,data,datalength);
@@ -102,6 +106,37 @@ cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength
   return _create(const_cast<void*>(data),datalength,flags,cStrF("%p",data),loop);
 }
 
+cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)
+{
+  std::pair<void*,unsigned int> d(data,datalength);
+  TINYOAL_FLAG flags2 = (flags&(~TINYOAL_FILETYPEMASK));
+  flags2=(flags2&(~TINYOAL_ISFILE));
+
+	switch(flags&TINYOAL_FILETYPEMASK)
+	{
+  case TINYOAL_FILETYPE_WAV:
+    d.first = malloc(datalength);
+    if(flags&TINYOAL_ISFILE)
+      fread(d.first,1,datalength,(FILE*)data);
+    else
+      memcpy(d.first,data,datalength);
+    flags2=(flags&(~TINYOAL_ISFILE));
+    break;
+	case TINYOAL_FILETYPE_OGG:
+    d = cAudioResourceOGG::ToWave(data, datalength, flags);
+    break;
+	case TINYOAL_FILETYPE_MP3:
+    d = cAudioResourceMP3::ToWave(data, datalength, flags);
+    break;
+	case TINYOAL_FILETYPE_FLAC:
+    d = cAudioResourceFLAC::ToWave(data, datalength, flags);
+    break;
+  default:
+    TINYOAL_LOG("WARNING") << data << " is using an unknown or unrecognized format, or may be corrupt." << std::endl;
+	}
+  if(!d.first) return 0;
+  return _create(d.first,d.second,flags2|TINYOAL_FILETYPE_WAV,path,loop);
+}
 cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop)
 {
   if(!file || datalength < 4) //bad file pointer
@@ -118,8 +153,9 @@ cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TI
     fseek(file, -4, SEEK_CUR); // reset file pointer (do NOT use set here or we'll lose the relative positioning
     flags|=_getfiletype(fheader);
   }
-  if(flags&TINYOAL_COPYINTOMEMORY)
-  {
+  if((flags&TINYOAL_FORCETOWAVE)==TINYOAL_FORCETOWAVE)
+    return _force(file,datalength,flags|TINYOAL_ISFILE,path,loop);
+  else if(flags&TINYOAL_COPYINTOMEMORY) {
     void* data = malloc(datalength);
     fread(data,1,datalength,file);
     return _create(data,datalength,flags,path,loop);
@@ -141,14 +177,16 @@ cAudioResource* cAudioResource::_create(void* data, unsigned int datalength, TIN
     break;
 	case TINYOAL_FILETYPE_WAV:
     TINYOAL_LOG("INFO") << "Loading " << (void*)data << " as WAVE" << std::endl;
-    r = new cAudioResourceWAV(data, datalength, flags, loop); //Assume its a wav
+    r = new cAudioResourceWAV(data, datalength, flags, loop);
     break;
-#ifdef __INCLUDE_MP3
 	case TINYOAL_FILETYPE_MP3:
     TINYOAL_LOG("INFO") << "Loading " << (void*)data << " as MP3" << std::endl;
     r = new cAudioResourceMP3(data, datalength, flags, loop);
     break;
-#endif
+	case TINYOAL_FILETYPE_FLAC:
+    TINYOAL_LOG("INFO") << "Loading " << (void*)data << " as FLAC" << std::endl;
+    r = new cAudioResourceFLAC(data, datalength, flags, loop);
+    break;
   default:
     TINYOAL_LOG("WARNING") << data << " is using an unknown or unrecognized format, or may be corrupt." << std::endl;
     return 0; //Unknown format
@@ -165,9 +203,9 @@ size_t TinyOAL::dat_read_func(void *ptr, size_t size, size_t nmemb, void *dataso
 {
   DatStream* data = (DatStream*)datasource;
   size_t retval = (data->datalength-dat_tell_func(datasource))/size;
-  retval = nmemb>retval?retval*size:nmemb*size; //This ensures we never read past the end but still conform to size restrictions
-  memcpy(ptr, data->streampos, retval);
-  data->streampos += retval; //increment stream pointer
+  retval = nmemb>retval?retval:nmemb; //This ensures we never read past the end but still conform to size restrictions
+  memcpy(ptr, data->streampos, retval*size);
+  data->streampos += retval*size; //increment stream pointer
   return retval;
 }
 
@@ -180,7 +218,7 @@ int TinyOAL::dat_seek_func(void *datasource, __int64 offset, int whence) //Who t
   {
   case SEEK_END:
     if((pos = data->datalength+offset) < 0 || pos > data->datalength)
-      return -1; //fail
+      return -1;//fail
     data->streampos = data->data+pos;
     return 0;
   case SEEK_SET:
@@ -190,7 +228,7 @@ int TinyOAL::dat_seek_func(void *datasource, __int64 offset, int whence) //Who t
     return 0;
   default:
   case SEEK_CUR:
-    if(((pos = dat_tell_func(datasource))+offset) < 0 || pos >= data->datalength)
+    if((pos = dat_tell_func(datasource)+offset) < 0 || pos > data->datalength)
       return -1;
     data->streampos += offset;
     return 0;

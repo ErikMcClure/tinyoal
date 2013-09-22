@@ -32,14 +32,16 @@ namespace TinyOAL {
   class cOggFunctions;
   class cMp3Functions;
   class cWaveFunctions;
+  class cFlacFunctions;
+  struct ALSoftSettings;
 
 	// This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
   class TINYOAL_DLLEXPORT cTinyOAL : protected bss_util::cSingleton<cTinyOAL>
   {
   public:
     // Constructors
-    cTinyOAL(unsigned char defnumbuf=4, std::ostream* errout=0);
-    cTinyOAL(const char* logfile, unsigned char defnumbuf);
+    cTinyOAL(unsigned char defnumbuf=4, std::ostream* errout=0, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
+    cTinyOAL(const char* logfile, unsigned char defnumbuf, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
     ~cTinyOAL();
 		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
     // to this update function can never exceed the length of a buffer, or the sound will cut out.
@@ -61,18 +63,24 @@ namespace TinyOAL {
     bool SetDevice(const char* device);
     // Gets a null-seperated list of all available devices, terminated by a double null character.
     const char* GetDevices();
+    // Handy function for figuring out formats
+    static unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear);
+    // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on windows)
+    static void SetSettings(const char* file);
+    static void SetSettingsStream(const char* data);
 
     OPENALFNTABLE* oalFuncs;
     cOggFunctions* oggFuncs;
     cMp3Functions* mp3Funcs;
     cWaveFunctions* waveFuncs;
+    cFlacFunctions* flacFuncs;
     const unsigned char defNumBuf;
 
   protected:
     friend class cAudio;
     friend class cAudioResource;
 
-    void BSS_FASTCALL _construct(std::ostream* errout,const char* logfile);
+    void BSS_FASTCALL _construct(std::ostream* errout,const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
     void BSS_FASTCALL _addaudio(cAudio* ref, cAudioResource* res);
     void BSS_FASTCALL _removeaudio(cAudio* ref, cAudioResource* res);
     char* BSS_FASTCALL _allocdecoder(unsigned int sz);
@@ -85,6 +93,7 @@ namespace TinyOAL {
     bss_util::cFixedAllocVoid _bufalloc;
     bss_util::cAVLtree<unsigned int,std::unique_ptr<bss_util::cFixedAllocVoid>> _treealloc;
   };
+
 }
 
 #endif
