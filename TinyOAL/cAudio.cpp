@@ -308,7 +308,6 @@ void cAudio::_processbuffers()
   // Request the number of OpenAL Buffers have been processed (played) on the Source
 	ALint iBuffersProcessed = 0;
 	cTinyOAL::Instance()->oalFuncs->alGetSourcei(uiSource, AL_BUFFERS_PROCESSED, &iBuffersProcessed);
-  bool loop = _looptime!=(unsigned __int64)-1;
   ALuint uiBuffer;
   unsigned long ulBytesWritten;
 
