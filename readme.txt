@@ -2,7 +2,7 @@ TinyOAL - An OpenAL Audio engine
 ----------------------------
 Copyright ©2013 Black Sphere Studios
 
-TinyOAL is a minimalist audio engine using openAL-soft. However, you can also force it to use the normal openAL dll if you really want to use it. Resources are loaded using cAudioResource, which is reference counted. These resources are then passed into a cAudio instance that plays them. Provided your resource isn't a streaming file, it can be played multiple times simultaneously. cAudioResource can also spawn managed cAudio instances that automatically start playing and destroy themselves once they've stopped playing, which is useful when you simply need to trigger a sound effect and don't need to micro-manage it.
+TinyOAL is a minimalist audio engine using openAL-soft. However, you can also force it to use the normal openAL dll if you really want to use it. TinyOAL supports volume, pitch, panning, loop points, resource management, maximum instance counts, WAV, OGG, MP3, FLAC, file-based streaming, in-memory streaming, conversion to WAV, and filetype detection. Resources are loaded using cAudioResource, which is reference counted. These resources are then passed into a cAudio instance that plays them. Provided your resource isn't a streaming file, it can be played multiple times simultaneously. cAudioResource can also spawn managed cAudio instances that automatically start playing and destroy themselves once they've stopped playing, which is useful when you simply need to trigger a sound effect and don't need to micro-manage it.
 
 Note that cAudioResource::Create() grabs a reference to the resource, as does assigning that resource to a cAudio. This means a cAudioResource will always have exactly 1 reference count left over after all instances of that resource have been deleted. This is done on purpose, because 99% of the time you want to keep those resources in memory as long as possible, but if you need to get rid of them, just remember to add a Drop() call after all instances have been destroyed.
 
@@ -20,12 +20,14 @@ A-law mono, stereo
 
 openAL-soft implements all of these extensions, but traditional OpenAL guarantees only PCM unsigned 8-bit mono/stereo and PCM signed 16 bit mono/stereo. 24-bit and 32-bit integer formats are promoted to floating point, so they require the 32-bit float extension to work.
 
-TinyOAL has no dependencies, simply drop the appropriate DLLs into your EXE's directory and link to the *.lib files in /bin. Note, however, that if you force TinyOAL to use the traditional openAL dll, clients may need to install it. Example projects demonstrating basic concepts are found in TinyOAL/examples/, which compile into TinyOAL/examples/bin/.
+TinyOAL has no dependencies, simply drop the appropriate DLLs into your EXE's directory and link to the *.lib files in /bin. Note, however, that if you force TinyOAL to use the traditional openAL dll, clients may need to install it. You must also provide any DLLs necessary to decode the formats you will be working with (OGG, MP3, or FLAC). Example projects demonstrating basic concepts are found in TinyOAL/examples/, which compile into TinyOAL/examples/bin/.
+
+TinyOAL_net is a Managed C++ wrapper around the TinyOAL dll. Simply add a reference to the TinyOAL_net.dll in your VB.net/C#/F# project and make sure that the corresponding TinyOAL.dll is placed in the same folder as TinyOAL_net.dll. Note that if you choose to use the TinyOAL_net64.dll, you'll need the TinyOAL64.dll, and the same applies to the debug versions.
 
 Known Issues:
 - libFLAC.dll was written by idiots and is extremely bad at streaming. If you are doing anything other than playing a large FLAC file without seamless looping, I strongly suggest using FORCETOWAVE. FLAC flat out can't do seamless looping because the decoder can't accurately seek to sample locations, but it will work fine if you use FORCETOWAVE.
 - The 32-bit integer to floating point does not attempt to do a good job of preserving precision. Since the audio driver usually only has 16 bits of precision, this shouldn't matter, but if you care about it, use a wav file saved as a 32-bit float instead.
-- TinyOAL attempts to set up mpg123's seamless looping abilities, but it requries specially crafted MP3 files. You should use OGG files if you need seamless looping.
+- TinyOAL attempts to set up mpg123's seamless looping abilities, but it requires specially crafted MP3 files. You should use OGG files if you need seamless looping.
 
 
 Base DLLs:
