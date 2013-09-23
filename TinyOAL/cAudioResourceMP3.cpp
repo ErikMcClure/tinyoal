@@ -120,6 +120,18 @@ unsigned __int64 cAudioResourceMP3::Tell(void* stream)
 {
   return cTinyOAL::Instance()->mp3Funcs->fn_mpgTell((mpg123_handle*)stream);
 }
+
+off_t __mp3_foffset;
+off_t __mp3_flength;
+off_t cAudioResourceMP3::cb_fileseekoffset(void* stream,off_t off,int loc)
+{
+  if(loc==SEEK_END) { loc=SEEK_SET; off+=__mp3_flength; }
+  if(loc==SEEK_SET) off+=__mp3_foffset;
+  if(!fseek((FILE*)stream,off,loc))
+    return ftell((FILE*)stream);
+  return -1;
+}
+
 std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
   auto fn = cTinyOAL::Instance()->mp3Funcs;
@@ -133,8 +145,10 @@ std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int
   DatStream dat;
   if(flags&TINYOAL_ISFILE)
   {
-    fseek((FILE*)data,0,SEEK_SET); // If we're a file, reset the pointer
-    fn->fn_mpgReplaceReader(h,&cb_fileread,&cb_fileseek,0);
+    //fseek((FILE*)data,0,SEEK_SET); // we don't do this in here because we could have gotten an external file pointer.
+    __mp3_foffset=ftell((FILE*)data);
+    __mp3_flength=datalength;
+    fn->fn_mpgReplaceReader(h,&cb_fileread,&cb_fileseekoffset,0);
     err=fn->fn_mpgOpenHandle(h,data);
   }
   else
@@ -144,23 +158,24 @@ std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int
     fn->fn_mpgReplaceReader(h,&cb_datread,&cb_datseek,0); // Don't do cleanup because Datstream is on the stack
     err=fn->fn_mpgOpenHandle(h,&dat);
   }
-  if(err!=MPG123_OK) { 
-    TINYOAL_LOGM("ERROR","Failed to open mpg handle");
-    fn->fn_mpgClose(h); 
-    fn->fn_mpgDelete(h); 
+  auto fnabort = [](mpg123_handle* h, const char* error) -> std::pair<void*,unsigned int> {
+    TINYOAL_LOGM("ERROR",error);
+    cTinyOAL::Instance()->mp3Funcs->fn_mpgClose(h); 
+    cTinyOAL::Instance()->mp3Funcs->fn_mpgDelete(h); 
     return std::pair<void*,unsigned int>((void*)0,0); 
-  }
+  };
+  if(err!=MPG123_OK) return fnabort(h,"Failed to open mpg handle");
   
   err=fn->fn_mpgScan(h);
   off_t len = fn->fn_mpgLength(h);
-  if(err!=MPG123_OK || len<0) { TINYOAL_LOGM("ERROR","Failed to scan mp3"); fn->fn_mpgClose(h); fn->fn_mpgDelete(h); return std::pair<void*,unsigned int>((void*)0,0); }
+  if(err!=MPG123_OK || len<0) return fnabort(h,"Failed to scan mp3");
   
   long freq;
   int channels,enc;
   err=fn->fn_mpgGetFormat(h, &freq, &channels, &enc);
   if(!err) err=fn->fn_mpgFormatNone(h);
   if(!err) err=fn->fn_mpgFormat(h, freq,channels,enc);
-  if(err!=0) { TINYOAL_LOGM("WARNING","Failed to get or set format");  fn->fn_mpgClose(h); fn->fn_mpgDelete(h); return std::pair<void*,unsigned int>((void*)0,0); }
+  if(err!=0) return fnabort(h,"Failed to get or set format");
 
   unsigned char bits=(enc==MPG123_ENC_SIGNED_16)?16:32;
   unsigned int total=len*(bits>>3)*channels;
@@ -187,7 +202,6 @@ off_t cAudioResourceMP3::cb_datseek(void* stream,off_t off,int loc)
 {
   if(!dat_seek_func(stream,off,loc))
     return dat_tell_func(stream);
-  dat_seek_func(stream,off,loc);
   return -1;
 }
 ssize_t cAudioResourceMP3::cb_fileread(void* stream,void* dst,size_t n)

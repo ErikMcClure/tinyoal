@@ -133,6 +133,7 @@ cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINY
     break;
   default:
     TINYOAL_LOG("WARNING") << data << " is using an unknown or unrecognized format, or may be corrupt." << std::endl;
+    return 0;
 	}
   if(!d.first) return 0;
   return _create(d.first,d.second,flags2|TINYOAL_FILETYPE_WAV,path,loop);

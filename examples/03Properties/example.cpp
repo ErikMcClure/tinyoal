@@ -10,6 +10,13 @@
 
 using namespace TinyOAL;
 
+#ifdef BSS_PLATFORM_WIN32
+#define SLEEP(n) _sleep(n)
+#else
+#include <unistd.h>
+#define SLEEP(n) usleep(n*1000) //translate milliseconds to microseconds
+#endif
+
 int main()
 {
   cTinyOAL engine;
