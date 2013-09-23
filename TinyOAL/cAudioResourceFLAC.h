@@ -10,18 +10,7 @@
 #include "cFlacFunctions.h"
 
 namespace TinyOAL {
-  class cAudioResourceFLAC;
-
-  struct DatStreamEx {
-    cAudioResourceFLAC* p;
-    FLAC__StreamDecoder* d;
-    unsigned __int64 cursample;
-    union {
-      DatStream stream;
-      FILE* f;
-      DatStreamEx* next;
-    };
-  };
+  struct DatStreamEx;
 
 	// This is a resource class for OGG files, and handles all the IO operations from the given buffer 
   class cAudioResourceFLAC : public cAudioResource
@@ -51,17 +40,32 @@ namespace TinyOAL {
     static FLAC__bool _cbeof(const FLAC__StreamDecoder *decoder, void *client_data);
     static FLAC__StreamDecoderReadStatus _cbfread(const FLAC__StreamDecoder *decoder, FLAC__byte buffer[], size_t *bytes, void *client_data);
     static FLAC__StreamDecoderSeekStatus _cbfseek(const FLAC__StreamDecoder *decoder, FLAC__uint64 absolute_byte_offset, void *client_data);
+    static FLAC__StreamDecoderSeekStatus _cbfseekoffset(const FLAC__StreamDecoder *decoder, FLAC__uint64 absolute_byte_offset, void *client_data);
     static FLAC__StreamDecoderTellStatus _cbftell(const FLAC__StreamDecoder *decoder, FLAC__uint64 *absolute_byte_offset, void *client_data);
-    static FLAC__StreamDecoderLengthStatus _cbflength(const FLAC__StreamDecoder *decoder, FLAC__uint64 *stream_length, void *client_data);
     static FLAC__bool _cbfeof(const FLAC__StreamDecoder *decoder, void *client_data);
     void* _openstream(bool empty);
     static DatStreamEx* _getstream();
+    static void _closestream(void* stream);
 
-    char* _buffer;
-    unsigned int _bytesread;
-    unsigned int _len;
-    unsigned __int64 _cursample;
+    struct INTERNAL {
+      char* _buffer;
+      unsigned int _bytesread;
+      unsigned int _len;
+      unsigned __int64 _cursample;
+    } _internal;
     static DatStreamEx* _freelist;
+    static size_t __flac_fseek_offset;
+  };
+
+  struct DatStreamEx {
+    void* p; //INTERNAL* pointer
+    FLAC__StreamDecoder* d;
+    unsigned __int64 cursample;
+    union {
+      DatStream stream;
+      FILE* f;
+      DatStreamEx* next;
+    };
   };
 }
 

@@ -34,8 +34,9 @@ namespace TinyOAL {
   protected:
     static unsigned long _read(void* stream, char* buffer, unsigned int len, bool& eof, char bytes, unsigned int channels); // Reads next chunk of data - buffer must be at least GetBufSize() long 
     bool _openstream(OggVorbis_FileEx* target);
-    static bss_util::cFixedAlloc<OggVorbis_FileEx> _allocogg;
+    static void _setcallbacks(ov_callbacks& callbacks, bool isfile);
 
+    static bss_util::cFixedAlloc<OggVorbis_FileEx> _allocogg;
     ov_callbacks _callbacks;
   };
 }

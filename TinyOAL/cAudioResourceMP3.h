@@ -33,6 +33,7 @@ namespace TinyOAL {
     static off_t cb_datseek(void* stream,off_t off,int loc);
     static ssize_t cb_fileread(void* stream,void* dst,size_t n);
     static off_t cb_fileseek(void* stream,off_t off,int loc);
+    static off_t cb_fileseekoffset(void* stream,off_t off,int loc);
 
     static bss_util::cFixedAlloc<DatStream> _datalloc;
   };

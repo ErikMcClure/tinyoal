@@ -7,10 +7,14 @@
 
 #include "bss_util/bss_compiler.h"
 
+#ifdef TINYOAL_STATICLIB
+#define TINYOAL_DLLEXPORT 
+#else
 #ifdef TINYOAL_EXPORTS
 #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLEXPORT
 #else
 #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLIMPORT
+#endif
 #endif
 
 #define TINYOAL_VERSION_MAJOR 1

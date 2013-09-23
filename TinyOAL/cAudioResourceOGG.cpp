@@ -15,18 +15,7 @@ cAudioResourceOGG::cAudioResourceOGG(const cAudioResourceOGG &copy) : cAudioReso
 // Constructor that takes a data pointer, a length of data, and flags.
 cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
 {
-  if(_flags&TINYOAL_ISFILE) {
-    _callbacks.read_func = file_read_func;
-	  _callbacks.seek_func = file_seek_func;
-	  _callbacks.close_func = file_close_func;
-	  _callbacks.tell_func = file_tell_func;
-  } else {
-	  _callbacks.read_func = dat_read_func;
-	  _callbacks.seek_func = dat_seek_func;
-	  _callbacks.close_func = dat_close_func;
-	  _callbacks.tell_func = dat_tell_func;
-  }
-
+  _setcallbacks(_callbacks,_flags&TINYOAL_ISFILE);
   // Open an initial stream and read in static information from the file
   OggVorbis_FileEx* f=(OggVorbis_FileEx*)OpenStream();
   if(!f) return;
@@ -157,10 +146,9 @@ unsigned __int64 cAudioResourceOGG::Tell(void* stream) // Gets what sample a str
   if(!stream) return false;
   return cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_tell((OggVorbis_File*)stream);
 }
-std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+void cAudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
 {
-  ov_callbacks callbacks;
-  if(flags&TINYOAL_ISFILE) {
+  if(isfile) {
     callbacks.read_func = file_read_func;
 	  callbacks.seek_func = file_seek_func;
 	  callbacks.close_func = file_close_func;
@@ -171,10 +159,19 @@ std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int
 	  callbacks.close_func = dat_close_func;
 	  callbacks.tell_func = dat_tell_func;
   }
+}
+
+std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+{
+  ov_callbacks callbacks;
+  _setcallbacks(callbacks,flags&TINYOAL_ISFILE);
   
   OggVorbis_FileEx r;
-  if(flags&TINYOAL_ISFILE) fseek((FILE*)data,0,SEEK_SET); // If we're a file, reset the pointer
-  else { r.stream.data=r.stream.streampos=(const char*)data; r.stream.datalength=datalength; } // Otherwise, set the data pointers in our Ex structure
+  if(!(flags&TINYOAL_ISFILE))
+  { 
+    r.stream.data=r.stream.streampos=(const char*)data;
+    r.stream.datalength=datalength;
+  }
   cOggFunctions* ogg = cTinyOAL::Instance()->oggFuncs;
 
   if(!ogg || !ogg->fn_ov_open_callbacks || ogg->fn_ov_open_callbacks((flags&TINYOAL_ISFILE)?data:&r.stream,&r.ogg,0,0,callbacks)!=0) {

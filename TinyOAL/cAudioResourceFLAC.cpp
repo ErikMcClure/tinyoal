@@ -29,14 +29,6 @@ cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINY
 }
 cAudioResourceFLAC::~cAudioResourceFLAC()
 {
-  DatStreamEx* h;
-  while(h=_freelist)
-  {
-    _freelist=h->next;
-    cTinyOAL::Instance()->flacFuncs->fn_flac_delete(h->d);
-    delete h;
-  }
-
   _destruct();
 }
 void* cAudioResourceFLAC::OpenStream()
@@ -48,16 +40,16 @@ void* cAudioResourceFLAC::_openstream(bool empty)
   auto fn = cTinyOAL::Instance()->flacFuncs;
   if(!fn) { TINYOAL_LOGM("ERROR","flacFuncs is NULL, cannot open stream"); return 0; }
   DatStreamEx* stream = _getstream();
-  stream->p=this;
+  stream->p=&_internal;
   stream->cursample=0;
   FLAC__StreamDecoderInitStatus err;
+  stream->stream.datalength=_datalength; // This still works, even for a file, because of DatStream's layout.
   if(_flags&TINYOAL_ISFILE) {
     fseek((FILE*)_data,0,SEEK_SET);
     stream->f=(FILE*)_data;
-    err=fn->fn_flac_init_stream(stream->d,&_cbfread,&_cbfseek,&_cbftell,&_cbflength,&_cbfeof,empty?&_cbemptywrite:&_cbwrite,&_cbmeta,&_cberror,stream);
+    err=fn->fn_flac_init_stream(stream->d,&_cbfread,&_cbfseek,&_cbftell,&_cblength,&_cbfeof,empty?&_cbemptywrite:&_cbwrite,&_cbmeta,&_cberror,stream);
   } else {
     stream->stream.data=stream->stream.streampos=(const char*)_data;
-    stream->stream.datalength=_datalength;
     err=fn->fn_flac_init_stream(stream->d,&_cbread,&_cbseek,&_cbtell,&_cblength,&_cbeof,empty?&_cbemptywrite:&_cbwrite,&_cbmeta,&_cberror,stream);
   }
   if(err!=0) { TINYOAL_LOG("WARNING") << "fn_flac_init_stream failed with error code " << err << std::endl; CloseStream(stream); return 0; }
@@ -81,7 +73,9 @@ DatStreamEx* cAudioResourceFLAC::_getstream()
   }
   return r;
 }
-void cAudioResourceFLAC::CloseStream(void* stream)
+
+void cAudioResourceFLAC::CloseStream(void* stream) { _closestream(stream); }
+void cAudioResourceFLAC::_closestream(void* stream)
 {
   DatStreamEx* ex = (DatStreamEx*)stream;
   cTinyOAL::Instance()->flacFuncs->fn_flac_finish(ex->d);
@@ -93,16 +87,16 @@ unsigned long cAudioResourceFLAC::Read(void* stream, char* buffer, unsigned int 
   DatStreamEx* ex = (DatStreamEx*)stream;
   auto fn = cTinyOAL::Instance()->flacFuncs;
 
-  _len=len;
-  _buffer=buffer;
-  _bytesread=0;
-  while(_len>0 && !(eof=fn->fn_flac_get_state(ex->d)>=FLAC__STREAM_DECODER_END_OF_STREAM))
+  _internal._len=len;
+  _internal._buffer=buffer;
+  _internal._bytesread=0;
+  while(_internal._len>0 && !(eof=fn->fn_flac_get_state(ex->d)>=FLAC__STREAM_DECODER_END_OF_STREAM))
     fn->fn_flac_process_single(ex->d);
-  _len=0;
-  if(_cursample!=-1LL && !eof) //_cursample gets set by our write callback. If it's -1, then we didn't need to terminate early.
-    if(!fn->fn_flac_seek(ex->d,_cursample))
-      TINYOAL_LOG("INFO") << "fn_flac_seek failed to seek to " << _cursample << std::endl;
-  return _bytesread;
+  _internal._len=0;
+  if(_internal._cursample!=-1LL && !eof) //_cursample gets set by our write callback. If it's -1, then we didn't need to terminate early.
+    if(!fn->fn_flac_seek(ex->d,_internal._cursample))
+      TINYOAL_LOG("INFO") << "fn_flac_seek failed to seek to " << _internal._cursample << std::endl;
+  return _internal._bytesread;
 }
 bool cAudioResourceFLAC::Reset(void* stream)
 {
@@ -114,7 +108,7 @@ bool cAudioResourceFLAC::Reset(void* stream)
 }
 bool cAudioResourceFLAC::Skip(void* stream, unsigned __int64 samples)
 {
-  _len=0; // Because FLAC was written by morons we have to make sure we don't go writing random shit willy-nilly
+  _internal._len=0; // Because FLAC was written by morons we have to make sure we don't go writing random shit willy-nilly
   if(!samples) return Reset(stream);
   ((DatStreamEx*)stream)->cursample=samples;
   if(cTinyOAL::Instance()->flacFuncs->fn_flac_seek(((DatStreamEx*)stream)->d,samples)!=0)
@@ -173,7 +167,7 @@ BSS_FORCEINLINE void r_flacread<float>(float* target, const FLAC__int32* const b
 }
 FLAC__StreamDecoderWriteStatus cAudioResourceFLAC::_cbwrite(const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)
 {
-  cAudioResourceFLAC* self = *(cAudioResourceFLAC**)client_data;
+  INTERNAL* self = *(INTERNAL**)client_data;
   unsigned int channels = frame->header.channels;
   unsigned int num = frame->header.blocksize;
   if(num==1) num=192;
@@ -201,26 +195,60 @@ FLAC__StreamDecoderWriteStatus cAudioResourceFLAC::_cbwrite(const FLAC__StreamDe
 
   return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
+
+size_t cAudioResourceFLAC::__flac_fseek_offset=0; // Special seek function that properly deals with external FILE* handles we can get in ToWave
+FLAC__StreamDecoderSeekStatus cAudioResourceFLAC::_cbfseekoffset(const FLAC__StreamDecoder *decoder, FLAC__uint64 absolute_byte_offset, void *client_data)
+{
+  if(fseek(((DatStreamEx*)client_data)->f, absolute_byte_offset+__flac_fseek_offset, SEEK_SET) < 0)
+     return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
+   else
+     return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+}
+
 std::pair<void*,unsigned int> cAudioResourceFLAC::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
-  cAudioResourceFLAC res(data,datalength,flags,0);
-  DatStreamEx* ex = (DatStreamEx*)res.OpenStream();
-  if(!ex) return std::pair<void*,unsigned int>((void*)0,0);
-  
+  static const std::pair<void*,unsigned int> NULLRET((void*)0,0);
   auto fn = cTinyOAL::Instance()->flacFuncs;
-  unsigned __int64 total = fn->fn_flac_get_total_samples(ex->d);
-  unsigned __int64 totalbytes = total*res._channels*(res._samplebits>>3);
+  if(!fn) { TINYOAL_LOGM("ERROR","flacFuncs is NULL, cannot open stream"); return NULLRET; }
+  DatStreamEx* stream = _getstream();
+  if(!stream) return NULLRET;
+  INTERNAL internal;
+  stream->p=&internal;
+  stream->cursample=0;
+  FLAC__StreamDecoderInitStatus err;
+  stream->stream.datalength=datalength;
+  if(flags&TINYOAL_ISFILE) {
+    __flac_fseek_offset=ftell((FILE*)data);
+    stream->f=(FILE*)data;
+    err=fn->fn_flac_init_stream(stream->d,&_cbfread,&_cbfseekoffset,&_cbftell,&_cblength,&_cbfeof,&_cbwrite,&_cbmeta,&_cberror,stream);
+  } else {
+    stream->stream.data=stream->stream.streampos=(const char*)data;
+    err=fn->fn_flac_init_stream(stream->d,&_cbread,&_cbseek,&_cbtell,&_cblength,&_cbeof,&_cbwrite,&_cbmeta,&_cberror,stream);
+  }
+  if(err!=0) { TINYOAL_LOG("WARNING") << "fn_flac_init_stream failed with error code " << err << std::endl; _closestream(stream); return NULLRET; }
+  if(!fn->fn_flac_process_until_metadata_end(stream->d))
+    TINYOAL_LOGM("INFO","fn_flac_process_until_metadata_end failed in _openstream()");
+
+  internal._len=0;
+  if(!fn->fn_flac_process_single(stream->d)) // Lets us pick up all this metadata
+    TINYOAL_LOGM("WARNING","Failed to preprocess first frame");
+  unsigned int channels=fn->fn_flac_get_channels(stream->d);
+  unsigned int samplebits=fn->fn_flac_get_bits_per_sample(stream->d);
+  if(samplebits==24) samplebits=32;
+  unsigned int freq=fn->fn_flac_get_sample_rate(stream->d);
+  unsigned __int64 total = fn->fn_flac_get_total_samples(stream->d);
+  unsigned __int64 totalbytes = total*channels*(samplebits>>3);
   unsigned int header = cTinyOAL::Instance()->waveFuncs->WriteHeader(0,0,0,0,0);
   char* buffer = (char*)malloc(totalbytes+header);
-  res.Reset(ex);
-  res._len=totalbytes;
-  res._buffer=buffer+header;
-  res._bytesread=0;
-  fn->fn_flac_process_until_stream_end(ex->d);
-  cTinyOAL::Instance()->waveFuncs->WriteHeader(buffer,res._bytesread+header,res._channels,res._samplebits,res._freq);
+  cTinyOAL::Instance()->flacFuncs->fn_flac_reset(stream->d);
+  internal._len=totalbytes;
+  internal._buffer=buffer+header;
+  internal._bytesread=0;
+  fn->fn_flac_process_until_stream_end(stream->d);
+  cTinyOAL::Instance()->waveFuncs->WriteHeader(buffer,internal._bytesread+header,channels,samplebits,freq);
   
-  res.CloseStream(ex);
-  return std::pair<void*,unsigned int>(buffer,res._bytesread+header);
+  _closestream(stream);
+  return std::pair<void*,unsigned int>(buffer,internal._bytesread+header);
 }
 FLAC__StreamDecoderWriteStatus cAudioResourceFLAC::_cbemptywrite(const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame, const FLAC__int32 * const buffer[], void *client_data)
 { // This function exists so we can yank the metadata out of the stream without actually putting it anywhere.
@@ -292,11 +320,6 @@ FLAC__StreamDecoderTellStatus cAudioResourceFLAC::_cbftell(const FLAC__StreamDec
   
   *absolute_byte_offset = (FLAC__uint64)pos;
   return FLAC__STREAM_DECODER_TELL_STATUS_OK;
-}
-FLAC__StreamDecoderLengthStatus cAudioResourceFLAC::_cbflength(const FLAC__StreamDecoder *decoder, FLAC__uint64 *stream_length, void *client_data)
-{
-  *stream_length = ((DatStreamEx*)client_data)->p->_datalength;
-  return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
 }
 FLAC__bool cAudioResourceFLAC::_cbfeof(const FLAC__StreamDecoder *decoder, void *client_data)
 {

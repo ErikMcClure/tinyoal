@@ -44,6 +44,7 @@ namespace TinyOAL {
     // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
     static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
+    // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
     static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     
 	  enum TINYOAL_FILETYPE : unsigned char
