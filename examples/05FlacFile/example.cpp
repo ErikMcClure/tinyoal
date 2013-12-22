@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates FLAC file support.
  *
- * Copyright ©2013 Erik McClure
+ * Copyright ©2013 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"

@@ -2,7 +2,7 @@
  * -------------------------
  * This example encodes loop information into OGG files
  *
- * Copyright ©2013 Erik McClure
+ * Copyright ©2013 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
