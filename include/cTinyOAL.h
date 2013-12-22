@@ -1,5 +1,5 @@
 /* TinyOAL - An OpenAL-Soft Audio engine
-   Copyright ©2013 Erik McClure
+   Copyright ©2013 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
