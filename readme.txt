@@ -1,6 +1,6 @@
 TinyOAL - An OpenAL Audio engine
 ----------------------------
-Copyright ©2013 Black Sphere Studios
+Copyright ©2014 Black Sphere Studios
 
 TinyOAL is a minimalist audio engine using openAL-soft. However, you can also force it to use the normal openAL dll if you really want to use it. TinyOAL supports volume, pitch, panning, loop points, resource management, maximum instance counts, WAV, OGG, MP3, FLAC, file-based streaming, in-memory streaming, conversion to WAV, and filetype detection. Resources are loaded using cAudioResource, which is reference counted. These resources are then passed into a cAudio instance that plays them. Provided your resource isn't a streaming file, it can be played multiple times simultaneously. cAudioResource can also spawn managed cAudio instances that automatically start playing and destroy themselves once they've stopped playing, which is useful when you simply need to trigger a sound effect and don't need to micro-manage it.
 
