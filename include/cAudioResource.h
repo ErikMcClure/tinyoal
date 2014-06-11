@@ -5,7 +5,7 @@
 #ifndef __C_AUDIO_RESOURCE_H__TOAL__
 #define __C_AUDIO_RESOURCE_H__TOAL__
 
-#include "bss-util/cKhash.h"
+#include "bss-util/cHash.h"
 #include "bss-util/cRefCounter.h"
 #include "bss-util/cStr.h"
 #include "bss-util/bss_alloc_fixed.h"

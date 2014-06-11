@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_COMPILER_H__
@@ -45,6 +45,8 @@
 #define BSS_FORCEINLINE inline
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGNED(sn, n) sn
+#define MSC_FASTCALL BSS_FASTCALL
+#define GCC_FASTCALL 
 
 # elif defined __GNUC__ // GCC
 #define BSS_COMPILER_GCC
@@ -60,6 +62,7 @@
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGN(n) __attribute__((aligned(n)))
 #define BSS_ALIGNED(sn, n) sn BSS_ALIGN(n)
+#define BSS_VARIADIC_TEMPLATES
 #ifndef __int8
 #define __int8 char
 #endif
@@ -73,6 +76,8 @@
 #define __int64 long long
 #endif
 //typedef __int128 __int128; // GCC doesn't have __int64/32/16/8, but it does have __int128 for whatever reason.
+#define MSC_FASTCALL 
+#define GCC_FASTCALL BSS_FASTCALL
 
 #elif defined _MSC_VER // VC++
 #define BSS_COMPILER_MSC
@@ -89,6 +94,16 @@
 #define BSS_ALIGN(n) __declspec(align(n))
 #define BSS_ALIGNED(sn, n) BSS_ALIGN(n) sn
 #define BSS_VERIFY_HEAP _ASSERTE(_CrtCheckMemory());
+#define FUNCPTRCC(m,CC) CC m
+#define MSC_FASTCALL BSS_FASTCALL
+#define GCC_FASTCALL 
+#if (_MANAGED == 1) || (_M_CEE == 1)
+#define MSC_MANAGED
+#endif
+
+#if _MSC_VER >= 1800
+#define BSS_VARIADIC_TEMPLATES
+#endif
 #endif
 
 #if defined(__MINGW32__) || defined(__MINGW64__)
