@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -15,7 +15,7 @@ cAudioResourceOGG::cAudioResourceOGG(const cAudioResourceOGG &copy) : cAudioReso
 // Constructor that takes a data pointer, a length of data, and flags.
 cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
 {
-  _setcallbacks(_callbacks,_flags&TINYOAL_ISFILE);
+  _setcallbacks(_callbacks,(_flags&TINYOAL_ISFILE)!=0);
   // Open an initial stream and read in static information from the file
   OggVorbis_FileEx* f=(OggVorbis_FileEx*)OpenStream();
   if(!f) return;
@@ -31,6 +31,7 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
     _bufsize = (_freq * _channels * 2)>>2; // Sets buffer size to 250 ms, which is freq * 2 (bytes per sample) / 4 (quarter of a second) 
     _bufsize -= (_bufsize % (_channels*2));
     _format = cTinyOAL::GetFormat(_channels,_samplebits,false);
+    _total = ogg->fn_ov_pcm_total(&f->ogg, -1);
 	}
 
 	// If the format never got set, error.
@@ -164,7 +165,7 @@ void cAudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
 std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
   ov_callbacks callbacks;
-  _setcallbacks(callbacks,flags&TINYOAL_ISFILE);
+  _setcallbacks(callbacks,(flags&TINYOAL_ISFILE)!=0);
   
   OggVorbis_FileEx r;
   if(!(flags&TINYOAL_ISFILE))

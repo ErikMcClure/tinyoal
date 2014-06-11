@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point.
  *
- * Copyright ©2013 Black Sphere Studios
+ * Copyright ©2014 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -29,7 +29,7 @@ int main()
   // start playing. We also specify TINYOAL_COPYINTOMEMORY when we load the OGG file, which causes the entire
   // OGG file to be copied into RAM and the file released. You can only have a single instance of a file-based
   // resource playing at any time, so if you need multiple instances, copy it into memory.
-  cAudio music(cAudioResource::Create("../media/idea803.ogg",TINYOAL_COPYINTOMEMORY),TINYOAL_ISPLAYING);
+  cAudio music(cAudioResource::Create("../media/idea803.ogg",(TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY),TINYOAL_ISPLAYING);
 
   // Songs can have loop points in the middle of them. These can be set per-resource, per-instance, or
   // embedded in the OGG metadata. LoopUtility is a utility program included in this SDK to help you do that.

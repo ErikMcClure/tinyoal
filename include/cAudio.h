@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -6,9 +6,9 @@
 #define __C_AUDIO_H__TOAL__
 
 #include "TinyOAL_dlldef.h"
-#include "bss_util/LLBase.h"
-#include "bss_util/cBitField.h"
-#include "bss_util/bss_util.h"
+#include "bss-util/LLBase.h"
+#include "bss-util/cBitField.h"
+#include "bss-util/bss_util.h"
 
 namespace TinyOAL {
   typedef unsigned char TINYOAL_FLAG;

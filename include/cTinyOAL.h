@@ -1,5 +1,5 @@
 /* TinyOAL - An OpenAL-Soft Audio engine
-   Copyright ©2013 Black Sphere Studios
+   Copyright ©2014 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 #define __C_TINY_OAL_H__TOAL__
 
 #include "cAudioResource.h"
-#include "bss_util/cSingleton.h"
-#include "bss_util/cAVLtree.h"
+#include "bss-util/cSingleton.h"
+#include "bss-util/cAVLtree.h"
 
 #define TINYOAL_LOG(level)(TinyOAL::cTinyOAL::Instance()->FormatLog(__FILE__,__LINE__) << (level) << ": ")
 #define TINYOAL_LOGM(level,message) (TINYOAL_LOG(level) << (message) << std::endl)

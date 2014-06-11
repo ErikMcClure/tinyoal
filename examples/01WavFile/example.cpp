@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up a wav file and play a simple sound.
  *
- * Copyright ©2013 Black Sphere Studios
+ * Copyright ©2014 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"

@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -19,7 +19,7 @@ using namespace TinyOAL;
 using namespace bss_util;
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss_util/bss_win32_includes.h"
+#include "bss-util/bss_win32_includes.h"
 #include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.

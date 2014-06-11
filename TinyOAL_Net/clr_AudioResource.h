@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -20,7 +20,7 @@ namespace TinyOAL_net {
     clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL_FLAG flags);
     ~clr_AudioResource();
     !clr_AudioResource();
-    unsigned __int64 ToSample(double seconds); // Converts given time to sample point 
+    unsigned __int64 ToSamples(double seconds); // Converts given time to sample point 
     property unsigned __int64 LoopPoint { unsigned __int64 get(); void set(unsigned __int64 looppoint); }
     property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); void set(CLR_TINYOAL_FLAG flags); }
     property unsigned int Frequency { unsigned int get(); }

@@ -3,7 +3,7 @@
  * This example demonstrates MP3 file support. MP3 is protected by a bunch of patent trolls, so 
  * only use this if you've paid the necessary license fees, or you're a non-profit.
  *
- * Copyright ©2013 Black Sphere Studios
+ * Copyright ©2014 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -26,7 +26,7 @@ int main()
   // loaded here has a corrupt first header, and won't be recognized by TinyOAL as an MP3 file. To get around this,
   // we pass in TINYOAL_FILETYPE_MP3 to force TinyOAL to attempt loading the file as an MP3. mpg123 can then skip the
   // initial corrupt header and play the rest of the MP3.
-  cAudio song(cAudioResource::Create("../media/idea894.mp3",cAudioResource::TINYOAL_FILETYPE_MP3),TINYOAL_ISPLAYING);
+  cAudio song(cAudioResource::Create("../media/idea894.mp3",(TINYOAL_FLAG)cAudioResource::TINYOAL_FILETYPE_MP3),TINYOAL_ISPLAYING);
 
   while(engine.Update())
     SLEEP(1);

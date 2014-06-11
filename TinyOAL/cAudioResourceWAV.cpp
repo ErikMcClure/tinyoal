@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -32,10 +32,10 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
 	
   cTinyOAL::Instance()->waveFuncs->Seek(_sentinel,0);
 
-  _channels=_sentinel.wfEXT.Format.nChannels;
-	_freq=_sentinel.wfEXT.Format.nSamplesPerSec;
-  _samplebits=_sentinel.wfEXT.Format.wBitsPerSample;
-
+  _channels = _sentinel.wfEXT.Format.nChannels;
+	_freq = _sentinel.wfEXT.Format.nSamplesPerSec;
+  _samplebits = _sentinel.wfEXT.Format.wBitsPerSample;
+  
   if(cTinyOAL::Instance()->oalFuncs!=0)
     _format=cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel);
 
@@ -45,6 +45,7 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
   if(_samplebits==24) align=((align/3)<<2);
 	_bufsize -= (_bufsize % _sentinel.wfEXT.Format.nBlockAlign); // IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment
   if(_samplebits==24) _samplebits=32;
+  _total = _sentinel.size/((_samplebits>>3)*_channels);
 
 	if(!_format)
   {

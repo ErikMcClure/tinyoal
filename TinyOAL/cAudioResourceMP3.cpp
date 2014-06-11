@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -31,6 +31,7 @@ cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOA
     _format=cTinyOAL::GetFormat(_channels,_samplebits,false);
     _bufsize = (_freq * _channels * (_samplebits>>3))>>2; // Sets buffer size to 250 ms, which is freq * bytes per sample / 4 (quarter of a second) 
     _bufsize -= (_bufsize % (_channels*(_samplebits>>3)));
+    _total = cTinyOAL::Instance()->mp3Funcs->fn_mpgLength(h); // OpenStream already called mpgScan so this value will be as accurate as we can get.
   }
   CloseStream(h);
 }

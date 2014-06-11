@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -171,7 +171,7 @@ void cAudio::Pause()
 bool cAudio::SkipSeconds(double seconds)
 {
   if(!_source) return false;
-  return Skip(_source->ToSample(seconds));
+  return Skip(_source->ToSamples(seconds));
 }
 bool cAudio::Skip(unsigned __int64 sample)
 {
@@ -202,7 +202,7 @@ unsigned __int64 cAudio::IsWhere() const
 void cAudio::SetLoopPointSeconds(double seconds)
 {
   if(_source!=0)
-    _looptime = _source->ToSample(seconds);
+    _looptime = _source->ToSamples(seconds);
 }
 
 void cAudio::SetLoopPoint(unsigned __int64 samples)

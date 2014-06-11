@@ -2,6 +2,13 @@
 * TinyOAL Changelog *
 *********************
 
+1.0.1
+-----
+- Updated utility library headers
+- cAudioResource::ToSample is now ToSamples, added a ToSeconds counterpart.
+- cAudioResource now has a GetTotalSamples and a GetLength for figuring out the total length of a resource
+- Fixed some settings in the managed project
+
 1.0.0
 ------
 - Completely rewrote the engine's internals; only changes to the external interface will be listed.

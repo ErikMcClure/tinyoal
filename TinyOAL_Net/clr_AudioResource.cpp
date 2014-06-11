@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -27,7 +27,7 @@ clr_AudioResource::clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL
 }
 clr_AudioResource::~clr_AudioResource() { this->!clr_AudioResource(); }
 clr_AudioResource::!clr_AudioResource() { if(_ref) _ref->Drop(); }
-unsigned __int64 clr_AudioResource::ToSample(double seconds) { return !_ref?0:_ref->ToSample(seconds); }
+unsigned __int64 clr_AudioResource::ToSamples(double seconds) { return !_ref?0:_ref->ToSamples(seconds); }
 unsigned __int64 clr_AudioResource::LoopPoint::get() { return !_ref?-1LL:_ref->GetLoopPoint(); }
 void clr_AudioResource::LoopPoint::set(unsigned __int64 loop) { if(_ref) _ref->SetLoopPoint(loop); }
 CLR_TINYOAL_FLAG clr_AudioResource::Flags::get() { return !_ref?0:_ref->GetFlags(); }
