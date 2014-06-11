@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Black Sphere Studios")]
 [assembly: AssemblyProduct("TinyOAL")]
-[assembly: AssemblyCopyright("Copyright ©2013 Black Sphere Studios")]
+[assembly: AssemblyCopyright("Copyright ©2014 Black Sphere Studios")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

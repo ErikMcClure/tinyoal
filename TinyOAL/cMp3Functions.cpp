@@ -1,13 +1,13 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "cMp3Functions.h"
-#include "bss_util/bss_util.h"
+#include "bss-util/bss_util.h"
 #include "cTinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss_util/bss_win32_includes.h"
+#include "bss-util/bss_win32_includes.h"
 
 #ifdef BSS_CPU_x86
 #define MP3_MODULE "libmpg123.dll"

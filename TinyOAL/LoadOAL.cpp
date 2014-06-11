@@ -29,7 +29,7 @@
 void* g_hOpenALDLL = NULL;
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss_util/bss_win32_includes.h"
+#include "bss-util/bss_win32_includes.h"
 
 #ifdef BSS_CPU_x86
 #define DEFAULT_OAL_DLLPATH "soft_oal.dll"

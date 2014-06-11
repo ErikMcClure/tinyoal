@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -25,6 +25,7 @@ cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINY
   if(_samplebits==24) _samplebits=32;
   _bufsize=fn->fn_flac_get_block_size(ex->d)*(_samplebits>>3)*_channels*2; // Allocate enough space for 2 blocks
   _format=cTinyOAL::GetFormat(_channels,_samplebits,false);
+  _total = fn->fn_flac_get_total_samples(ex->d);
   CloseStream(ex);
 }
 cAudioResourceFLAC::~cAudioResourceFLAC()
