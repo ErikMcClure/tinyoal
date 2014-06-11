@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates TinyOAL's .net wrapper, which exposes the entire engine to the .net runtime.
  *
- * Copyright ©2013 Black Sphere Studios
+ * Copyright ©2014 Black Sphere Studios
  */
 
 using System;
@@ -24,7 +24,7 @@ namespace _06Managed
       clr_AudioResource songref = new clr_AudioResource("../media/idea549.wav", clr_Audio.TINYOAL_COPYINTOMEMORY);
       songref.MaxActive=1;
       songref.Play();
-      songref.Play().Time=songref.ToSample(2.0);
+      songref.Play().Time = songref.ToSamples(2.0);
       clr_Audio r = songref.Play();
       //r.SkipSeconds(4.0);
       r.Time = 0;

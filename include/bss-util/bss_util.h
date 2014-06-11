@@ -1,5 +1,5 @@
 /* Black Sphere Studios Utility Library
-   Copyright ©2013 Black Sphere Studios
+   Copyright ©2014 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@
 #include <memory>
 #include <cstring> // for memcmp
 #include <emmintrin.h> // for SSE intrinsics
-//#include <type_traits>
-//#include <utility>
+#include <float.h>
 #ifdef BSS_COMPILER_GCC
 #include <stdlib.h> // For abs(int) on GCC
 #endif
@@ -37,6 +36,7 @@ namespace bss_util {
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const char* path);
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const wchar_t* path);
   BSS_COMPILER_DLLEXPORT extern long BSS_FASTCALL GetTimeZoneMinutes(); //Returns the current time zone difference from UTC in minutes
+  BSS_COMPILER_DLLEXPORT extern int BSS_FASTCALL ToArgV(char** argv, char* cmdline);
 
   //Useful numbers
   const double PI = 3.141592653589793238462643383279;
@@ -54,35 +54,39 @@ namespace bss_util {
   const __int32 FLT_INTEPS = *(__int32*)(&FLT_EPS);
   const __int64 DBL_INTEPS = *(__int64*)(&DBL_EPS);
 
-  // Given the size of a type, lets you return the signed or unsigned integral equivelent
-  template<int bytes> struct TSignPick {};
-  template<> struct TSignPick<1> { typedef char SIGNED; typedef unsigned char UNSIGNED; };
-  template<> struct TSignPick<2> { typedef __int16 SIGNED; typedef unsigned __int16 UNSIGNED; };
-  template<> struct TSignPick<4> { typedef __int32 SIGNED; typedef unsigned __int32 UNSIGNED; };
-  template<> struct TSignPick<8> { typedef __int64 SIGNED; typedef unsigned __int64 UNSIGNED; };
-#ifdef BSS_COMPILER_GCC
-  template<> struct TSignPick<16> { typedef __int128 SIGNED; typedef unsigned __int128 UNSIGNED; };
-#endif 
-
   // Get max size of an arbitrary number of bits, either signed or unsigned (assuming one's or two's complement implementation)
   template<unsigned char BITS>
-  struct ABitLimit
+  struct BitLimit
   {
-    typedef typename TSignPick<((T_CHARGETMSB(BITS)>>3) << (0+((BITS%8)>0))) + (BITS<8)>::SIGNED SIGNED; //rounds the type up if necessary.
-    typedef typename TSignPick<((T_CHARGETMSB(BITS)>>3) << (0+((BITS%8)>0))) + (BITS<8)>::UNSIGNED UNSIGNED;
+    static const unsigned short BYTES = ((T_CHARGETMSB(BITS)>>3) << (0+((BITS%8)>0))) + (BITS<8);
+    typedef typename std::conditional<sizeof(char) == BYTES, char,  //rounds the type up if necessary.
+      typename std::conditional<sizeof(short) == BYTES, short,
+      typename std::conditional<sizeof(int) == BYTES, int,
+      typename std::conditional<sizeof(__int64) == BYTES, __int64,
+#if defined(BSS_COMPILER_GCC) && defined(BSS_64BIT)
+      typename std::conditional<sizeof(__int128) == BYTES, __int128, void>::type>::type>::type>::type>::type SIGNED;
+#else
+      void>::type>::type>::type>::type SIGNED;
+#endif
+    typedef typename std::make_unsigned<SIGNED>::type UNSIGNED;
 
     static const UNSIGNED UNSIGNED_MIN=0;
     static const UNSIGNED UNSIGNED_MAX=(((UNSIGNED)2)<<(BITS-1))-((UNSIGNED)1); //these are all done carefully to ensure no overflow is ever utilized unless appropriate and it respects an arbitrary bit limit. We use 2<<(BITS-1) here to avoid shifting more bits than there are bits in the type.
     static const SIGNED SIGNED_MIN_RAW=(((SIGNED)1)<<(BITS-1)); // When we have normal bit lengths (8,16, etc) this will correctly result in a negative value in two's complement.
 #ifdef BSS_COMPILER_GCC
-    static const SIGNED SIGNED_MIN=-((__int128)SIGNED_MIN_RAW); // GCC is a pendantic fuckwad that treats signed overflow as undefined even if I want it to overflow, so we work around it.
+    static const SIGNED SIGNED_MIN=-((__int128)SIGNED_MIN_RAW); // GCC is a pedantic fuckwad that treats signed overflow as undefined even if I want it to overflow, so we work around it.
 #else
     static const SIGNED SIGNED_MIN=(-SIGNED_MIN_RAW); // However if we have unusual bit lengths (3,19, etc) the raw bit representation will be technically correct in the context of that sized integer, but since we have to round to a real integer size to represent the number, the literal interpretation will be wrong. This yields the proper minimum value.
 #endif
     static const SIGNED SIGNED_MAX=((~SIGNED_MIN_RAW)&UNSIGNED_MAX);
   };
   template<typename T>
-  struct TBitLimit : public ABitLimit<sizeof(T)<<3> {};
+  struct TBitLimit : public BitLimit<sizeof(T)<<3> {};
+
+  //template<bool Cond, typename F, F f1, F f2>
+  //struct choose_func { BSS_FORCEINLINE static F get() { return f1; } };
+  //template<typename F, F f1, F f2>
+  //struct choose_func<false,F,f1,f2> { BSS_FORCEINLINE static F get() { return f2; } };
 
   // template inferred version of T_GETBIT and T_GETBITRANGE
   template<class T>
@@ -153,6 +157,23 @@ namespace bss_util {
     return (i/div) - ((i<0)&((i%div)!=0)); // If i is negative and has a nonzero remainder, subtract one to correct the truncation.
   }
 
+  // Performs a mathematically correct modulo, unlike the modulo operator, which doesn't actually perform modulo, it performs a remainder operation. THANKS GUYS!
+  template<typename T> //T must be integral
+  BSS_FORCEINLINE static T BSS_FASTCALL bssmod(T x, T m)
+  {
+		static_assert(std::is_signed<T>::value && std::is_integral<T>::value,"T must be a signed integral type or this function is pointless");
+    x%=m;
+    return (x+((-(T)(x<0))&m));
+    //return (x+((x<0)*m)); // This is a tad slower
+  }
+
+  // Performs a mathematically correct floating point modulo, unlike fmod, which performs a remainder operation, not a modulo operation.
+  template<typename T> //T must be floating point
+  BSS_FORCEINLINE static T BSS_FASTCALL bssfmod(T x, T m)
+  {
+    static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+    return x - floor(x/m)*m;
+  }
   // Uses rswap to reverse the order of an array
   template<typename T>
   inline static void BSS_FASTCALL bssreverse(T* src, unsigned int length)
@@ -186,15 +207,6 @@ namespace bss_util {
     return str;
   }
 
-  // Performs a mathematically correct modulo, unlike the modulo operator, which doesn't actually perform modulo, it performs a remainder operation. THANKS GUYS!
-  template<typename T> //T must be integral
-  BSS_FORCEINLINE static T BSS_FASTCALL bssmod(T x, T m)
-  {
-		static_assert(std::is_signed<T>::value && std::is_integral<T>::value,"T must be a signed integral type or this function is pointless");
-    x%=m;
-    return (x+((x<0)*m));
-  }
-
   // Trims space from left and right ends of a string
   template<typename T>
   BSS_FORCEINLINE static T* BSS_FASTCALL strtrim(T* str)
@@ -202,7 +214,45 @@ namespace bss_util {
     return strrtrim(strltrim(str));
   }
 
-  // This is a bit-shift method of calculating the next number in the fibonacci sequence by approximating the golden ratio with 0.6171875 (1/2 + 1/8 - 1/128)
+  // Processes an argv command line using the given function and divider
+  template<typename F> //std::function<void(const char* const*,int num)>
+  inline static void ProcessCmdArgs(int argc, const char* const* argv, F && fn, char divider='-')
+  {
+    if(!argc||!argv) return;
+    const char* const* cur=argv;
+    int len=1;
+    for(int i = 1; i<argc; ++i)
+    {
+      if(argv[i][0]==divider)
+      {
+        fn(cur, len);
+        cur=argv+i;
+        len=1;
+      }
+      else
+        ++len;
+    }
+    fn(cur, len);
+  }
+
+  // Flips the endianness of a memory location
+  BSS_FORCEINLINE static void BSS_FASTCALL flipendian(char* target, char n)
+  {
+    char t;
+    char end = (n>>1);
+    --n;
+    for(char i=0; i<end; ++i)
+    {
+      t=target[n-i];
+      target[n-i]=target[i];
+      target[i]=t;
+    }
+  }
+
+  template<typename T>
+  BSS_FORCEINLINE static void BSS_FASTCALL flipendian(T* target) { flipendian((char*)target, sizeof(T)); }
+
+    // This is a bit-shift method of calculating the next number in the fibonacci sequence by approximating the golden ratio with 0.6171875 (1/2 + 1/8 - 1/128)
   template<typename T>
   BSS_FORCEINLINE static T BSS_FASTCALL fbnext(T in)
   {
@@ -238,7 +288,7 @@ namespace bss_util {
   BSS_FORCEINLINE static T BSS_FASTCALL angledistsgn(T a, T b)
   {
     static_assert(std::is_floating_point<T>::value,"T must be float, double, or long double");
-    return fmod(a - b - ((T)PI), (T)PI_DOUBLE) + ((T)PI);
+    return fmod(bssfmod(b - a, (T)PI_DOUBLE) + ((T)PI), (T)PI_DOUBLE) - ((T)PI);
   }
 
   // Smart compilers will use SSE2 instructions to eliminate the massive overhead of int -> float conversions. This uses SSE2 instructions
@@ -261,6 +311,17 @@ namespace bss_util {
   BSS_FORCEINLINE static __int32 fFastTruncate(double f)
   {
     return _mm_cvttsd_si32(_mm_load_sd(&f));
+  }
+
+  BSS_FORCEINLINE static void fSetRounding(bool nearest)
+  {
+    uint a;
+    _controlfp_s(&a, nearest?_RC_NEAR:_RC_CHOP, _MCW_RC);
+  }
+  BSS_FORCEINLINE static void fSetDenormal(bool on)
+  {
+    uint a;
+    _controlfp_s(&a, on?_DN_SAVE:_DN_FLUSH, _MCW_DN);
   }
 
   // Returns true if FPU is in single precision mode and false otherwise (false for both double and extended precision)
@@ -550,6 +611,17 @@ namespace bss_util {
 	  return v + 1;
   }
 
+#ifdef BSS_COMPILER_MSC
+  inline static unsigned int BSS_FASTCALL log2(unsigned int v)
+  {
+    if(!v) return 0;
+    unsigned long r; 
+    _BitScanReverse(&r, v); 
+    return r; 
+  }
+#elif defined(BSS_COMPILER_GCC)
+  inline static unsigned int BSS_FASTCALL log2(unsigned int v) { return !v?0:((sizeof(unsigned int)<<3)-1-__builtin_clz(v)); }
+#else
   // Bit-twiddling hack for base 2 log by Sean Eron Anderson
   inline static unsigned int BSS_FASTCALL log2(unsigned char v)
   {
@@ -591,9 +663,17 @@ namespace bss_util {
 
     return r;
   }
+#endif
   inline static unsigned int BSS_FASTCALL log2(unsigned __int64 v)
   {
-    const unsigned __int64 b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000, 0xFFFFFFFF00000000 };
+#if defined(BSS_COMPILER_MSC) && defined(BSS_64BIT)
+    if(!v) return 0;
+    unsigned long r; 
+    _BitScanReverse64(&r, v); 
+#elif defined(BSS_COMPILER_GCC) && defined(BSS_64BIT)
+    unsigned int r = !v?0:((sizeof(unsigned __int64)<<3)-1-__builtin_clz(v));
+#else
+    const unsigned __int64 b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000, 0xFFFFFFFF00000000};
     const unsigned int S[] = {1, 2, 4, 8, 16, 32};
 
     register unsigned int r = 0; // result of log2(v) will go here
@@ -603,19 +683,26 @@ namespace bss_util {
     if (v & b[2]) { v >>= S[2]; r |= S[2]; } 
     if (v & b[1]) { v >>= S[1]; r |= S[1]; } 
     if (v & b[0]) { v >>= S[0]; r |= S[0]; } 
+#endif
 
     return r;
   }
   inline static unsigned int BSS_FASTCALL log2_p2(unsigned int v) //Works only if v is a power of 2
   {
     assert(v && !(v & (v - 1))); //debug version checks to ensure its a power of two
+#ifdef BSS_COMPILER_MSC
+    unsigned long r;
+    _BitScanReverse(&r,v);
+#elif defined(BSS_COMPILER_GCC)
+    unsigned int r = (sizeof(unsigned int)<<3)-1-__builtin_clz(v);
+#else
     const unsigned int b[] = {0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000};
     register unsigned int r = (v & b[0]) != 0;
     r |= ((v & b[4]) != 0) << 4;
     r |= ((v & b[3]) != 0) << 3;
     r |= ((v & b[2]) != 0) << 2;
     r |= ((v & b[1]) != 0) << 1;
-
+#endif
     return r;
   }
 
@@ -626,6 +713,16 @@ namespace bss_util {
 	  return a+((T)((b-a)*amt));
   }
   
+  // Generates a packed sequence of numbers
+  template<int N, int ...S> 
+  struct bssSeq : bssSeq<N-1, N-1, S...> { };
+
+  template<int ...> struct bssSeq_gen { };
+  template<int ...S>
+  struct bssSeq<0, S...> {
+    typedef bssSeq_gen<S...> type;
+  };
+
   //unique_ptr deleter class that forces the deletion to occur in this DLL
   template<class _Ty>
 	struct bssdll_delete

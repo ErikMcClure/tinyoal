@@ -2,12 +2,11 @@
  * -------------------------
  * This example encodes loop information into OGG files
  *
- * Copyright ©2013 Black Sphere Studios
+ * Copyright ©2014 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
 #include <iostream>
-#include "bss_util\cStr.h"
 #include "cOggFunctions.h"
 #include "taginclude/fileref.h"
 #include "taginclude/vorbisfile.h"
@@ -82,10 +81,11 @@ int main()
     std::cin >> seconds;
   }
 
-  ogg_int64_t samples = song.GetResource()->ToSample(seconds);
-
+  ogg_int64_t samples = song.GetResource()->ToSamples(seconds);
+  char strsamples[128];
+  sprintf_s(strsamples, "%il", samples);
   TagLib::FileRef g(file);
-  ((TagLib::Ogg::XiphComment*)g.tag())->addField("LOOPSTART",cStrF("%il",samples).c_str());
+  ((TagLib::Ogg::XiphComment*)g.tag())->addField("LOOPSTART", strsamples);
   g.save();
   system("PAUSE");
 }

@@ -1,14 +1,14 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2014 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #ifndef __C_AUDIO_RESOURCE_H__TOAL__
 #define __C_AUDIO_RESOURCE_H__TOAL__
 
-#include "bss_util/cKhash.h"
-#include "bss_util/cRefCounter.h"
-#include "bss_util/cStr.h"
-#include "bss_util/bss_alloc_fixed.h"
+#include "bss-util/cKhash.h"
+#include "bss-util/cRefCounter.h"
+#include "bss-util/cStr.h"
+#include "bss-util/bss_alloc_fixed.h"
 #include "cAudio.h"
 #include <stdio.h>
 
@@ -23,15 +23,19 @@ namespace TinyOAL {
     virtual bool Reset(void* stream)=0; // This resets a stream to the beginning 
     virtual bool Skip(void* stream, unsigned __int64 samples)=0; // Sets a stream to given sample 
     virtual unsigned __int64 Tell(void* stream)=0; // Gets what sample a stream is currently on
-    inline unsigned __int64 ToSample(double seconds) { return (unsigned __int64)(seconds*_freq); } // Converts given time to sample point 
+    inline unsigned __int64 ToSamples(double seconds) const { return (unsigned __int64)(seconds*_freq); } // Converts given time to sample point 
+    inline double ToSeconds(unsigned __int64 samples) const { return samples/(double)_freq; } // converts sample point to time
     inline unsigned __int64 GetLoopPoint() const { return _loop; }
     inline void SetLoopPoint(unsigned __int64 loop) { _loop=loop; }
+
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
     inline void SetFlags(TINYOAL_FLAG flags) { _flags=flags; }
     inline unsigned int GetFreq() const { return _freq; }
     inline unsigned int GetChannels() const { return _channels; }
     inline unsigned int GetFormat() const { return _format; }
     inline unsigned int GetBufSize() const { return _bufsize; }
+    inline unsigned __int64 GetTotalSamples() const { return _total; }
+    inline double GetLength() const { return ToSeconds(_total); }
     inline unsigned short GetBitsPerSample() const { return _samplebits; }
     inline cAudio* GetActiveInstances() const { return _activelist; }
     inline cAudio* GetInactiveInstances() const { return _inactivelist; }
@@ -47,7 +51,7 @@ namespace TinyOAL {
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
     static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
     
-	  enum TINYOAL_FILETYPE : unsigned char
+    enum TINYOAL_FILETYPE : TINYOAL_FLAG
 	  {
 		  TINYOAL_FILETYPE_UNKNOWN=0,
 		  TINYOAL_FILETYPE_OGG=32,
@@ -69,7 +73,7 @@ namespace TinyOAL {
     static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
-    static bss_util::cKhash_StringIns<cAudioResource*> _audiohash;
+    static bss_util::cHash<const char*, cAudioResource*, true, true> _audiohash;
     static bss_util::cFixedAlloc<cAudio> _allocaudio;
 
     void* _data;
@@ -81,6 +85,7 @@ namespace TinyOAL {
     unsigned int _bufsize;
     unsigned short _samplebits;
     unsigned __int64 _loop;
+    unsigned __int64 _total; // total number of samples
     cStr _hash;
     cAudio* _activelist;
     cAudio* _activelistend;
