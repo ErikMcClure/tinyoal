@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 // Notice: This header file does not need to be included in binary distributions of the library
@@ -35,7 +35,7 @@ namespace TinyOAL {
     static off_t cb_fileseek(void* stream,off_t off,int loc);
     static off_t cb_fileseekoffset(void* stream,off_t off,int loc);
 
-    static bss_util::cFixedAlloc<DatStream> _datalloc;
+    static bss_util::cBlockAlloc<DatStream> _datalloc;
   };
 }
 #endif

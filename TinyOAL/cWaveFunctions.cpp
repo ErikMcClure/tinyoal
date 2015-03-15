@@ -23,7 +23,6 @@
  */
 
 #include "cWaveFunctions.h"
-#include "bss-util/bss_deprecated.h"
 #include "bss-util/bss_sse.h"
 #include <string.h> //STRNICMP
 #include "openAL/alext.h"

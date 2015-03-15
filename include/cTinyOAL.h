@@ -1,5 +1,5 @@
 /* TinyOAL - An OpenAL-Soft Audio engine
-   Copyright ©2014 Black Sphere Studios
+   Copyright ©2015 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -90,8 +90,8 @@ namespace TinyOAL {
     std::filebuf* _errbuf; //used as backup
     cAudioResource* _activereslist;
     cAudioResource* _reslist;
-    bss_util::cFixedAllocVoid _bufalloc;
-    bss_util::cAVLtree<unsigned int,std::unique_ptr<bss_util::cFixedAllocVoid>> _treealloc;
+    bss_util::cBlockAllocVoid _bufalloc;
+    bss_util::cAVLtree<unsigned int, std::unique_ptr<bss_util::cBlockAllocVoid>> _treealloc;
   };
 
 }

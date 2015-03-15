@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -7,7 +7,7 @@
 #include "openAL/loadoal.h"
 
 using namespace TinyOAL;
-bss_util::cFixedAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
+bss_util::cBlockAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
 
 cAudioResourceWAV::cAudioResourceWAV(const cAudioResourceWAV& copy) : cAudioResource(copy) {}
 cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)

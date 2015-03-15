@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -296,7 +296,7 @@ char* BSS_FASTCALL cTinyOAL::_allocdecoder(unsigned int sz)
   if(!p)
   {
     TINYOAL_LOG("INFO") << "Created allocation pool of size " << sz << std::endl;
-    _treealloc.Insert(sz,std::unique_ptr<bss_util::cFixedAllocVoid>(new cFixedAllocVoid(sz,3)));
+    _treealloc.Insert(sz,std::unique_ptr<bss_util::cBlockAllocVoid>(new cBlockAllocVoid(sz,3)));
     p = _treealloc.GetRef(sz);
   }
   return !p?0:(char*)(*p)->alloc(1);

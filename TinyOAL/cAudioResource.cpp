@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -10,7 +10,7 @@
 
 using namespace TinyOAL;
 bss_util::cHash<const char*, cAudioResource*, true, true> cAudioResource::_audiohash;
-bss_util::cFixedAlloc<cAudio> cAudioResource::_allocaudio(5);
+bss_util::cBlockAlloc<cAudio> cAudioResource::_allocaudio(5);
 
 cAudioResource::cAudioResource(const cAudioResource& copy) { assert(false); }
 cAudioResource::cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned __int64 loop) : _data(data), _datalength(len),

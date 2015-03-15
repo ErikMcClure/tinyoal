@@ -2,6 +2,11 @@
 * TinyOAL Changelog *
 *********************
 
+1.0.2
+-----
+- Updated bss-util headers
+- Re-organized intermediate output folders
+
 1.0.1
 -----
 - Updated utility library headers

@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __CSTR_H__BSS__
@@ -9,7 +9,6 @@
 #include <stdarg.h>
 #include <vector>
 #include <assert.h>
-#include "bss_deprecated.h"
 #include "bss_util_c.h"
 #ifdef BSS_COMPILER_GCC
 #include <stdio.h>
@@ -110,6 +109,7 @@ public:
   template<class U> inline cStrT(const cStrT<T,U>& copy) : BASE(copy) {}
   template<class U> inline cStrT(const cStrT<OTHER_C,U>& copy) : BASE() { _convstr(copy.c_str()); }
   inline cStrT(const CHAR* string) : BASE(!string?CSTR_CT<T>::STREMPTY():string) { }
+  inline cStrT(const CHAR* string, size_t count) : BASE(!string?CSTR_CT<T>::STREMPTY():string, count) { }
   inline cStrT(const OTHER_C* text) : BASE() { if(text!=0) _convstr(text); }
   cStrT(unsigned short index, const CHAR* text, const CHAR delim) : BASE() //Creates a new string from the specified chunk
   {
@@ -241,6 +241,7 @@ public:
   }
 
 private:
+  void operator[](std::allocator<char>&) BSS_DELETEFUNC
 #ifdef BSS_COMPILER_MSC
   BSS_FORCEINLINE CHAR* _internal_ptr() { return _Myptr(); }
   BSS_FORCEINLINE const CHAR* _internal_ptr() const { return _Myptr(); }
@@ -263,8 +264,6 @@ private:
 
   inline static T* BSS_FASTCALL _ltrim(T* str) { for(;*str>0 && *str<33;++str); return str; }
   inline static T* BSS_FASTCALL _rtrim(T* str, size_t size) { T* inter=str+size; for(;inter>str && *inter<33;--inter); *(++inter)=0; return str; }
-  //The following line of code is in such a twisted state because it must overload the operator[] inherent in the basic_string class and render it totally unusable so as to force the compiler to disregard it as a possibility, otherwise it gets confused with the CHAR* type conversion
-  void operator[](std::allocator<CHAR>& f) { }//return BASE::operator [](_Off); }
 
 };
 #pragma warning(pop)

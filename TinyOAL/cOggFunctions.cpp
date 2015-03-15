@@ -1,11 +1,10 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "cOggFunctions.h"
 #include "bss-util/bss_util.h"
 #include "bss-util/cStr.h"
-#include "bss-util/bss_deprecated.h"
 #include "cTinyOAL.h"
 #include <ostream>
 
