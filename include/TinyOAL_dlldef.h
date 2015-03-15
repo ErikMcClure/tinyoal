@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -19,6 +19,6 @@
 
 #define TINYOAL_VERSION_MAJOR 1
 #define TINYOAL_VERSION_MINOR 0
-#define TINYOAL_VERSION_REVISION 1
+#define TINYOAL_VERSION_REVISION 2
 
 #endif

@@ -1,5 +1,5 @@
 /* Black Sphere Studios Utility Library
-   Copyright ©2014 Black Sphere Studios
+   Copyright ©2015 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ namespace bss_util {
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const char* path);
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const wchar_t* path);
   BSS_COMPILER_DLLEXPORT extern long BSS_FASTCALL GetTimeZoneMinutes(); //Returns the current time zone difference from UTC in minutes
-  BSS_COMPILER_DLLEXPORT extern int BSS_FASTCALL ToArgV(char** argv, char* cmdline);
 
   //Useful numbers
   const double PI = 3.141592653589793238462643383279;
@@ -103,7 +102,7 @@ namespace bss_util {
 	{
     static_assert(std::is_integral<T>::value,"T must be integral");
 		if(!string) return 0;
-		unsigned int curpos = (unsigned int)-1; //this will wrap around to 0 when we increment
+    size_t curpos = (size_t)-1; //this will wrap around to 0 when we increment
 
 		while(string[++curpos] != '\0') //replace until the null-terminator
 			if(string[curpos] == find)
@@ -119,21 +118,21 @@ namespace bss_util {
 
   // Counts number of occurences of character c in string, up to the null terminator
   template<typename T>
-  inline static unsigned int BSS_FASTCALL strccount(const T* string, T c)
+  inline static size_t BSS_FASTCALL strccount(const T* string, T c)
   {
     static_assert(std::is_integral<T>::value,"T must be integral");
-    unsigned int ret=0;
+    size_t ret=0;
     while(*string) { if(*string==c) ++ret; ++string; }
     return ret;
   }
   
   // Counts number of occurences of character c in string, up to length characters
   template<typename T>
-  inline static unsigned int BSS_FASTCALL strccount(const T* string, T c, unsigned int length)
+  inline static size_t BSS_FASTCALL strccount(const T* string, T c, size_t length)
   {
     static_assert(std::is_integral<T>::value,"T must be integral");
-    unsigned int ret=0;
-    for(unsigned int i = 0; (i < length) && ((*string)!=0); ++i)
+    size_t ret=0;
+    for(size_t i = 0; (i < length) && ((*string)!=0); ++i)
       if(string[i]==c) ++ret;
     return ret;
   }
@@ -177,13 +176,13 @@ namespace bss_util {
   }
   // Uses rswap to reverse the order of an array
   template<typename T>
-  inline static void BSS_FASTCALL bssreverse(T* src, unsigned int length)
+  inline static void BSS_FASTCALL bssreverse(T* src, size_t length)
   {
     assert(length>0);
-    for(unsigned int i = 0,j=(--length); i < j; j=length-(++i)) // Equivelent to: for(unsigned int i = 0,j=length-1; i < j; j=length-1-(++i))
+    for(size_t i = 0, j=(--length); i < j; j=length-(++i)) // Equivelent to: for(size_t i = 0,j=length-1; i < j; j=length-1-(++i))
       rswap(src[i],src[j]);
   }
-  template<typename T, unsigned int size>
+  template<typename T, size_t size>
   BSS_FORCEINLINE static void BSS_FASTCALL bssreverse(T (&p)[size]) { bssreverse(p,size); }
 
   /* Trims space from left end of string by returning a different pointer. It is possible to use const char or const wchar_t as a type
@@ -215,7 +214,32 @@ namespace bss_util {
     return strrtrim(strltrim(str));
   }
 
-  // Processes an argv command line using the given function and divider
+  template<typename T>
+  inline static int ToArgV(T** argv, T* cmdline)
+  {
+    int count=0;
+    while(*cmdline)
+    {
+      if(!isspace(*cmdline))
+      {
+        if(*cmdline == '"') {
+          if(argv!=0) argv[count++]=cmdline+1;
+          else ++count;
+          while(*++cmdline !=0 && cmdline[1] !=0 && (*cmdline != '"' || !isspace(cmdline[1])));
+        } else {
+          if(argv!=0) argv[count++]=cmdline;
+          else ++count;
+          while(*++cmdline !=0 && !isspace(*cmdline));
+        }
+        if(!*cmdline) break;
+        if(argv!=0) *cmdline=0;
+      }
+      ++cmdline;
+    }
+    return count;
+  }
+
+  // Processes an argv command line using the given function and divider. Use ToArgV if you only have a string (for windows command lines)
   template<typename F> //std::function<void(const char* const*,int num)>
   inline static void ProcessCmdArgs(int argc, const char* const* argv, F && fn, char divider='-')
   {
@@ -255,11 +279,11 @@ namespace bss_util {
 
     // This is a bit-shift method of calculating the next number in the fibonacci sequence by approximating the golden ratio with 0.6171875 (1/2 + 1/8 - 1/128)
   template<typename T>
-  BSS_FORCEINLINE static T BSS_FASTCALL fbnext(T in)
+  BSS_FORCEINLINE static T BSS_FASTCALL fbnext(T x)
   {
     static_assert(std::is_integral<T>::value,"T must be integral");
-    return in + 1 + (in>>1) + (in>>3) - (in>>7);
-    //return in + 1 + (in>>1) + (in>>3) - (in>>7) + (in>>10) - (in>>13) - (in>>17) - (in>>21) + (in>>24); // 0.61803394 (but kind of pointless)
+    return T_FBNEXT(x);
+    //return x + 1 + (x>>1) + (x>>3) - (x>>7) + (x>>10) - (x>>13) - (x>>17) - (x>>21) + (x>>24); // 0.61803394 (but kind of pointless)
   }
 
   // Gets the sign of any number (0 is assumed to be positive)
@@ -477,13 +501,13 @@ namespace bss_util {
   }
 
   // bit-twiddling based method of calculating an integral square root from Wilco Dijkstra - http://www.finesse.demon.co.uk/steven/sqrt.html
-  template<typename T, unsigned int bits> // WARNING: bits should be HALF the actual number of bits in (T)!
+  template<typename T, size_t bits> // WARNING: bits should be HALF the actual number of bits in (T)!
   inline static T BSS_FASTCALL IntFastSqrt(T n)
   {
     static_assert(std::is_integral<T>::value,"T must be integral");
     T root = 0, t;
 
-    for(unsigned int i = bits; i>0;)
+    for(size_t i = bits; i>0;)
     {
       --i;
       t = ((root + (((T)1) << (i))) << (i)); 
@@ -523,10 +547,21 @@ namespace bss_util {
   // Average aggregation without requiring a total variable that can overflow. Nextnum should be the current avg count incremented by 1.
   template<typename T, typename ST_> // T must be float or double, ST_ must be integral
   BSS_FORCEINLINE static T BSS_FASTCALL bssavg(T curavg, T nvalue, ST_ nextnum)
-  {
+  { // USAGE: avg = bssavg<double, int>(avg, value, ++total);
     static_assert(std::is_integral<ST_>::value,"ST_ must be integral");
     static_assert(std::is_floating_point<T>::value,"T must be float, double, or long double");
-    return (curavg*(((T)(nextnum-1))/((T)nextnum))) + nvalue/((T)nextnum);
+    return curavg + ((nvalue-curavg)/(T)nextnum);
+  }
+
+  // Sum of squares of differences aggregation using an algorithm by Knuth. Nextnum should be the current avg count incremented by 1.
+  template<typename T, typename ST_> // T must be float or double, ST_ must be integral
+  BSS_FORCEINLINE static void BSS_FASTCALL bssvariance(T& curvariance, T& avg, T nvalue, ST_ nextnum)
+  { // USAGE: bssvariance<double, int>(variance, avg, value, ++total); Then use sqrt(variance/(n-1)) to get the actual standard deviation
+    static_assert(std::is_integral<ST_>::value, "ST_ must be integral");
+    static_assert(std::is_floating_point<T>::value, "T must be float, double, or long double");
+    T delta = nvalue - avg;
+    avg += delta/(T)nvalue;
+    curvariance += delta*(nvalue - avg);
   }
 
   // Searches an arbitrary series of bytes for another arbitrary series of bytes
@@ -728,15 +763,13 @@ namespace bss_util {
 	  return a+((T)((b-a)*amt));
   }
   
-  // Generates a packed sequence of numbers
-  template<int N, int ...S> 
-  struct bssSeq : bssSeq<N-1, N-1, S...> { };
+#ifdef BSS_VARIADIC_TEMPLATES
 
-  template<int ...> struct bssSeq_gen { };
-  template<int ...S>
-  struct bssSeq<0, S...> {
-    typedef bssSeq_gen<S...> type;
-  };
+  // Generates a packed sequence of numbers
+  template<int ...> struct bssSeq {};
+  template<int N, int ...S> struct bssSeq_gens : bssSeq_gens<N-1, N-1, S...> {};
+  template<int ...S> struct bssSeq_gens<0, S...>{ typedef bssSeq<S...> type; };
+#endif
 
   //unique_ptr deleter class that forces the deletion to occur in this DLL
   template<class _Ty>

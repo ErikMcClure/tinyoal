@@ -21,7 +21,8 @@ clean:
 	-@ rm examples/bin/libtinyoal.so
 	
 dist: all distclean
-	tar -czf tinyoal-posix.tar.gz *
+	-@ rm ../tinyoal-posix.tar.gz
+	tar -czf ../tinyoal-posix.tar.gz "../$$(basename "$$(pwd)")"
 
 distclean:
 	make distclean -f tinyoal.mk

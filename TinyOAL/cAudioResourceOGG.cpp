@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -8,7 +8,7 @@
 #include "openAL/loadoal.h"
 
 using namespace TinyOAL;
-bss_util::cFixedAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
+bss_util::cBlockAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
 
 cAudioResourceOGG::cAudioResourceOGG(const cAudioResourceOGG &copy) : cAudioResource(copy) {}
 

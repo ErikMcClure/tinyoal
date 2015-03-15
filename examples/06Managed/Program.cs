@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates TinyOAL's .net wrapper, which exposes the entire engine to the .net runtime.
  *
- * Copyright ©2014 Black Sphere Studios
+ * Copyright ©2015 Black Sphere Studios
  */
 
 using System;

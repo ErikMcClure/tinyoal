@@ -3,12 +3,13 @@
  * This enables the wave writer backend and runs a series of tests to ensure TinyOAL
  * is working as intended.
  *
- * Copyright ©2014 Black Sphere Studios
+ * Copyright ©2015 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #ifdef BSS_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)

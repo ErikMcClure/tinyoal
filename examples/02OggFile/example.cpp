@@ -2,11 +2,12 @@
  * -------------------------
  * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point.
  *
- * Copyright ©2014 Black Sphere Studios
+ * Copyright ©2015 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
 #include <iostream>
+#include <time.h>
 
 #ifdef BSS_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)

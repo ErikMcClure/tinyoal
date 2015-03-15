@@ -1,4 +1,4 @@
-// Copyright ©2013 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __C_AVLTREE_H__BSS__
@@ -71,9 +71,11 @@ namespace bss_util {
   };
 
   // AVL Tree implementation
-  template<class Key, class Data, char (*CFunc)(const Key&, const Key&)=CompT<Key>, typename Alloc=Allocator<typename _AVL_TREE_DATAFIELD<Key,Data>::AVLNode>>
+  template<class Key, class Data, char(*CFunc)(const Key&, const Key&) = CompT<Key>, typename Alloc = StandardAllocPolicy<typename _AVL_TREE_DATAFIELD<Key, Data>::AVLNode>>
 	class BSS_COMPILER_DLLEXPORT cAVLtree : protected cAllocTracker<Alloc>, public _AVL_TREE_DATAFIELD<Key,Data>
   {
+    cAVLtree(const cAVLtree& copy) BSS_DELETEFUNC
+    cAVLtree& operator=(const cAVLtree& copy) BSS_DELETEFUNCOP
   protected:
     typedef _AVL_TREE_DATAFIELD<Key,Data> BASE;
     typedef typename BASE::KeyData KeyData;
@@ -82,11 +84,11 @@ namespace bss_util {
     typedef typename BASE::DATAGET DATAGET;
     
   public:
-    inline cAVLtree(const cAVLtree& copy) : cAllocTracker<Alloc>(copy), _root(0) {}
     inline cAVLtree(cAVLtree&& mov) : cAllocTracker<Alloc>(std::move(mov)), _root(mov._root) { mov._root=0; }
     inline cAVLtree(Alloc* allocator=0) : cAllocTracker<Alloc>(allocator), _root(0) {}
     inline ~cAVLtree() { Clear(); }
-    inline void Clear() { _clear(_root); _root=0; } // We have to use  to satisfy GCC's lookups
+    inline void Clear() { _clear(_root); _root=0; }
+    inline AVLNode* GetRoot() { return _root; }
     template<typename F> // std::function<void(std::pair<key,data>)> (we infer _traverse's template argument here, otherwise GCC explodes)
     BSS_FORCEINLINE void Traverse(F lambda) { _traverse(lambda, _root); }
     BSS_FORCEINLINE bool BSS_FASTCALL Insert(Key key, const DATAGET& data)

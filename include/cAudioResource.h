@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -8,7 +8,7 @@
 #include "bss-util/cHash.h"
 #include "bss-util/cRefCounter.h"
 #include "bss-util/cStr.h"
-#include "bss-util/bss_alloc_fixed.h"
+#include "bss-util/bss_alloc_block.h"
 #include "cAudio.h"
 #include <stdio.h>
 
@@ -74,7 +74,7 @@ namespace TinyOAL {
     static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss_util::cHash<const char*, cAudioResource*, true, true> _audiohash;
-    static bss_util::cFixedAlloc<cAudio> _allocaudio;
+    static bss_util::cBlockAlloc<cAudio> _allocaudio;
 
     void* _data;
     size_t _datalength;
