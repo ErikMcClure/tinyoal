@@ -11,6 +11,8 @@ TinyOAL_Net/x64/
 TinyOAL_Net/Win32/
 examples/00Testbed/x64/
 examples/00Testbed/Win32/
+examples/00Testbed/out.wav
+examples/00Testbed/TinyOAL.txt
 examples/01WavFile/x64/
 examples/01WavFile/Win32/
 examples/02OggFile/x64/
@@ -28,3 +30,4 @@ examples/LoopUtility/Win32/
 examples/bin/
 examples/media/
 !examples/media/license.txt
+examples/loopexample.zip
