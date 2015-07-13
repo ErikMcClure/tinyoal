@@ -35,7 +35,8 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
   _channels = _sentinel.wfEXT.Format.nChannels;
 	_freq = _sentinel.wfEXT.Format.nSamplesPerSec;
   _samplebits = _sentinel.wfEXT.Format.wBitsPerSample;
-  
+  _total = 0;
+
   if(cTinyOAL::Instance()->oalFuncs!=0)
     _format=cTinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel);
 
@@ -43,9 +44,11 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
   _bufsize = (_samplebits==24)?(_sentinel.wfEXT.Format.nAvgBytesPerSec/3):(_sentinel.wfEXT.Format.nAvgBytesPerSec >> 2);
   unsigned short align=_sentinel.wfEXT.Format.nBlockAlign;
   if(_samplebits==24) align=((align/3)<<2);
-	_bufsize -= (_bufsize % _sentinel.wfEXT.Format.nBlockAlign); // IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment
+  if(_sentinel.wfEXT.Format.nBlockAlign != 0) // Prevent a divide by zero
+    _bufsize -= (_bufsize % _sentinel.wfEXT.Format.nBlockAlign); // IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment
   if(_samplebits==24) _samplebits=32;
-  _total = _sentinel.size/((_samplebits>>3)*_channels);
+  if(_samplebits != 0 && _channels != 0) // Prevent a divide by zero
+    _total = (_sentinel.size<<3)/(_samplebits*_channels); // This is a re-arranged version of size/(bits>>3)*_channels to prevent divide-by-zero errors
 
 	if(!_format)
   {
@@ -97,5 +100,6 @@ unsigned __int64 cAudioResourceWAV::Tell(void* stream)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
-  return cTinyOAL::Instance()->waveFuncs->Tell(*r)/((bits>>3)*_channels);
+  unsigned __int64 pos = (bits>>3)*_channels;
+  return !pos?0:cTinyOAL::Instance()->waveFuncs->Tell(*r)/pos;
 }

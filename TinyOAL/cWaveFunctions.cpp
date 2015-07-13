@@ -229,8 +229,8 @@ unsigned int cWaveFunctions::WriteHeader(char* buffer,unsigned int length,unsign
   format.wFormatTag=(bits==32)?WAVE_FORMAT_IEEE_FLOAT:WAVE_FORMAT_PCM;
   format.nChannels=channels;
   format.nSamplesPerSec=freq;
-  format.nAvgBytesPerSec=freq*(bits>>3)*channels;
-  format.nBlockAlign=(bits>>3)*channels;
+  format.nAvgBytesPerSec=(freq*bits*channels)>>3;
+  format.nBlockAlign=(bits*channels)>>3;
   format.wBitsPerSample=bits;
 
   buffer+=fmt.size;
