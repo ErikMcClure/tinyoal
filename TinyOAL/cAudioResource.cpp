@@ -9,7 +9,7 @@
 #include "cTinyOAL.h"
 
 using namespace TinyOAL;
-bss_util::cHash<const char*, cAudioResource*, true, true> cAudioResource::_audiohash;
+bss_util::cHash<const char*, cAudioResource*, true> cAudioResource::_audiohash;
 bss_util::cBlockAlloc<cAudio> cAudioResource::_allocaudio(5);
 
 cAudioResource::cAudioResource(const cAudioResource& copy) { assert(false); }

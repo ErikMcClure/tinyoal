@@ -73,7 +73,7 @@ namespace TinyOAL {
     static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
-    static bss_util::cHash<const char*, cAudioResource*, true, true> _audiohash;
+    static bss_util::cHash<const char*, cAudioResource*, true> _audiohash;
     static bss_util::cBlockAlloc<cAudio> _allocaudio;
 
     void* _data;
