@@ -115,6 +115,8 @@ bool cAudioResourceFLAC::Skip(void* stream, unsigned __int64 samples)
   if(cTinyOAL::Instance()->flacFuncs->fn_flac_seek(((DatStreamEx*)stream)->d,samples)!=0)
     return true;
   TINYOAL_LOG("WARNING") << "fn_flac_seek failed to seek to " << samples << std::endl;
+  if(cTinyOAL::Instance()->flacFuncs->fn_flac_get_state(((DatStreamEx*)stream)->d) == FLAC__STREAM_DECODER_SEEK_ERROR)
+    Reset(stream); // FLAC requires us to reset or flush the stream if seeking fails with FLAC__STREAM_DECODER_SEEK_ERROR
   return false;
 }
 unsigned __int64 cAudioResourceFLAC::Tell(void* stream)
