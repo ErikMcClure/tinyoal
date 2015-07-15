@@ -6,6 +6,7 @@
 -----
 - Updated bss-util headers
 - Fixed divide-by-zero errors when loading incompatible wav files
+- Changed OGG layer to look for libvorbisfile and libvorbisfile64 and added 64-bit DLLs for ogg, vorbis, and vorbisfile
 
 1.0.2
 -----
