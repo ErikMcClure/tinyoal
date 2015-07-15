@@ -11,10 +11,13 @@
 #ifdef BSS_PLATFORM_WIN32
 #include "bss-util/bss_win32_includes.h"
 
+#define OGG_MODULE_ALT "vorbisfile.dll"
+#define OGG_MODULE32 "libvorbisfile.dll"
+
 #ifdef BSS_CPU_x86
-#define OGG_MODULE "vorbisfile.dll"
+#define OGG_MODULE OGG_MODULE32
 #elif defined(BSS_CPU_x86_64)
-#define OGG_MODULE "vorbisfile64.dll"
+#define OGG_MODULE "libvorbisfile64.dll"
 #endif
 
 #define LOADDYNLIB(s) LoadLibraryA(s)
@@ -36,7 +39,9 @@ cOggFunctions::cOggFunctions(const char* force)
     force=OGG_MODULE;
   memset(this,0,sizeof(cOggFunctions));
   _oggDLL = LOADDYNLIB(force);
-  
+  if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE32);
+  if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
+
 	if (_oggDLL)
 	{
 		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, "ov_clear");
