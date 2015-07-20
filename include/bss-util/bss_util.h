@@ -24,6 +24,7 @@
 #include <cstring> // for memcmp
 #include <emmintrin.h> // for SSE intrinsics
 #include <float.h>
+#include <string>
 #ifdef BSS_COMPILER_GCC
 #include <stdlib.h> // For abs(int) on GCC
 #include <fpu_control.h> // for CPU control on GCC
@@ -37,6 +38,7 @@ namespace bss_util {
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const char* path);
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const wchar_t* path);
   BSS_COMPILER_DLLEXPORT extern long BSS_FASTCALL GetTimeZoneMinutes(); //Returns the current time zone difference from UTC in minutes
+  BSS_COMPILER_DLLEXPORT extern void BSS_FASTCALL OutputUnicode(std::string& s, int c);
 
   //Useful numbers
   const double PI = 3.141592653589793238462643383279;
@@ -415,7 +417,7 @@ namespace bss_util {
   // Highly optimized traditional tolerance based approach to comparing floating point numbers, found here: http://www.randydillon.org/Papers/2007/everfast.htm
   inline static bool BSS_FASTCALL fcompare(float af, float bf, __int32 maxDiff=1)
   { 
-    assert(af!=0.0f && bf!=0.0f); // Use fsmall for this
+    //assert(af!=0.0f && bf!=0.0f); // Use fsmall for this
     __int32 ai = *reinterpret_cast<__int32*>(&af);
     __int32 bi = *reinterpret_cast<__int32*>(&bf);
     __int32 test = (-(__int32)(((unsigned __int32)(ai^bi))>>31));
@@ -425,9 +427,10 @@ namespace bss_util {
     __int32 v2 = maxDiff - diff;
     return (v1|v2) >= 0;
   }
+
   inline static bool BSS_FASTCALL fcompare(double af, double bf, __int64 maxDiff=1)
   { 
-    assert(af!=0.0 && bf!=0.0); // Use fsmall for this
+    //assert(af!=0.0 && bf!=0.0); // Use fsmall for this
     __int64 ai = *reinterpret_cast<__int64*>(&af);
     __int64 bi = *reinterpret_cast<__int64*>(&bf);
     __int64 test = (-(__int64)(((unsigned __int64)(ai^bi))>>63));
@@ -452,6 +455,20 @@ namespace bss_util {
     unsigned __int64 i=((*((unsigned __int64*)&f))&0x7FFFFFFFFFFFFFFF); //0x7FFFFFFFFFFFFFFF strips off the sign bit (which is always the highest bit)
     unsigned __int64 e=((*((unsigned __int64*)&eps)));
     return i<=e; 
+  }
+
+  inline static bool BSS_FASTCALL fcomparesmall(float af, float bf, __int32 maxDiff=1, float eps = FLT_EPS)
+  {
+    if(af==0.0) return fsmall(bf, eps);
+    if(bf==0.0) return fsmall(af, eps);
+    return fcompare(af, bf, maxDiff);
+  }
+
+  inline static bool BSS_FASTCALL fcomparesmall(double af, double bf, __int64 maxDiff=1, double eps = DBL_EPS)
+  {
+    if(af==0.0) return fsmall(bf, eps);
+    if(bf==0.0) return fsmall(af, eps);
+    return fcompare(af, bf, maxDiff);
   }
 
   // This is a super fast length approximation for 2D coordinates; See http://www.azillionmonkeys.com/qed/sqroot.html for details (Algorithm by Paul Hsieh)
