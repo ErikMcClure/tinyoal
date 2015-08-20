@@ -38,7 +38,6 @@ namespace bss_util {
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const char* path);
   BSS_COMPILER_DLLEXPORT extern unsigned long long BSS_FASTCALL bssFileSize(const wchar_t* path);
   BSS_COMPILER_DLLEXPORT extern long BSS_FASTCALL GetTimeZoneMinutes(); //Returns the current time zone difference from UTC in minutes
-  BSS_COMPILER_DLLEXPORT extern void BSS_FASTCALL OutputUnicode(std::string& s, int c);
 
   //Useful numbers
   const double PI = 3.141592653589793238462643383279;
@@ -262,6 +261,16 @@ namespace bss_util {
     fn(cur, len);
   }
 
+  // Converts 32-bit unicode int to a series of utf8 encoded characters, appending them to the string
+  inline static void BSS_FASTCALL OutputUnicode(std::string& s, int c)
+  {
+    if(c < 0x0080) s += c;
+    else if(c < 0x0800) { s += (0xC0 | c >> (6 * 1)); s += (0x80 | (c & 0x3F)); }
+    else if(c < 0x10000) { s += (0xE0 | c >> (6 * 2)); s += (0x80 | (c & 0x0FC0) >> (6 * 1)); s += (0x80 | (c & 0x3F)); }
+    else if(c < 0x10FFFF) { s += (0xF0 | c >> (6 * 3)); s += (0x80 | (c & 0x03F000) >> (6 * 2)); s += (0x80 | (c & 0x0FC0) >> (6 * 1)); s += (0x80 | (c & 0x3F)); }
+    // Otherwise this is an illegal codepoint so just ignore it
+  }
+
   // Flips the endianness of a memory location
   BSS_FORCEINLINE static void BSS_FASTCALL flipendian(char* target, char n)
   {
@@ -276,8 +285,14 @@ namespace bss_util {
     }
   }
 
+  template<int I>
+  BSS_FORCEINLINE static void BSS_FASTCALL flipendian(char* target) { flipendian((char*)target, I); }
+  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<0>(char* target) { }
+  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<1>(char* target) { }
+  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<2>(char* target) { char t = target[0]; target[0] = target[1]; target[1] = t; }
+
   template<typename T>
-  BSS_FORCEINLINE static void BSS_FASTCALL flipendian(T* target) { flipendian((char*)target, sizeof(T)); }
+  BSS_FORCEINLINE static void BSS_FASTCALL flipendian(T* target) { flipendian<sizeof(T)>((char*)target); }
 
     // This is a bit-shift method of calculating the next number in the fibonacci sequence by approximating the golden ratio with 0.6171875 (1/2 + 1/8 - 1/128)
   template<typename T>
