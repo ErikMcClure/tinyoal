@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -9,8 +9,7 @@
 using namespace TinyOAL;
 bss_util::cBlockAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
 
-cAudioResourceWAV::cAudioResourceWAV(const cAudioResourceWAV& copy) : cAudioResource(copy) {}
-cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
+cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)
 {
   wav_callbacks callbacks;
   if(_flags&TINYOAL_ISFILE) {
@@ -102,4 +101,23 @@ unsigned __int64 cAudioResourceWAV::Tell(void* stream)
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
   unsigned __int64 pos = (bits>>3)*_channels;
   return !pos?0:cTinyOAL::Instance()->waveFuncs->Tell(*r)/pos;
+}
+
+size_t cAudioResourceWAV::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+{
+  if(p) new(p) cAudioResourceWAV(data, datalength, flags, loop);
+  return sizeof(cAudioResourceWAV);
+}
+bool cAudioResourceWAV::ScanHeader(const char* fileheader)
+{
+  return !strncmp(fileheader, "RIFF", 4) || !strncmp(fileheader, "RIFX", 4);
+}
+std::pair<void*, unsigned int> cAudioResourceWAV::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+{
+  std::pair<void*, unsigned int> d = { malloc(datalength), datalength };
+  if(flags&TINYOAL_ISFILE)
+    fread(d.first, 1, datalength, (FILE*)data);
+  else
+    memcpy(d.first, data, datalength);
+  return d;
 }

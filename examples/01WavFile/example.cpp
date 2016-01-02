@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up a wav file and play a simple sound.
  *
- * Copyright ©2015 Black Sphere Studios
+ * Copyright ©2016 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -18,6 +18,8 @@ using namespace TinyOAL;
 
 int main()
 {
+  cTinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
+
   // We initialize the engine here with the default number of buffers. You can also specify the error log file.
   cTinyOAL engine(4);
   // The engine will use the default device at first, but you can get a null-seperated list of devices with 

@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -7,7 +7,10 @@
 #include "openAL/alc.h"
 #include "openAL/alext.h"
 #include "openAL/loadoal.h"
-#include "cAudioResource.h"
+#include "cAudioResourceWAV.h"
+#include "cAudioResourceOGG.h"
+#include "cAudioResourceMP3.h"
+#include "cAudioResourceFLAC.h"
 #include "cAudio.h"
 #include "cOggFunctions.h"
 #include "cMp3Functions.h"
@@ -237,6 +240,11 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile, const char* 
   if(oggFuncs->Failure()) { delete oggFuncs; oggFuncs=0; }
   if(flacFuncs->Failure()) { delete flacFuncs; flacFuncs=0; }
   if(mp3Funcs->Failure()) { delete mp3Funcs; mp3Funcs=0; }
+
+  cAudioResource::RegisterCodec(cAudioResource::TINYOAL_FILETYPE_WAV, cAudioResourceWAV::Construct, cAudioResourceWAV::ScanHeader, cAudioResourceWAV::ToWave);
+  cAudioResource::RegisterCodec(cAudioResource::TINYOAL_FILETYPE_OGG, cAudioResourceOGG::Construct, cAudioResourceOGG::ScanHeader, cAudioResourceOGG::ToWave);
+  cAudioResource::RegisterCodec(cAudioResource::TINYOAL_FILETYPE_MP3, cAudioResourceMP3::Construct, cAudioResourceMP3::ScanHeader, cAudioResourceMP3::ToWave);
+  cAudioResource::RegisterCodec(cAudioResource::TINYOAL_FILETYPE_FLAC, cAudioResourceFLAC::Construct, cAudioResourceFLAC::ScanHeader, cAudioResourceFLAC::ToWave);
 }
 unsigned int cTinyOAL::GetFormat(unsigned short channels, unsigned short bits, bool rear)
 {

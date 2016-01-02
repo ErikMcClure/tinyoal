@@ -3,7 +3,7 @@
  * This example demonstrates how you can adjust the volume, panning and pitch of a sound. It then proceeds to horribly
  * abuse these parameters to play a song (you really shouldn't do this in a real program, ever).
  *
- * Copyright ©2015 Black Sphere Studios
+ * Copyright ©2016 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -19,13 +19,14 @@ using namespace TinyOAL;
 
 int main()
 {
+  cTinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
   cTinyOAL engine;
   // While we support the lossless FLAC format, the FLAC codec is terrible, and can't do accurate seeking. Because of this,
   // FLAC streams cannot do seamless looping. However, they can still be decoded into wave files. To do this, we specify
   // TINYOAL_FORCETOWAVE in the resource loading flags. This converts whatever audio we're loading into WAVE format using
   // an internal memory buffer (consequently, TINYOAL_FORCETOWAVE implies TINYOAL_COPYTOMEMORY). Then, we'll get a
   // resource back for the converted wave format instead, which will release its contents when it is no longer referenced.
-  cAudio tone(cAudioResource::Create("../media/shape.flac",(TINYOAL_FLAG)TINYOAL_FORCETOWAVE,0),TINYOAL_ISPLAYING);
+  cAudio tone(cAudioResource::Create("../media/shape.flac", (TINYOAL_FLAG)TINYOAL_FORCETOWAVE, 0, 0), TINYOAL_ISPLAYING);
   cAudio echo(tone);  // cAudio instances can be copied and moved around. Copied instances retain all aspects of their
   cAudio echo2(echo); // parents, including if they were playing, where they were playing, volume/pitch/position/flags/etc.
   echo.SetPosition(2); // You can modify the volume, pitch, and location of any audio instance. This pans to the right.

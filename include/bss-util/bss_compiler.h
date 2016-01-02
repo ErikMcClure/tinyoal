@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_COMPILER_H__
@@ -144,6 +144,7 @@
 
 #define BSS_ALIGNED_STRUCT(n) struct BSS_ALIGN(n)
 #define BSS_ALIGNED_CLASS(n) class BSS_ALIGN(n)
+#define BSS_ALIGNED_UNION(n) union BSS_ALIGN(n)
 
 // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(__TOS_WIN__) || defined(__WINDOWS__)

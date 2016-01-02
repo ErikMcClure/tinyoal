@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -10,8 +10,7 @@ using namespace TinyOAL;
 
  bss_util::cBlockAlloc<DatStream> cAudioResourceMP3::_datalloc;
 
-cAudioResourceMP3::cAudioResourceMP3(const cAudioResourceMP3& copy) : cAudioResource(copy) {}
-cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data,datalength,flags,loop)
+ cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_MP3, loop)
 {
   mpg123_handle* h = (mpg123_handle*)OpenStream();
   if(!h) return;
@@ -131,6 +130,16 @@ off_t cAudioResourceMP3::cb_fileseekoffset(void* stream,off_t off,int loc)
   if(!fseek((FILE*)stream,off,loc))
     return ftell((FILE*)stream);
   return -1;
+}
+
+size_t cAudioResourceMP3::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+{
+  if(p) new(p) cAudioResourceMP3(data, datalength, flags, loop);
+  return sizeof(cAudioResourceMP3);
+}
+bool cAudioResourceMP3::ScanHeader(const char* fileheader)
+{
+  return !strncmp(fileheader, "ID3", 3) || 0x3FF == (0x3FF & (*(unsigned short*)fileheader));
 }
 
 std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)

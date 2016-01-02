@@ -3,7 +3,7 @@
  * This enables the wave writer backend and runs a series of tests to ensure TinyOAL
  * is working as intended.
  *
- * Copyright ©2015 Black Sphere Studios
+ * Copyright ©2016 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -56,129 +56,130 @@ struct TESTDEF
 TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, const char* strlog, double length)
 {
   BEGINTEST;
-  static cTinyOAL engine("TinyOAL.txt",4); // Initialize the engine with default number of buffers
+  static cTinyOAL engine("TinyOAL.txt", 4); // Initialize the engine with default number of buffers
 
-  cAudioResource* resnorm = cAudioResource::Create(RES,0);
+  cAudioResource* resnorm = cAudioResource::Create(RES, 0);
   cAudioResource* rescopy = cAudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY);
   cAudioResource* reswave = cAudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE);
-  TEST(resnorm!=0);
-  TEST(rescopy!=0);
-  TEST(reswave!=0);
-  
+  TEST(resnorm != 0);
+  TEST(rescopy != 0);
+  TEST(reswave != 0);
+
   auto fn = [&](cAudio* r, cAudioResource* res, TINYOAL_FLAG managed) {
-  TEST(r!=0);
-  TEST(r->IsPlaying());
-  r->Pause();
-  TEST(r->SkipSeconds(1.0));
-  TEST(r->IsWhere()==44100);
-  r->Play();
-  r->SetVolume(0.5f);
-  TEST(r->GetVolume()==0.5f)
-  r->SetPitch(1.5f);
-  TEST(r->GetPitch()==1.5f);
-  r->SetLoopPointSeconds(2.0);
-  TEST(r->GetLoopPoint()==88200);
-  r->SetPosition(1,0,1);
-  const float* pos = r->GetPosition();
-  TEST(pos[0]==1.0f && pos[1]==0.0f && pos[2]==1.0f);
-  TEST(r->GetFlags()==(TINYOAL_ISPLAYING|managed|res->GetFlags()));
-  TEST(r->GetResource()==res);
-  r->Pause();
-  TEST(!r->IsPlaying());
-  TEST(r->Play());
-  TEST(r->IsPlaying());
-  TEST(r->Play());
-  TEST(r->IsPlaying());
-  TEST(r->Update());
-  cAudio cr(*r);
-  //TEST(cr.IsWhere()==r->IsWhere()); // This is too time-dependent
-  TEST(cr.IsPlaying());
-  TEST(cr.GetResource()==res);
-  cAudio mv(std::move(*r));
-  r->Stop();
-  TEST(mv.IsPlaying());
-  mv.Stop();
-  if(!managed)
-  {
+    TEST(r != 0);
+    TEST(r->IsPlaying());
+    r->Pause();
+    TEST(r->SkipSeconds(1.0));
+    TEST(r->IsWhere() == 44100);
+    r->Play();
+    r->SetVolume(0.5f);
+    TEST(r->GetVolume() == 0.5f)
+      r->SetPitch(1.5f);
+    TEST(r->GetPitch() == 1.5f);
+    r->SetLoopPointSeconds(2.0);
+    TEST(r->GetLoopPoint() == 88200);
+    r->SetPosition(1, 0, 1);
+    const float* pos = r->GetPosition();
+    TEST(pos[0] == 1.0f && pos[1] == 0.0f && pos[2] == 1.0f);
+    TEST(r->GetFlags() == (TINYOAL_ISPLAYING | managed | res->GetFlags()));
+    TEST(r->GetResource() == res);
+    r->Pause();
     TEST(!r->IsPlaying());
-    TEST(!r->IsWhere());
-    TEST(!mv.IsPlaying());
-    TEST(!mv.IsWhere());
+    TEST(r->Play());
+    TEST(r->IsPlaying());
+    TEST(r->Play());
+    TEST(r->IsPlaying());
+    TEST(r->Update());
+    cAudio cr(*r);
+    //TEST(cr.IsWhere()==r->IsWhere()); // This is too time-dependent
+    TEST(cr.IsPlaying());
+    TEST(cr.GetResource() == res);
+    cAudio mv(std::move(*r));
+    r->Stop();
+    TEST(mv.IsPlaying());
     mv.Stop();
-    TEST(mv.Play());
-    mv.Stop();
-  }
-  TEST(res->GetLoopPoint()==-1LL);
-  res->SetLoopPoint(9);
-  TEST(res->GetLoopPoint()==9);
-  res->SetFlags(res->GetFlags()|TINYOAL_ISPLAYING);
-  TEST(res->GetFlags()&TINYOAL_ISPLAYING);
-  TEST(res->GetFreq()==44100);
-  TEST(res->GetChannels()==2);
-  TEST(res->GetBufSize()>0);
-  TEST(res->GetFormat()>0);
-  TEST(res->GetBitsPerSample()==(res->GetFlags()&cAudioResource::TINYOAL_FILETYPE_WAV)?8:16);
-  TEST(res->GetActiveInstances()==&cr);
-  TEST(res->GetInactiveInstances()==&mv);
-  mv.Play();
-  TEST(res->GetNumActive()==2);
-  TEST(res->GetMaxActive()==0);
-  res->SetMaxActive(2);
-  TEST(res->GetMaxActive()==2);
-  TEST(res->Play()==&cr);
-  res->SetMaxActive(0);
-  
-  while(res->GetActiveInstances())
-    res->GetActiveInstances()->Stop();
-  
-  cAudio* hold[32]; // Simulate source exhaustion
-  for(int i = 0; i < 32; ++i)
-    hold[i]=res->Play();
-  
-  // Currently if source exhaustion happens TinyOAL just stops playing sounds. The default max is 256 so this shouldn't be a problem.
-  for(int i = 0; i < 32; ++i) {
-    hold[i]->Pause();
-    hold[i]->SkipSeconds(1.0);
-    TEST(hold[i]->IsWhere()==44100);
-    hold[i]->Play();
-    hold[i]->Update();
-    hold[i]->SetVolume(0.5f);
-    TEST(hold[i]->GetVolume()==0.5f)
-    hold[i]->SetPitch(1.5f);
-    TEST(hold[i]->GetPitch()==1.5f);
-    hold[i]->SetLoopPointSeconds(2.0);
-    TEST(hold[i]->GetLoopPoint()==88200);
-    hold[i]->SetPosition(1,0,1);
-    hold[i]->Stop();
-  }
+    if(!managed)
+    {
+      TEST(!r->IsPlaying());
+      TEST(!r->IsWhere());
+      TEST(!mv.IsPlaying());
+      TEST(!mv.IsWhere());
+      mv.Stop();
+      TEST(mv.Play());
+      mv.Stop();
+    }
+    TEST(res->GetLoopPoint() == -1LL);
+    res->SetLoopPoint(9);
+    TEST(res->GetLoopPoint() == 9);
+    res->SetFlags(res->GetFlags() | TINYOAL_ISPLAYING);
+    TEST(res->GetFlags()&TINYOAL_ISPLAYING);
+    TEST(res->GetFreq() == 44100);
+    TEST(res->GetChannels() == 2);
+    TEST(res->GetBufSize() > 0);
+    TEST(res->GetFormat() > 0);
+    TEST(res->GetBitsPerSample() == (res->GetFileType() == cAudioResource::TINYOAL_FILETYPE_WAV) ? 8 : 16);
+    TEST(res->GetActiveInstances() == &cr);
+    TEST(res->GetInactiveInstances() == &mv);
+    mv.Play();
+    TEST(res->GetNumActive() == 2);
+    TEST(res->GetMaxActive() == 0);
+    res->SetMaxActive(2);
+    TEST(res->GetMaxActive() == 2);
+    TEST(res->Play() == &cr);
+    res->SetMaxActive(0);
 
-  if(!(res->GetFlags()&cAudioResource::TINYOAL_FILETYPE_MP3)) //skip this test for MP3 because the seamless loop messes things up
-  {
-    TEST(res->GetLength()==length);
-  }
+    while(res->GetActiveInstances())
+      res->GetActiveInstances()->Stop();
 
-  TEST(res->Play()->IsPlaying());
-  res->GetActiveInstances()->Stop();
+    cAudio* hold[32]; // Simulate source exhaustion
+    for(int i = 0; i < 32; ++i)
+      hold[i] = res->Play();
+
+    // Currently if source exhaustion happens TinyOAL just stops playing sounds. The default max is 256 so this shouldn't be a problem.
+    for(int i = 0; i < 32; ++i) {
+      hold[i]->Pause();
+      hold[i]->SkipSeconds(1.0);
+      TEST(hold[i]->IsWhere() == 44100);
+      hold[i]->Play();
+      hold[i]->Update();
+      hold[i]->SetVolume(0.5f);
+      TEST(hold[i]->GetVolume() == 0.5f)
+        hold[i]->SetPitch(1.5f);
+      TEST(hold[i]->GetPitch() == 1.5f);
+      hold[i]->SetLoopPointSeconds(2.0);
+      TEST(hold[i]->GetLoopPoint() == 88200);
+      hold[i]->SetPosition(1, 0, 1);
+      hold[i]->Stop();
+    }
+
+    if(res->GetFileType() != cAudioResource::TINYOAL_FILETYPE_MP3) //skip this test for MP3 because the seamless loop messes things up
+    {
+      TEST(res->GetLength() == length);
+    }
+
+    TEST(res->Play()->IsPlaying());
+    if(res->Play()->IsPlaying())
+      res->GetActiveInstances()->Stop();
   };
-  fn(resnorm->Play(),resnorm,TINYOAL_MANAGED);
-  fn(rescopy->Play(),rescopy,TINYOAL_MANAGED);
-  cAudio inst(reswave,TINYOAL_ISPLAYING);
-  fn(&inst,reswave,0);
-  
+  fn(resnorm->Play(), resnorm, TINYOAL_MANAGED);
+  fn(rescopy->Play(), rescopy, TINYOAL_MANAGED);
+  cAudio inst(reswave, TINYOAL_ISPLAYING);
+  fn(&inst, reswave, 0);
+
   resnorm->Drop();
   rescopy->Drop();
   reswave->Drop();
 
   if(SEAMLESS)
   {
-    cAudioResource* loop = cAudioResource::Create(SEAMLESS,0,0);
-    cAudioResource* loopcopy = cAudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY, 0);
-    cAudioResource* loopwave = cAudioResource::Create(SEAMLESS,(TINYOAL_FLAG)TINYOAL_FORCETOWAVE,0);
-    TEST(loop!=0);
-    TEST(loopcopy!=0);
-    TEST(loopwave!=0);
+    cAudioResource* loop = cAudioResource::Create(SEAMLESS, 0, 0, 0);
+    cAudioResource* loopcopy = cAudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY, 0, 0);
+    cAudioResource* loopwave = cAudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE, 0, 0);
+    TEST(loop != 0);
+    TEST(loopcopy != 0);
+    TEST(loopwave != 0);
 
-    auto fn2 = [&](cAudio* r, cAudioResource* res){
+    auto fn2 = [&](cAudio* r, cAudioResource* res) {
       TEST(!res->GetLoopPoint());
       TEST(!r->GetLoopPoint());
       TEST(r->IsPlaying());
@@ -190,13 +191,13 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
       r->Stop();
     };
 
-    const int NUMSAMPLES=85;
-    TEST(loop->GetTotalSamples()==NUMSAMPLES);
-    TEST(loopcopy->GetTotalSamples()==NUMSAMPLES);
-    TEST(loopwave->GetTotalSamples()==NUMSAMPLES);
-    fn2(loop->Play(),loop);
-    fn2(loopcopy->Play(),loopcopy);
-    fn2(loopwave->Play(),loopwave);
+    const int NUMSAMPLES = 85;
+    TEST(loop->GetTotalSamples() == NUMSAMPLES);
+    TEST(loopcopy->GetTotalSamples() == NUMSAMPLES);
+    TEST(loopwave->GetTotalSamples() == NUMSAMPLES);
+    fn2(loop->Play(), loop);
+    fn2(loopcopy->Play(), loopcopy);
+    fn2(loopwave->Play(), loopwave);
     loop->Drop();
     loopcopy->Drop();
     loopwave->Drop();
@@ -204,6 +205,7 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
 
   ENDTEST;
 }
+
 TESTDEF::RETPAIR test_cAudioResourceWAV()
 {
   return test_cAudioResource("../media/idea549.wav", "../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);

@@ -2,6 +2,13 @@
 * TinyOAL Changelog *
 *********************
 
+1.0.4
+-----
+- Split filetype out from flags
+- Codecs can now be dynamically registered at runtime
+- Added M4A codec example (windows only)
+- Fixed error when destroying the engine while audio samples were still playing
+
 1.0.3
 -----
 - Updated bss-util headers
