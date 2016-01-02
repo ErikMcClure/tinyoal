@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 // Notice: This header file does not need to be included in binary distributions of the library
@@ -26,6 +26,8 @@ namespace TinyOAL {
     virtual bool Skip(void* stream, unsigned __int64 samples); // Sets a stream to given sample 
     virtual unsigned __int64 Tell(void* stream); // Gets what sample a stream is currently on
 
+    static size_t Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop);
+    static bool ScanHeader(const char* fileheader);
     static std::pair<void*,unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
   protected:

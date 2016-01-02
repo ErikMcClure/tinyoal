@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point.
  *
- * Copyright ©2015 Black Sphere Studios
+ * Copyright ©2016 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -21,6 +21,7 @@ using namespace bss_util;
 
 int main()
 {
+  cTinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
   cTinyOAL engine(4); // Initialize the engine with default number of buffers
 
   // Here we load a resource, and then immediately load it into an audio instance. Because this audio instance 

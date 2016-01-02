@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -20,7 +20,6 @@ namespace TinyOAL {
     TINYOAL_MANAGED=4, // Instance will be deleted by the engine when it stops playing
     TINYOAL_ISFILE=8,
     TINYOAL_FORCETOWAVE=16+1, // Forces the resource to be copied into memory as an uncompressed wave for efficient playback. Implies TINYOAL_COPYINTOMEMORY
-    TINYOAL_FILETYPEMASK=224,
   };
 
   class cAudioResource;

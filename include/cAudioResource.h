@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -28,8 +28,19 @@ namespace TinyOAL {
     inline unsigned __int64 GetLoopPoint() const { return _loop; }
     inline void SetLoopPoint(unsigned __int64 loop) { _loop=loop; }
 
+    enum TINYOAL_FILETYPE : unsigned char
+    {
+      TINYOAL_FILETYPE_UNKNOWN = 0,
+      TINYOAL_FILETYPE_WAV,
+      TINYOAL_FILETYPE_OGG,
+      TINYOAL_FILETYPE_MP3,
+      TINYOAL_FILETYPE_FLAC,
+      TINYOAL_FILETYPE_CUSTOM, // Add custom filetypes here
+    };
+
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
     inline void SetFlags(TINYOAL_FLAG flags) { _flags=flags; }
+    inline TINYOAL_FILETYPE GetFileType() const { return _filetype; }
     inline unsigned int GetFreq() const { return _freq; }
     inline unsigned int GetChannels() const { return _channels; }
     inline unsigned int GetFormat() const { return _format; }
@@ -46,39 +57,50 @@ namespace TinyOAL {
     cAudio* Play(TINYOAL_FLAG flags=TINYOAL_ISPLAYING);
 
     // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
-    static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
-    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
-    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned __int64 loop=(unsigned __int64)-1);
-    
-    enum TINYOAL_FILETYPE : TINYOAL_FLAG
-	  {
-		  TINYOAL_FILETYPE_UNKNOWN=0,
-		  TINYOAL_FILETYPE_OGG=32,
-		  TINYOAL_FILETYPE_MP3=64,
-		  TINYOAL_FILETYPE_WAV=96,
-      TINYOAL_FILETYPE_FLAC=128,
-	  };
+    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
+
+    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop);
+    typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
+    typedef std::pair<void*, unsigned int>(*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+
+    struct Codec
+    {
+      CODEC_CONSTRUCT construct;
+      CODEC_SCANHEADER scanheader;
+      CODEC_TOWAVE towave;
+    };
+
+    static void RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave);
+    static Codec* GetCodec(unsigned char filetype);
 
   protected:
     friend class cAudio;
     friend class cTinyOAL;
 
-    cAudioResource(const cAudioResource& copy); // These are protected ensure we can ONLY be created inside this DLL
-    cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned __int64 loop);
+#ifdef BSS_COMPILER_MSC2010
+    cAudioResource(const cAudioResource& copy) : _filetype(TINYOAL_FILETYPE_UNKNOWN) { assert(false); }
+#else
+    cAudioResource(const cAudioResource& copy) = delete;
+#endif
+    cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop);
     virtual ~cAudioResource();
     void _destruct();
 
-    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
-    static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
-    static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, const char* path, unsigned __int64 loop);
+    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
+    static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
+    static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss_util::cHash<const char*, cAudioResource*, true> _audiohash;
     static bss_util::cBlockAlloc<cAudio> _allocaudio;
+    static bss_util::cHash<unsigned char, Codec> _codecs;
 
     void* _data;
     size_t _datalength;
     bss_util::cBitField<TINYOAL_FLAG> _flags;
+    const TINYOAL_FILETYPE _filetype;
     unsigned int _freq;
 	  unsigned int _channels;
     unsigned int _format;

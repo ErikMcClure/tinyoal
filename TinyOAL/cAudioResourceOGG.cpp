@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -10,10 +10,8 @@
 using namespace TinyOAL;
 bss_util::cBlockAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
 
-cAudioResourceOGG::cAudioResourceOGG(const cAudioResourceOGG &copy) : cAudioResource(copy) {}
-
 // Constructor that takes a data pointer, a length of data, and flags.
-cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
+cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_OGG, loop)
 {
   _setcallbacks(_callbacks,(_flags&TINYOAL_ISFILE)!=0);
   // Open an initial stream and read in static information from the file
@@ -160,6 +158,16 @@ void cAudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
 	  callbacks.close_func = dat_close_func;
 	  callbacks.tell_func = dat_tell_func;
   }
+}
+
+size_t cAudioResourceOGG::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+{
+  if(p) new(p) cAudioResourceOGG(data, datalength, flags, loop);
+  return sizeof(cAudioResourceOGG);
+}
+bool cAudioResourceOGG::ScanHeader(const char* fileheader)
+{
+  return !strncmp(fileheader, "OggS", 4);
 }
 
 std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)

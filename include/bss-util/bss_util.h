@@ -1,5 +1,5 @@
 /* Black Sphere Studios Utility Library
-   Copyright ©2015 Black Sphere Studios
+   Copyright ©2016 Black Sphere Studios
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,15 +71,11 @@ namespace bss_util {
 #endif
     typedef typename std::make_unsigned<SIGNED>::type UNSIGNED;
 
-    static const UNSIGNED UNSIGNED_MIN=0;
-    static const UNSIGNED UNSIGNED_MAX=(((UNSIGNED)2)<<(BITS-1))-((UNSIGNED)1); //these are all done carefully to ensure no overflow is ever utilized unless appropriate and it respects an arbitrary bit limit. We use 2<<(BITS-1) here to avoid shifting more bits than there are bits in the type.
-    static const SIGNED SIGNED_MIN_RAW=(((SIGNED)1)<<(BITS-1)); // When we have normal bit lengths (8,16, etc) this will correctly result in a negative value in two's complement.
-#ifdef BSS_COMPILER_GCC
-    static const SIGNED SIGNED_MIN=-((__int128)SIGNED_MIN_RAW); // GCC is a pedantic fuckwad that treats signed overflow as undefined even if I want it to overflow, so we work around it.
-#else
-    static const SIGNED SIGNED_MIN=(-SIGNED_MIN_RAW); // However if we have unusual bit lengths (3,19, etc) the raw bit representation will be technically correct in the context of that sized integer, but since we have to round to a real integer size to represent the number, the literal interpretation will be wrong. This yields the proper minimum value.
-#endif
-    static const SIGNED SIGNED_MAX=((~SIGNED_MIN_RAW)&UNSIGNED_MAX);
+    static const UNSIGNED UNSIGNED_MIN = 0;
+    static const UNSIGNED UNSIGNED_MAX = (((UNSIGNED)2) << (BITS - 1)) - ((UNSIGNED)1); //these are all done carefully to ensure no overflow is ever utilized unless appropriate and it respects an arbitrary bit limit. We use 2<<(BITS-1) here to avoid shifting more bits than there are bits in the type.
+    static const SIGNED SIGNED_MIN_RAW = (SIGNED)(((UNSIGNED)1) << (BITS - 1)); // When we have normal bit lengths (8,16, etc) this will correctly result in a negative value in two's complement.
+    static const SIGNED SIGNED_MIN = (((SIGNED)~0) << (BITS - 1)); // However if we have unusual bit lengths (3,19, etc) the raw bit representation will be technically correct in the context of that sized integer, but since we have to round to a real integer size to represent the number, the literal interpretation will be wrong. This yields the proper minimum value.
+    static const SIGNED SIGNED_MAX = ((~SIGNED_MIN_RAW)&UNSIGNED_MAX);
   };
   template<typename T>
   struct TBitLimit : public BitLimit<sizeof(T)<<3> {};
@@ -287,9 +283,9 @@ namespace bss_util {
 
   template<int I>
   BSS_FORCEINLINE static void BSS_FASTCALL flipendian(char* target) { flipendian((char*)target, I); }
-  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<0>(char* target) { }
-  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<1>(char* target) { }
-  template<> BSS_FORCEINLINE static void BSS_FASTCALL flipendian<2>(char* target) { char t = target[0]; target[0] = target[1]; target[1] = t; }
+  template<> BSS_FORCEINLINE BSS_EXPLICITSTATIC void BSS_FASTCALL flipendian<0>(char* target) { }
+  template<> BSS_FORCEINLINE BSS_EXPLICITSTATIC void BSS_FASTCALL flipendian<1>(char* target) { }
+  template<> BSS_FORCEINLINE BSS_EXPLICITSTATIC void BSS_FASTCALL flipendian<2>(char* target) { char t = target[0]; target[0] = target[1]; target[1] = t; }
 
   template<typename T>
   BSS_FORCEINLINE static void BSS_FASTCALL flipendian(T* target) { flipendian<sizeof(T)>((char*)target); }
@@ -436,7 +432,7 @@ namespace bss_util {
     __int32 ai = *reinterpret_cast<__int32*>(&af);
     __int32 bi = *reinterpret_cast<__int32*>(&bf);
     __int32 test = (-(__int32)(((unsigned __int32)(ai^bi))>>31));
-    assert((0 == test) || (0xFFFFFFFF == test));
+    assert((0 == test) || (0xFFFFFFFF == (unsigned __int32)test));
     __int32 diff = ((ai + test) ^ (test & 0x7fffffff)) - bi;
     __int32 v1 = maxDiff + diff;
     __int32 v2 = maxDiff - diff;
@@ -449,7 +445,7 @@ namespace bss_util {
     __int64 ai = *reinterpret_cast<__int64*>(&af);
     __int64 bi = *reinterpret_cast<__int64*>(&bf);
     __int64 test = (-(__int64)(((unsigned __int64)(ai^bi))>>63));
-    assert((0 == test) || (0xFFFFFFFFFFFFFFFF == test));
+    assert((0 == test) || (0xFFFFFFFFFFFFFFFF == (unsigned __int64)test));
     __int64 diff = ((ai + test) ^ (test & 0x7fffffffffffffff)) - bi;
     __int64 v1 = maxDiff + diff;
     __int64 v2 = maxDiff - diff;
@@ -577,19 +573,19 @@ namespace bss_util {
   }
 
   // Average aggregation without requiring a total variable that can overflow. Nextnum should be the current avg count incremented by 1.
-  template<typename T, typename ST_> // T must be float or double, ST_ must be integral
-  BSS_FORCEINLINE static T BSS_FASTCALL bssavg(T curavg, T nvalue, ST_ nextnum)
+  template<typename T, typename CT_> // T must be float or double, CT_ must be integral
+  BSS_FORCEINLINE static T BSS_FASTCALL bssavg(T curavg, T nvalue, CT_ nextnum)
   { // USAGE: avg = bssavg<double, int>(avg, value, ++total);
-    static_assert(std::is_integral<ST_>::value,"ST_ must be integral");
+    static_assert(std::is_integral<CT_>::value,"CT_ must be integral");
     static_assert(std::is_floating_point<T>::value,"T must be float, double, or long double");
     return curavg + ((nvalue-curavg)/(T)nextnum);
   }
 
   // Sum of squares of differences aggregation using an algorithm by Knuth. Nextnum should be the current avg count incremented by 1.
-  template<typename T, typename ST_> // T must be float or double, ST_ must be integral
-  BSS_FORCEINLINE static void BSS_FASTCALL bssvariance(T& curvariance, T& avg, T nvalue, ST_ nextnum)
+  template<typename T, typename CT_> // T must be float or double, CT_ must be integral
+  BSS_FORCEINLINE static void BSS_FASTCALL bssvariance(T& curvariance, T& avg, T nvalue, CT_ nextnum)
   { // USAGE: bssvariance<double, int>(variance, avg, value, ++total); Then use sqrt(variance/(n-1)) to get the actual standard deviation
-    static_assert(std::is_integral<ST_>::value, "ST_ must be integral");
+    static_assert(std::is_integral<CT_>::value, "CT_ must be integral");
     static_assert(std::is_floating_point<T>::value, "T must be float, double, or long double");
     T delta = nvalue - avg;
     avg += delta/(T)nvalue;
@@ -803,6 +799,8 @@ namespace bss_util {
   template<int ...S> struct bssSeq_gens<0, S...>{ typedef bssSeq<S...> type; };
 #endif
 
+  BSS_COMPILER_DLLEXPORT extern void bssdll_delete_delfunc(void* p);
+
   //unique_ptr deleter class that forces the deletion to occur in this DLL
   template<class _Ty>
 	struct bssdll_delete
@@ -829,8 +827,6 @@ namespace bss_util {
       }
 		}
 	};
-
-  BSS_COMPILER_DLLEXPORT extern void bssdll_delete_delfunc(void* p);
 } 
 
 #endif

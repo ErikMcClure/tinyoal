@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -11,8 +11,7 @@ using namespace TinyOAL;
 
 DatStreamEx* cAudioResourceFLAC::_freelist=0;
 
-cAudioResourceFLAC::cAudioResourceFLAC(const cAudioResourceFLAC& copy) : cAudioResource(copy) {}
-cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, loop)
+cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_FLAC, loop)
 {
   auto fn = cTinyOAL::Instance()->flacFuncs;
   DatStreamEx* ex = (DatStreamEx*)_openstream(true);
@@ -206,6 +205,16 @@ FLAC__StreamDecoderSeekStatus cAudioResourceFLAC::_cbfseekoffset(const FLAC__Str
      return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
    else
      return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+}
+
+size_t cAudioResourceFLAC::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+{
+  if(p) new(p) cAudioResourceFLAC(data, datalength, flags, loop);
+  return sizeof(cAudioResourceFLAC);
+}
+bool cAudioResourceFLAC::ScanHeader(const char* fileheader)
+{
+  return !strncmp(fileheader, "fLaC", 4);
 }
 
 std::pair<void*,unsigned int> cAudioResourceFLAC::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)

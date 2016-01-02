@@ -3,6 +3,7 @@
 *.opensdf
 *.bak
 *TinyOAL_log.txt
+*.opendb
 bin/
 TinyOAL/TinyOAL.aps
 TinyOAL/x64/
@@ -25,6 +26,8 @@ examples/05FlacFile/x64/
 examples/05FlacFile/Win32/
 examples/06Managed/bin/
 examples/06Managed/obj/
+examples/07M4AFile/x64/
+examples/07M4AFile/Win32/
 examples/LoopUtility/x64/
 examples/LoopUtility/Win32/
 examples/bin/
