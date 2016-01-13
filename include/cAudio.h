@@ -45,9 +45,9 @@ namespace TinyOAL {
     bool IsPlaying() const;
     // Attempts to skip to the given song time (in seconds or samples) 
     bool SkipSeconds(double seconds);
-    bool Skip(unsigned __int64 sample);
+    bool Skip(uint64_t sample);
     // Gets the current sample location of the stream
-    unsigned __int64 IsWhere() const;
+    uint64_t IsWhere() const;
 		// Sets the volume - 1.0 signifies 100% volume, 0.5 is 50%, 1.5 is 150%, etc. 
     void SetVolume(float range);
     inline float GetVolume() const { return _vol; }
@@ -59,8 +59,8 @@ namespace TinyOAL {
     inline const float* GetPosition() const { return _pos; }
     // Sets loop point in seconds, or samples 
     void SetLoopPointSeconds(double seconds);
-    void SetLoopPoint(unsigned __int64 sample);
-    inline unsigned __int64 GetLoopPoint() const { return _looptime; }
+    void SetLoopPoint(uint64_t sample);
+    inline uint64_t GetLoopPoint() const { return _looptime; }
     // Get Flags 
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
     // Grab reference to audio resource used by this cAudio instance 
@@ -87,7 +87,7 @@ namespace TinyOAL {
     float _vol;
     float _pitch;
     bss_util::cBitField<TINYOAL_FLAG> _flags;
-    unsigned __int64 _looptime;
+    uint64_t _looptime;
     unsigned int uiSource;
     unsigned int* uiBuffers;
     unsigned int _bufsize;

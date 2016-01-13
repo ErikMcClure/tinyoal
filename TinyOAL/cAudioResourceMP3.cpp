@@ -10,7 +10,7 @@ using namespace TinyOAL;
 
  bss_util::cBlockAlloc<DatStream> cAudioResourceMP3::_datalloc;
 
- cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_MP3, loop)
+ cAudioResourceMP3::cAudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_MP3, loop)
 {
   mpg123_handle* h = (mpg123_handle*)OpenStream();
   if(!h) return;
@@ -109,14 +109,14 @@ bool cAudioResourceMP3::Reset(void* stream)
 {
   return Skip(stream,0);
 }
-bool cAudioResourceMP3::Skip(void* stream, unsigned __int64 samples)
+bool cAudioResourceMP3::Skip(void* stream, uint64_t samples)
 {
   off_t err = cTinyOAL::Instance()->mp3Funcs->fn_mpgSeek((mpg123_handle*)stream,samples,SEEK_SET);
   if(err>=0) return true;
   TINYOAL_LOG("WARNING") << "fn_mpgSeek failed with error code " << err << std::endl;
   return false;
 }
-unsigned __int64 cAudioResourceMP3::Tell(void* stream)
+uint64_t cAudioResourceMP3::Tell(void* stream)
 {
   return cTinyOAL::Instance()->mp3Funcs->fn_mpgTell((mpg123_handle*)stream);
 }
@@ -132,7 +132,7 @@ off_t cAudioResourceMP3::cb_fileseekoffset(void* stream,off_t off,int loc)
   return -1;
 }
 
-size_t cAudioResourceMP3::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+size_t cAudioResourceMP3::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p) new(p) cAudioResourceMP3(data, datalength, flags, loop);
   return sizeof(cAudioResourceMP3);

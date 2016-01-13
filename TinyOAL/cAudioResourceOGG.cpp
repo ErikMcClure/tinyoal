@@ -11,7 +11,7 @@ using namespace TinyOAL;
 bss_util::cBlockAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
 
 // Constructor that takes a data pointer, a length of data, and flags.
-cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_OGG, loop)
+cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_OGG, loop)
 {
   _setcallbacks(_callbacks,(_flags&TINYOAL_ISFILE)!=0);
   // Open an initial stream and read in static information from the file
@@ -36,7 +36,7 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 	if(!_format)
     TINYOAL_LOGM("ERROR","Failed to find format information, or unsupported format");
 
-  unsigned __int64 fileloop = ogg->GetLoopStart(&f->ogg);
+  uint64_t fileloop = ogg->GetLoopStart(&f->ogg);
   if(fileloop!=-1LL) _loop=fileloop; // Only overwrite our loop point with the file loop point if it actually had one.
   CloseStream(f);
 }
@@ -131,7 +131,7 @@ bool cAudioResourceOGG::Reset(void* stream)
   }
   return true;
 }
-bool cAudioResourceOGG::Skip(void* stream, unsigned __int64 samples)
+bool cAudioResourceOGG::Skip(void* stream, uint64_t samples)
 {
   if(!stream) return false;
   if(!cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream,(ogg_int64_t)samples)) return true;
@@ -140,7 +140,7 @@ bool cAudioResourceOGG::Skip(void* stream, unsigned __int64 samples)
   return false;
 }
 
-unsigned __int64 cAudioResourceOGG::Tell(void* stream) // Gets what sample a stream is currently on
+uint64_t cAudioResourceOGG::Tell(void* stream) // Gets what sample a stream is currently on
 {
   if(!stream) return false;
   return cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_tell((OggVorbis_File*)stream);
@@ -160,7 +160,7 @@ void cAudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
   }
 }
 
-size_t cAudioResourceOGG::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+size_t cAudioResourceOGG::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p) new(p) cAudioResourceOGG(data, datalength, flags, loop);
   return sizeof(cAudioResourceOGG);
@@ -192,11 +192,11 @@ std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int
   vorbis_info* psVorbisInfo = ogg->fn_ov_info(&r.ogg, -1);
   if(!psVorbisInfo) { ogg->fn_ov_clear(&r.ogg); return std::pair<void*,unsigned int>((void*)0,0);  }
 
-  unsigned __int64 total = ogg->fn_ov_pcm_total(&r.ogg,-1); // Get total number of samples
+  uint64_t total = ogg->fn_ov_pcm_total(&r.ogg,-1); // Get total number of samples
 	long freq = psVorbisInfo->rate;
 	int channels = psVorbisInfo->channels;
   short samplebits=16; 
-  unsigned __int64 totalbytes = total*channels*(samplebits>>3);
+  uint64_t totalbytes = total*channels*(samplebits>>3);
   unsigned int header = cTinyOAL::Instance()->waveFuncs->WriteHeader(0,0,0,0,0);
   char* buffer = (char*)malloc(totalbytes+header);
   bool eof;

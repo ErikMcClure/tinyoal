@@ -97,7 +97,7 @@ ogg_int64_t cOggFunctions::GetCommentSection(OggVorbis_File *vf)
   }
   index-=READSIZE;
   index+=(pos-buf) + 6 - 5; //+6 to skip past "vorbis", -5 to remove 5 lead bytes on buffer
-  __int32 length;
+  int32_t length;
   vf->callbacks.seek_func(vf->datasource,index,SEEK_SET); //seek to the proper location
   if(vf->callbacks.read_func(&length,4,1,vf->datasource)!=1) return 0;
   return index+=length+4;
@@ -111,16 +111,16 @@ ogg_int64_t cOggFunctions::GetLoopStart(OggVorbis_File *vf)
   vf->callbacks.seek_func(vf->datasource,0,SEEK_SET);
 
   ogg_int64_t index=GetCommentSection(vf);
-  __int32 length;
+  int32_t length;
   ogg_int64_t retval=-1;
 
   vf->callbacks.seek_func(vf->datasource,index,SEEK_SET); //seek to the end of the vendor info
 
-  __int32 numcomments;
+  int32_t numcomments;
   if(vf->callbacks.read_func(&numcomments,4,1,vf->datasource)==1) //get number of comments
   {
     cStr comment;
-    for(__int32 i=0; i < numcomments; ++i)
+    for(int32_t i=0; i < numcomments; ++i)
     {
       if(vf->callbacks.read_func(&length,4,1,vf->datasource)!=1) break;
       comment.resize(length+1);
@@ -152,21 +152,21 @@ ogg_int64_t cOggFunctions::GetLoopStart(OggVorbis_File *vf)
 //  memset(sf.UnsafeString(),0,length+32);
 //
 //  vf->callbacks.seek_func(vf->datasource,0,SEEK_SET);
-//  __int32 index=GetCommentSection(vf);
+//  int32_t index=GetCommentSection(vf);
 //  if(!index) return false;
 //
 //  vf->callbacks.seek_func(vf->datasource,0,SEEK_SET);
 //  vf->callbacks.read_func(sf.UnsafeString(),1,index,vf->datasource);
 //  
-//  __int32 numcomments;
+//  int32_t numcomments;
 //  if(vf->callbacks.read_func(&numcomments,4,1,vf->datasource)!=1) return false; //get number of comments
 //
 //  char* cp = sf.UnsafeString()+index;
-//  *((__int32*)cp) = ++numcomments;
-//  cp+=sizeof(__int32);
+//  *((int32_t*)cp) = ++numcomments;
+//  cp+=sizeof(int32_t);
 //
-//  *((__int32*)cp) = sprintf(cp+sizeof(__int32),"%s%il","LOOPSTART=",sample); //Write out incremented numcomments and our new comment
-//  cp+=sizeof(__int32)+*((__int32*)cp);
+//  *((int32_t*)cp) = sprintf(cp+sizeof(int32_t),"%s%il","LOOPSTART=",sample); //Write out incremented numcomments and our new comment
+//  cp+=sizeof(int32_t)+*((int32_t*)cp);
 //  cp+=vf->callbacks.read_func(cp,1,length-index,vf->datasource);
 //
 //  FILE* f=0;
