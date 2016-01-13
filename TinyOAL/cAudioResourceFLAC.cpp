@@ -11,7 +11,7 @@ using namespace TinyOAL;
 
 DatStreamEx* cAudioResourceFLAC::_freelist=0;
 
-cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_FLAC, loop)
+cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_FLAC, loop)
 {
   auto fn = cTinyOAL::Instance()->flacFuncs;
   DatStreamEx* ex = (DatStreamEx*)_openstream(true);
@@ -106,7 +106,7 @@ bool cAudioResourceFLAC::Reset(void* stream)
   TINYOAL_LOGM("WARNING","fn_flac_reset failed");
   return false;
 }
-bool cAudioResourceFLAC::Skip(void* stream, unsigned __int64 samples)
+bool cAudioResourceFLAC::Skip(void* stream, uint64_t samples)
 {
   _internal._len=0; // Because FLAC was written by morons we have to make sure we don't go writing random shit willy-nilly
   if(!samples) return Reset(stream);
@@ -118,7 +118,7 @@ bool cAudioResourceFLAC::Skip(void* stream, unsigned __int64 samples)
     Reset(stream); // FLAC requires us to reset or flush the stream if seeking fails with FLAC__STREAM_DECODER_SEEK_ERROR
   return false;
 }
-unsigned __int64 cAudioResourceFLAC::Tell(void* stream)
+uint64_t cAudioResourceFLAC::Tell(void* stream)
 {
   return ((DatStreamEx*)stream)->cursample;
 }
@@ -193,7 +193,7 @@ FLAC__StreamDecoderWriteStatus cAudioResourceFLAC::_cbwrite(const FLAC__StreamDe
   self->_buffer+=bytes;
   self->_len-=bytes;
   ((DatStreamEx*)client_data)->cursample+=num;
-  self->_cursample=(self->_len>0)?((DatStreamEx*)client_data)->cursample:(unsigned __int64)-1;
+  self->_cursample=(self->_len>0)?((DatStreamEx*)client_data)->cursample:(uint64_t)-1;
 
   return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
@@ -207,7 +207,7 @@ FLAC__StreamDecoderSeekStatus cAudioResourceFLAC::_cbfseekoffset(const FLAC__Str
      return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 }
 
-size_t cAudioResourceFLAC::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+size_t cAudioResourceFLAC::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p) new(p) cAudioResourceFLAC(data, datalength, flags, loop);
   return sizeof(cAudioResourceFLAC);
@@ -248,8 +248,8 @@ std::pair<void*,unsigned int> cAudioResourceFLAC::ToWave(void* data, unsigned in
   unsigned int samplebits=fn->fn_flac_get_bits_per_sample(stream->d);
   if(samplebits==24) samplebits=32;
   unsigned int freq=fn->fn_flac_get_sample_rate(stream->d);
-  unsigned __int64 total = fn->fn_flac_get_total_samples(stream->d);
-  unsigned __int64 totalbytes = total*channels*(samplebits>>3);
+  uint64_t total = fn->fn_flac_get_total_samples(stream->d);
+  uint64_t totalbytes = total*channels*(samplebits>>3);
   unsigned int header = cTinyOAL::Instance()->waveFuncs->WriteHeader(0,0,0,0,0);
   char* buffer = (char*)malloc(totalbytes+header);
   cTinyOAL::Instance()->flacFuncs->fn_flac_reset(stream->d);

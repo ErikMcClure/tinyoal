@@ -10,7 +10,7 @@ bss_util::cHash<const char*, cAudioResource*, true> cAudioResource::_audiohash;
 bss_util::cBlockAlloc<cAudio> cAudioResource::_allocaudio(5);
 bss_util::cHash<unsigned char, cAudioResource::Codec> cAudioResource::_codecs;
 
-cAudioResource::cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop) : _data(data), _datalength(len),
+cAudioResource::cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop) : _data(data), _datalength(len),
   _flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0), _inactivelist(0), 
   _maxactive(0), _total(0), _filetype(TINYOAL_FILETYPE(filetype))
 {
@@ -69,7 +69,7 @@ unsigned char BSS_FASTCALL cAudioResource::_getfiletype(const char* fileheader)
 	return TINYOAL_FILETYPE_UNKNOWN;
 }
 
-cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop)
+cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop)
 {
   FILE* f;
 #ifdef BSS_PLATFORM_WIN32
@@ -85,12 +85,12 @@ cAudioResource* cAudioResource::Create(const char* file, TINYOAL_FLAG flags, uns
   if(flags&TINYOAL_COPYINTOMEMORY) fclose(f);
   return r;
 }
-cAudioResource* cAudioResource::Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop)
+cAudioResource* cAudioResource::Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop)
 {
   return cAudioResource::_fcreate(file, datalength, flags | TINYOAL_COPYINTOMEMORY, filetype, cStrF("%p", file), loop);
 }
 
-cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop)
+cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop)
 {
   if(!data || datalength < 8) //bad file pointer
   {
@@ -113,7 +113,7 @@ cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength
   return _create(const_cast<void*>(data), datalength, flags, filetype, cStrF("%p", data), loop);
 }
 
-cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop)
+cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
   Codec* c = GetCodec(filetype);
   if(!c)
@@ -126,7 +126,7 @@ cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINY
   if(!d.first) return 0;
   return _create(d.first, d.second, flags&(~TINYOAL_ISFILE), TINYOAL_FILETYPE_WAV, path, loop);
 }
-cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop)
+cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
   if(!file || datalength < 8) //bad file pointer
   {
@@ -154,7 +154,7 @@ cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TI
   return _create(file, datalength, flags | TINYOAL_ISFILE, filetype, path, loop);
 }
 
-cAudioResource* cAudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop)
+cAudioResource* cAudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
   const char* hash=(flags&TINYOAL_COPYINTOMEMORY)?"":path;
   cAudioResource* r = _audiohash[hash];
@@ -199,10 +199,10 @@ size_t TinyOAL::dat_read_func(void *ptr, size_t size, size_t nmemb, void *dataso
   return retval;
 }
 
-int TinyOAL::dat_seek_func(void *datasource, __int64 offset, int whence) //Who the hell names a parameter "whence"?!
+int TinyOAL::dat_seek_func(void *datasource, int64_t offset, int whence) //Who the hell names a parameter "whence"?!
 {
   DatStream* data = (DatStream*)datasource;
-  __int64 pos=0;
+  int64_t pos=0;
 
   switch(whence)
   {
@@ -241,7 +241,7 @@ size_t TinyOAL::file_read_func(void *ptr, size_t size, size_t nmemb, void *datas
 	return fread(ptr, size, nmemb, (FILE*)datasource);
 }
 
-int TinyOAL::file_seek_func(void *datasource, __int64 offset, int whence)
+int TinyOAL::file_seek_func(void *datasource, int64_t offset, int whence)
 {
 	return fseek((FILE*)datasource, (long)offset, whence);
 }

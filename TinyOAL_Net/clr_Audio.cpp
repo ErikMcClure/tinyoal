@@ -29,8 +29,8 @@ bool clr_Audio::Play() { return !_ref?false:_ref->Play(); }
 void clr_Audio::Stop() { if(_ref) _ref->Stop(); }
 void clr_Audio::Pause() { if(_ref) _ref->Pause(); }
 bool clr_Audio::Playing::get() { return !_ref?false:_ref->IsPlaying(); }
-unsigned __int64 clr_Audio::Time::get() { return !_ref?0:_ref->IsWhere(); }
-void clr_Audio::Time::set(unsigned __int64 sample) { if(_ref) _ref->Skip(sample); }
+uint64_t clr_Audio::Time::get() { return !_ref?0:_ref->IsWhere(); }
+void clr_Audio::Time::set(uint64_t sample) { if(_ref) _ref->Skip(sample); }
 float clr_Audio::Volume::get() { return !_ref?0.0f:_ref->GetVolume(); }
 void clr_Audio::Volume::set(float range) { if(_ref) _ref->SetVolume(range); }
 float clr_Audio::Pitch::get() { return !_ref?0.0f:_ref->GetPitch(); }
@@ -46,8 +46,8 @@ cli::array<float>^ clr_Audio::Position::get() {
   return r;
 }
 void clr_Audio::Position::set(cli::array<float>^ range) { if(_ref) _ref->SetPosition(range[0],range[1],range[2]); }
-unsigned __int64 clr_Audio::LoopPoint::get() { return !_ref?-1LL:_ref->GetLoopPoint(); }
-void clr_Audio::LoopPoint::set(unsigned __int64 sample) { if(_ref) _ref->SetLoopPoint(sample); }
+uint64_t clr_Audio::LoopPoint::get() { return !_ref?-1LL:_ref->GetLoopPoint(); }
+void clr_Audio::LoopPoint::set(uint64_t sample) { if(_ref) _ref->SetLoopPoint(sample); }
 CLR_TINYOAL_FLAG clr_Audio::Flags::get() { return !_ref?0:_ref->GetFlags(); }
 
 bool clr_Audio::SkipSeconds(double seconds) { return !_ref?false:_ref->SkipSeconds(seconds); }

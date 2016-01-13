@@ -47,8 +47,8 @@ struct TESTDEF
 #define TESTERROR(t, e) { ++__testret.first; try { (t); FAILEDTEST(t); } catch(e) { ++__testret.second; } }
 #define TESTERR(t) TESTERROR(t,...)
 #define TESTNOERROR(t) { ++__testret.first; try { (t); ++__testret.second; } catch(...) { FAILEDTEST(t); } }
-#define TESTCOUNT(c,t) { for(uint i = 0; i < c; ++i) TEST(t) }
-#define TESTCOUNTALL(c,t) { bool __val=true; for(uint i = 0; i < c; ++i) __val=__val&&(t); TEST(__val); }
+#define TESTCOUNT(c,t) { for(uint32_t i = 0; i < c; ++i) TEST(t) }
+#define TESTCOUNTALL(c,t) { bool __val=true; for(uint32_t i = 0; i < c; ++i) __val=__val&&(t); TEST(__val); }
 #define TESTFOUR(s,a,b,c,d) TEST(((s)[0]==(a)) && ((s)[1]==(b)) && ((s)[2]==(c)) && ((s)[3]==(d)))
 #define TESTALLFOUR(s,a) TEST(((s)[0]==(a)) && ((s)[1]==(a)) && ((s)[2]==(a)) && ((s)[3]==(a)))
 #define TESTRELFOUR(s,a,b,c,d) TEST(fcompare((s)[0],(a)) && fcompare((s)[1],(b)) && fcompare((s)[2],(c)) && fcompare((s)[3],(d)))
@@ -239,14 +239,14 @@ int main()
   
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
 
-  std::cout << "TinyOAL - OpenAL-Soft Audio Engine v" << (uint)TINYOAL_VERSION.Major << '.' << (uint)TINYOAL_VERSION.Minor << '.' <<
-    (uint)TINYOAL_VERSION.Revision << ": Unit Tests\nCopyright (c)2013 Black Sphere Studios\n" << std::endl;
+  std::cout << "TinyOAL - OpenAL-Soft Audio Engine v" << (uint32_t)TINYOAL_VERSION.Major << '.' << (uint32_t)TINYOAL_VERSION.Minor << '.' <<
+    (uint32_t)TINYOAL_VERSION.Revision << ": Unit Tests\nCopyright (c)2013 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] = { 24, 11, 8 };
   printf("%-*s %-*s %-*s\n",COLUMNS[0],"Test Name", COLUMNS[1],"Subtests", COLUMNS[2],"Pass/Fail");
 
   TESTDEF::RETPAIR numpassed;
-  std::vector<uint> failures;
-  for(uint i = 0; i < NUMTESTS; ++i)
+  std::vector<uint32_t> failures;
+  for(uint32_t i = 0; i < NUMTESTS; ++i)
   {
     numpassed=tests[i].FUNC(); //First is total, second is succeeded
     if(numpassed.first!=numpassed.second) failures.push_back(i);
@@ -259,7 +259,7 @@ int main()
   else
   {
     std::cout << "\nThe following tests failed: " << std::endl;
-    for (uint i = 0; i < failures.size(); i++)
+    for (uint32_t i = 0; i < failures.size(); i++)
       std::cout << "  " << tests[failures[i]].NAME << std::endl;
     std::cout << "\nThese failures indicate either a misconfiguration on your system, or a potential bug. Please report all bugs to https://code.google.com/p/tinyoal/issues/list\n\nA detailed list of failed tests was written to failedtests.txt" << std::endl;
   }

@@ -21,12 +21,12 @@ namespace TinyOAL {
     virtual void CloseStream(void* stream)=0; //This closes an AUDIOSTREAM pointer
     virtual unsigned long Read(void* stream, char* buffer, unsigned int len, bool& eof)=0; // Reads next chunk of data - buffer must be at least bufsize long 
     virtual bool Reset(void* stream)=0; // This resets a stream to the beginning 
-    virtual bool Skip(void* stream, unsigned __int64 samples)=0; // Sets a stream to given sample 
-    virtual unsigned __int64 Tell(void* stream)=0; // Gets what sample a stream is currently on
-    inline unsigned __int64 ToSamples(double seconds) const { return (unsigned __int64)(seconds*_freq); } // Converts given time to sample point 
-    inline double ToSeconds(unsigned __int64 samples) const { return samples/(double)_freq; } // converts sample point to time
-    inline unsigned __int64 GetLoopPoint() const { return _loop; }
-    inline void SetLoopPoint(unsigned __int64 loop) { _loop=loop; }
+    virtual bool Skip(void* stream, uint64_t samples)=0; // Sets a stream to given sample 
+    virtual uint64_t Tell(void* stream)=0; // Gets what sample a stream is currently on
+    inline uint64_t ToSamples(double seconds) const { return (uint64_t)(seconds*_freq); } // Converts given time to sample point 
+    inline double ToSeconds(uint64_t samples) const { return samples/(double)_freq; } // converts sample point to time
+    inline uint64_t GetLoopPoint() const { return _loop; }
+    inline void SetLoopPoint(uint64_t loop) { _loop=loop; }
 
     enum TINYOAL_FILETYPE : unsigned char
     {
@@ -45,7 +45,7 @@ namespace TinyOAL {
     inline unsigned int GetChannels() const { return _channels; }
     inline unsigned int GetFormat() const { return _format; }
     inline unsigned int GetBufSize() const { return _bufsize; }
-    inline unsigned __int64 GetTotalSamples() const { return _total; }
+    inline uint64_t GetTotalSamples() const { return _total; }
     inline double GetLength() const { return ToSeconds(_total); }
     inline unsigned short GetBitsPerSample() const { return _samplebits; }
     inline cAudio* GetActiveInstances() const { return _activelist; }
@@ -57,12 +57,12 @@ namespace TinyOAL {
     cAudio* Play(TINYOAL_FLAG flags=TINYOAL_ISPLAYING);
 
     // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
-    static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
-    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
-    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, unsigned __int64 loop=(unsigned __int64)-1);
+    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
 
-    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop);
+    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
     typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
     typedef std::pair<void*, unsigned int>(*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
@@ -85,13 +85,13 @@ namespace TinyOAL {
 #else
     cAudioResource(const cAudioResource& copy) = delete;
 #endif
-    cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, unsigned __int64 loop);
+    cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop);
     virtual ~cAudioResource();
     void _destruct();
 
-    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
-    static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
-    static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, unsigned __int64 loop);
+    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
+    static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
+    static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static unsigned char BSS_FASTCALL _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss_util::cHash<const char*, cAudioResource*, true> _audiohash;
     static bss_util::cBlockAlloc<cAudio> _allocaudio;
@@ -106,8 +106,8 @@ namespace TinyOAL {
     unsigned int _format;
     unsigned int _bufsize;
     unsigned short _samplebits;
-    unsigned __int64 _loop;
-    unsigned __int64 _total; // total number of samples
+    uint64_t _loop;
+    uint64_t _total; // total number of samples
     cStr _hash;
     cAudio* _activelist;
     cAudio* _activelistend;
@@ -124,11 +124,11 @@ namespace TinyOAL {
 
   //8 functions - Four for parsing pure void*, and four for reading files
   extern size_t dat_read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
-  extern int dat_seek_func(void *datasource, __int64 offset, int whence);
+  extern int dat_seek_func(void *datasource, int64_t offset, int whence);
   extern int dat_close_func(void *datasource);
   extern long dat_tell_func(void *datasource);
   extern size_t file_read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
-  extern int file_seek_func(void *datasource, __int64 offset, int whence);
+  extern int file_seek_func(void *datasource, int64_t offset, int whence);
   extern int file_close_func(void *datasource);
   extern long file_tell_func(void *datasource);
 }

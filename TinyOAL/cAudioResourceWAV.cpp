@@ -9,7 +9,7 @@
 using namespace TinyOAL;
 bss_util::cBlockAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
 
-cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)
+cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)
 {
   wav_callbacks callbacks;
   if(_flags&TINYOAL_ISFILE) {
@@ -89,21 +89,21 @@ bool cAudioResourceWAV::Reset(void* stream)
   return !cTinyOAL::Instance()->waveFuncs->Seek(*r, 0);
 }
 
-bool cAudioResourceWAV::Skip(void* stream, unsigned __int64 samples)
+bool cAudioResourceWAV::Skip(void* stream, uint64_t samples)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
   return !cTinyOAL::Instance()->waveFuncs->Seek(*r, samples*(bits>>3)*_channels);
 }
-unsigned __int64 cAudioResourceWAV::Tell(void* stream)
+uint64_t cAudioResourceWAV::Tell(void* stream)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
   unsigned short bits=r->wfEXT.Format.wBitsPerSample;
-  unsigned __int64 pos = (bits>>3)*_channels;
+  uint64_t pos = (bits>>3)*_channels;
   return !pos?0:cTinyOAL::Instance()->waveFuncs->Tell(*r)/pos;
 }
 
-size_t cAudioResourceWAV::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+size_t cAudioResourceWAV::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p) new(p) cAudioResourceWAV(data, datalength, flags, loop);
   return sizeof(cAudioResourceWAV);

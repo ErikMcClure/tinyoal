@@ -36,14 +36,14 @@ using namespace bss_util;
 struct WAVEFILEHEADER
 {
 	char RIFF[4];
-	unsigned __int32	sz;
+	uint32_t	sz;
 	char WAVE[4];
 };
 
 struct RIFFCHUNK
 {
 	char name[4];
-	unsigned __int32	size;
+	uint32_t	size;
 };
 #pragma pack(pop)
 
@@ -121,7 +121,7 @@ cWaveFunctions::WAVERESULT cWaveFunctions::Read(WAVEFILEINFO& wave, void *data, 
   }
 	return WR_OK;
 }
-cWaveFunctions::WAVERESULT cWaveFunctions::Seek(WAVEFILEINFO& wave, __int64 offset)
+cWaveFunctions::WAVERESULT cWaveFunctions::Seek(WAVEFILEINFO& wave, int64_t offset)
 {
   if(!wave.source) return WR_INVALIDPARAM;
   wave.callbacks.seek_func(wave.source, wave.offset + offset, SEEK_SET);
@@ -132,7 +132,7 @@ cWaveFunctions::WAVERESULT cWaveFunctions::Close(WAVEFILEINFO& wave)
   wave.callbacks.close_func(wave.source);
   return WR_OK;
 }
-unsigned __int64 cWaveFunctions::Tell(WAVEFILEINFO& wave)
+uint64_t cWaveFunctions::Tell(WAVEFILEINFO& wave)
 {
   return wave.callbacks.tell_func(wave.source) - wave.offset;
 }
@@ -206,7 +206,7 @@ unsigned int cWaveFunctions::GetALFormat(WAVEFILEINFO& wave)
   return 0;
 }
 
-unsigned int cWaveFunctions::WriteHeader(char* buffer,unsigned int length,unsigned short channels, unsigned short bits, unsigned __int32 freq)
+unsigned int cWaveFunctions::WriteHeader(char* buffer,unsigned int length,unsigned short channels, unsigned short bits, uint32_t freq)
 {
   static const int FULL_HEADER_SIZE=sizeof(WAVEFILEHEADER)+sizeof(RIFFCHUNK)+sizeof(WAVEFORMATEX)-sizeof(unsigned short)+sizeof(RIFFCHUNK);
   if(!buffer)

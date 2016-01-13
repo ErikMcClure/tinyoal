@@ -24,8 +24,8 @@ namespace TinyOAL_net {
     clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL_FLAG flags, CLR_TINYOAL_FILETYPE filetype);
     ~clr_AudioResource();
     !clr_AudioResource();
-    unsigned __int64 ToSamples(double seconds); // Converts given time to sample point 
-    property unsigned __int64 LoopPoint { unsigned __int64 get(); void set(unsigned __int64 looppoint); }
+    uint64_t ToSamples(double seconds); // Converts given time to sample point 
+    property uint64_t LoopPoint { uint64_t get(); void set(uint64_t looppoint); }
     property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); void set(CLR_TINYOAL_FLAG flags); }
     property CLR_TINYOAL_FILETYPE FileType { CLR_TINYOAL_FILETYPE get(); }
     property unsigned int Frequency { unsigned int get(); }

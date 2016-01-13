@@ -37,9 +37,9 @@ clr_AudioResource::clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL
 }
 clr_AudioResource::~clr_AudioResource() { this->!clr_AudioResource(); }
 clr_AudioResource::!clr_AudioResource() { if(_ref) _ref->Drop(); }
-unsigned __int64 clr_AudioResource::ToSamples(double seconds) { return !_ref?0:_ref->ToSamples(seconds); }
-unsigned __int64 clr_AudioResource::LoopPoint::get() { return !_ref?-1LL:_ref->GetLoopPoint(); }
-void clr_AudioResource::LoopPoint::set(unsigned __int64 loop) { if(_ref) _ref->SetLoopPoint(loop); }
+uint64_t clr_AudioResource::ToSamples(double seconds) { return !_ref?0:_ref->ToSamples(seconds); }
+uint64_t clr_AudioResource::LoopPoint::get() { return !_ref?-1LL:_ref->GetLoopPoint(); }
+void clr_AudioResource::LoopPoint::set(uint64_t loop) { if(_ref) _ref->SetLoopPoint(loop); }
 CLR_TINYOAL_FLAG clr_AudioResource::Flags::get() { return !_ref?0:_ref->GetFlags(); }
 void clr_AudioResource::Flags::set(CLR_TINYOAL_FLAG flags) { if(_ref) _ref->SetFlags(flags); }
 CLR_TINYOAL_FILETYPE clr_AudioResource::FileType::get() { return !_ref ? 0 : _ref->GetFileType(); }

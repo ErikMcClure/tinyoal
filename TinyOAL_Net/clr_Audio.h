@@ -6,6 +6,7 @@
 #define __CLR_AUDIO_H__
 
 #include <vcclr.h>
+#include <cstdint>
 
 namespace TinyOAL { class cAudio; }
 
@@ -34,7 +35,7 @@ namespace TinyOAL_net {
 		// This returns whether the sample is (supposed) to be playing. Whether a sample is actually playing can differ due to starved audio sources and other things. 
     property bool Playing { bool get(); }
     // Attempts to skip to the given song time (in seconds or samples) 
-    property unsigned __int64 Time { unsigned __int64 get(); void set(unsigned __int64 sample); }
+    property uint64_t Time { uint64_t get(); void set(uint64_t sample); }
     bool SkipSeconds(double seconds);
 		// Sets the volume - 1.0 signifies 100% volume, 0.5 is 50%, 1.5 is 150%, etc. 
     property float Volume { float get(); void set(float volume); }
@@ -43,7 +44,7 @@ namespace TinyOAL_net {
 		// This sets the position of the sound in a 3D space. This function's parameters are RELATIVE - that means if you set Y and Z to 0, the X value will become meaningless. By default Z is 0.5, so nearly all the way to the left is -10.0 and nearly all the way to the right is 10.0, and centered is 0.0 
     property cli::array<float>^ Position { cli::array<float>^ get(); void set(cli::array<float>^ pos); }
     // Sets loop point in seconds, or samples 
-    property unsigned __int64 LoopPoint { unsigned __int64 get(); void set(unsigned __int64 looppoint); }
+    property uint64_t LoopPoint { uint64_t get(); void set(uint64_t looppoint); }
     void SetLoopPointSeconds(double seconds);
     // Get Flags 
     property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); }

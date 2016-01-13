@@ -18,7 +18,7 @@ using namespace TinyOAL;
 #pragma comment(lib, "Mfreadwrite.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-cAudioResourceM4A::cAudioResourceM4A(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_M4A, loop)
+cAudioResourceM4A::cAudioResourceM4A(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_M4A, loop)
 {
   if(FAILED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
     TINYOAL_LOGM("ERROR", "SSMF: failed to initialize COM");
@@ -172,7 +172,7 @@ bool cAudioResourceM4A::Reset(void* stream)
 {
   return Skip(stream, 0);
 }
-bool cAudioResourceM4A::Skip(void* stream, unsigned __int64 samples)
+bool cAudioResourceM4A::Skip(void* stream, uint64_t samples)
 {
   sMP4* s = (sMP4*)stream;
   s->buf.resize(0);
@@ -180,8 +180,8 @@ bool cAudioResourceM4A::Skip(void* stream, unsigned __int64 samples)
   if(FAILED(s->reader->Flush(MF_SOURCE_READER_FIRST_AUDIO_STREAM)))
     TINYOAL_LOGM("WARNING", "SSMF: failed to flush before seek");
 
-  //__int64 seekTarget = samples / _channels;
-  s->cur = static_cast<__int64>((static_cast<double>(samples) / _freq) * 1e7);
+  //int64_t seekTarget = samples / _channels;
+  s->cur = static_cast<int64_t>((static_cast<double>(samples) / _freq) * 1e7);
 
   PROPVARIANT prop;
   InitPropVariantFromInt64(s->cur, &prop);
@@ -190,13 +190,13 @@ bool cAudioResourceM4A::Skip(void* stream, unsigned __int64 samples)
   PropVariantClear(&prop);
   return true;
 }
-unsigned __int64 cAudioResourceM4A::Tell(void* stream)
+uint64_t cAudioResourceM4A::Tell(void* stream)
 {
   sMP4* s = (sMP4*)stream;
   return (s->cur*_freq)/1e7;
 }
 
-size_t cAudioResourceM4A::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned __int64 loop)
+size_t cAudioResourceM4A::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p) new(p) cAudioResourceM4A(data, datalength, flags, loop);
   return sizeof(cAudioResourceM4A);

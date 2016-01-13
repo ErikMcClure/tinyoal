@@ -173,7 +173,7 @@ bool cAudio::SkipSeconds(double seconds)
   if(!_source) return false;
   return Skip(_source->ToSamples(seconds));
 }
-bool cAudio::Skip(unsigned __int64 sample)
+bool cAudio::Skip(uint64_t sample)
 {
   if(!_source || !_stream) return false;
   if(!_source->Skip(_stream,sample)) return false;
@@ -191,7 +191,7 @@ bool cAudio::Skip(unsigned __int64 sample)
   return true;
 }
 
-unsigned __int64 cAudio::IsWhere() const
+uint64_t cAudio::IsWhere() const
 {
   if(!_source || !_stream) return 0;
   ALint offset=0;
@@ -205,7 +205,7 @@ void cAudio::SetLoopPointSeconds(double seconds)
     _looptime = _source->ToSamples(seconds);
 }
 
-void cAudio::SetLoopPoint(unsigned __int64 samples)
+void cAudio::SetLoopPoint(uint64_t samples)
 {
   _looptime = samples;
 }
@@ -290,7 +290,7 @@ unsigned long cAudio::_readbuf()
   bool eof;
   unsigned long hold;
 	unsigned long ulBytesWritten = _source->Read(_stream, pDecodeBuffer, _bufsize, eof);
-  if(eof && _looptime!=(unsigned __int64)-1)
+  if(eof && _looptime!=(uint64_t)-1)
   {
     while(eof && ulBytesWritten<_bufsize) // If we didn't completely fill up our buffer, we hit the end, so if we're looping, reset.
     { // We reset the stream here for every loop, because we will only loop if we hit the end of the stream.
