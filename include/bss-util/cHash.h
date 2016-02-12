@@ -16,7 +16,7 @@ namespace bss_util {
   inline bool khint_equalfunc(T a, T b) { return a == b; }
 
   template<typename khkey_t, typename khval_t, bool kh_is_map, khint_t(*__hash_func)(khkey_t), bool(*__hash_equal)(khkey_t, khkey_t)>
-  class BSS_COMPILER_DLLEXPORT kh_template_t
+  class BSS_TEMPLATE_DLLEXPORT kh_template_t
   {
   public:
     khint_t n_buckets, size, n_occupied, upper_bound;
@@ -201,7 +201,7 @@ namespace bss_util {
   };
 
   template<typename khkey_t, typename khval_t, bool kh_is_map, khint_t(*__hash_func)(khkey_t), bool(*__hash_equal)(khkey_t, khkey_t)>
-  class BSS_COMPILER_DLLEXPORT kh_insert_template_t : protected kh_template_t<khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal>
+  class BSS_TEMPLATE_DLLEXPORT kh_insert_template_t : protected kh_template_t<khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal>
   {
     template<bool CHK, typename KHGET, typename KHTYPE> friend struct __getval_KHASH;
 
@@ -221,7 +221,7 @@ namespace bss_util {
   };
 
   template<typename khkey_t, typename khval_t, khint_t(*__hash_func)(khkey_t), bool(*__hash_equal)(khkey_t, khkey_t)>
-  class BSS_COMPILER_DLLEXPORT kh_insert_template_t<khkey_t, khval_t, false, __hash_func, __hash_equal> : protected kh_template_t<khkey_t, khval_t, false, __hash_func, __hash_equal>
+  class BSS_TEMPLATE_DLLEXPORT kh_insert_template_t<khkey_t, khval_t, false, __hash_func, __hash_equal> : protected kh_template_t<khkey_t, khval_t, false, __hash_func, __hash_equal>
   {
     template<bool CHK, typename KHGET, typename KHTYPE> friend struct __getval_KHASH;
 
@@ -236,7 +236,7 @@ namespace bss_util {
 
   // Base template for cKhash. If you want a set instead of a map, set khval_t to 'char' and kh_is_map to 'false'.
   template<typename khkey_t, typename khval_t, bool kh_is_map, khint_t(*__hash_func)(khkey_t), bool(*__hash_equal)(khkey_t, khkey_t), typename khget_t = khval_t*, khget_t INVALID = 0>
-  class BSS_COMPILER_DLLEXPORT cKhash : public kh_insert_template_t<khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal>
+  class BSS_TEMPLATE_DLLEXPORT cKhash : public kh_insert_template_t<khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal>
   {
   protected:
     typedef khkey_t KHKEY;
@@ -297,7 +297,7 @@ namespace bss_util {
     //inline KHVAL& operator[](khiter_t iterator) { return kh_val(iterator); }
     //inline const KHVAL& operator[](khiter_t iterator) const { return kh_val(iterator); }
 
-    class BSS_COMPILER_DLLEXPORT cKhash_Iter : public std::iterator<std::bidirectional_iterator_tag, khiter_t>
+    class BSS_TEMPLATE_DLLEXPORT cKhash_Iter : public std::iterator<std::bidirectional_iterator_tag, khiter_t>
     {
     public:
       inline explicit cKhash_Iter(const cKhash& src) : _src(&src), cur(0) { _chknext(); }
@@ -348,29 +348,29 @@ namespace bss_util {
   template<typename T> struct KH_AUTO_HELPER<T, 2> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_INT_HASHFUNC<T>((int32_t)k); } };
   template<typename T> struct KH_AUTO_HELPER<T, 4> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_INT64_HASHFUNC((int64_t)k); } };
 
-#ifdef BSS_COMPILER_GCC // GCC decides that "force inline" doesn't really mean "force inline" so we have to put static here to protect it from it's own idiocy.
-#define FIX_PISS_POOR_PROGRAMMING_IN_GCC static
+#ifndef BSS_COMPILER_MSC // GCC decides that "force inline" doesn't really mean "force inline" so we have to put static here to protect it from it's own idiocy.
+#define MSC_NOSTATIC static
 #else
-#define FIX_PISS_POOR_PROGRAMMING_IN_GCC 
+#define MSC_NOSTATIC 
 #endif
 
   template<typename T>
-  FIX_PISS_POOR_PROGRAMMING_IN_GCC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC(T k) { return KH_AUTO_HELPER<T, std::is_pointer<T>::value + std::is_integral<T>::value * 2 * (1 + (sizeof(T) == 8))>::hash(k); }
+  MSC_NOSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC(T k) { return KH_AUTO_HELPER<T, std::is_pointer<T>::value + std::is_integral<T>::value * 2 * (1 + (sizeof(T) == 8))>::hash(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const char*>(const char* k) { return KH_STR_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<char*>(char* k) { return KH_STR_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const wchar_t*>(const wchar_t* k) { return KH_STRW_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<wchar_t*>(wchar_t* k) { return KH_STRW_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<double>(double k) { return KH_INT64_HASHFUNC(*(int64_t*)&k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<float>(float k) { return *(khint32_t*)&k; }
-  template<typename T> FIX_PISS_POOR_PROGRAMMING_IN_GCC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC(T k) { return KH_STRINS_HASHFUNC(k); }
+  template<typename T> MSC_NOSTATIC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC(T k) { return KH_STRINS_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<const wchar_t*>(const wchar_t* k) { return KH_STRWINS_HASHFUNC(k); }
   template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<wchar_t*>(wchar_t* k) { return KH_STRWINS_HASHFUNC(k); }
 
   template<typename T>
-  FIX_PISS_POOR_PROGRAMMING_IN_GCC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC(T a, T b) { return a == b; }
+  MSC_NOSTATIC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC(T a, T b) { return a == b; }
   template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const char*>(const char* a, const char* b) { return strcmp(a, b) == 0; }
   template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const wchar_t*>(const wchar_t* a, const wchar_t* b) { return wcscmp(a, b) == 0; }
-  template<typename T> FIX_PISS_POOR_PROGRAMMING_IN_GCC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC(T a, T b) { return STRICMP(a, b) == 0; }
+  template<typename T> MSC_NOSTATIC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC(T a, T b) { return STRICMP(a, b) == 0; }
   template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<const wchar_t*>(const wchar_t* a, const wchar_t* b) { return WCSICMP(a, b) == 0; }
   template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<wchar_t*>(wchar_t* a, wchar_t* b) { return WCSICMP(a, b) == 0; }
 

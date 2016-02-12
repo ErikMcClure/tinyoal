@@ -9,97 +9,6 @@
 #include <emmintrin.h>
 
 // Define compiler-specific intrinsics for working with SSE.
-/*#ifdef BSS_COMPILER_GCC
-#define BSS_SSE_LOAD_APS __builtin_ia32_loadaps
-#define BSS_SSE_LOAD_UPS __builtin_ia32_loadups
-#define BSS_SSE_SET_PS 
-#define BSS_SSE_SET1_PS 
-#define BSS_SSE_STORE_APS __builtin_ia32_storeaps
-#define BSS_SSE_STORE_UPS __builtin_ia32_storeups
-#define BSS_SSE_ADD_PS __builtin_ia32_addps
-#define BSS_SSE_SUB_PS __builtin_ia32_subps 
-#define BSS_SSE_MUL_PS __builtin_ia32_mulps
-#define BSS_SSE_DIV_PS __builtin_ia32_divps
-#define BSS_SSE_MIN_PS 
-#define BSS_SSE_MAX_PS 
-#define BSS_SSE_LOAD_APD 
-#define BSS_SSE_LOAD_UPD 
-#define BSS_SSE_SET_PD 
-#define BSS_SSE_SET1_PD 
-#define BSS_SSE_STORE_APD 
-#define BSS_SSE_STORE_UPD 
-#define BSS_SSE_ADD_PD 
-#define BSS_SSE_SUB_PD 
-#define BSS_SSE_MUL_PD 
-#define BSS_SSE_DIV_PD 
-#define BSS_SSE_MIN_PD 
-#define BSS_SSE_MAX_PD 
-
-#define BSS_SSE_LOAD_ASI128 
-#define BSS_SSE_LOAD_USI128  
-#define BSS_SSE_SET_EPI32 
-#define BSS_SSE_SET1_EPI32 
-#define BSS_SSE_STORE_ASI128  
-#define BSS_SSE_STORE_USI128  
-#define BSS_SSE_ADD_EPI32 __builtin_ia32_paddd128
-#define BSS_SSE_SUB_EPI32 __builtin_ia32_psubd128
-#define BSS_SSE_MIN_EPI32 
-#define BSS_SSE_MAX_EPI32 
-#define BSS_SSE_AND __builtin_ia32_pand
-#define BSS_SSE_OR __builtin_ia32_por
-#define BSS_SSE_XOR __builtin_ia32_pxor
-#define BSS_SSE_SL_EPI32 __builtin_ia32_pslld128
-#define BSS_SSE_SLI_EPI32 __builtin_ia32_pslldi128
-#define BSS_SSE_SR_EPI32 __builtin_ia32_psrld128
-#define BSS_SSE_SRI_EPI32 __builtin_ia32_psrldi128
-#define BSS_SSE_SAR_EPI32 __builtin_ia32_psrad128 //Arithmetic right shift
-#define BSS_SSE_SARI_EPI32 __builtin_ia32_psradi128
-#define BSS_SSE_CMPEQ_EPI32 __builtin_ia32_pcmpeqd128
-#define BSS_SSE_CMPLT_EPI32 
-#define BSS_SSE_CMPGT_EPI32 __builtin_ia32_pcmpgtd128
-#define BSS_SSE_CMPEQ_PS _mm_cmpeq_ps
-#define BSS_SSE_CMPNEQ_PS _mm_cmpneq_ps
-#define BSS_SSE_CMPLT_PS _mm_cmplt_ps
-#define BSS_SSE_CMPLTE_PS _mm_cmple_ps
-#define BSS_SSE_CMPGT_PS _mm_cmpgt_ps
-#define BSS_SSE_CMPGTE_PS _mm_cmpge_ps
-#define BSS_SSE_CMPEQ_PD _mm_cmpeq_pd
-#define BSS_SSE_CMPNEQ_PD _mm_cmpneq_pd
-#define BSS_SSE_CMPLT_PD _mm_cmplt_pd
-#define BSS_SSE_CMPLTE_PD _mm_cmple_pd
-#define BSS_SSE_CMPGT_PD _mm_cmpgt_pd
-#define BSS_SSE_CMPGTE_PD _mm_cmpge_pd
-
-#define BSS_SSE_SET_EPI64 
-#define BSS_SSE_SET1_EPI64 
-#define BSS_SSE_ADD_EPI64 __builtin_ia32_paddq128
-#define BSS_SSE_SUB_EPI64 __builtin_ia32_psubq128
-#define BSS_SSE_SL_EPI64 __builtin_ia32_psllq128
-#define BSS_SSE_SLI_EPI64 __builtin_ia32_psllqi128
-#define BSS_SSE_SR_EPI64 
-#define BSS_SSE_SRI_EPI64 
-
-#define BSS_SSE_SHUFFLE_EPI32 
-#define BSS_SSE_SHUFFLEHI_EPI16 __builtin_ia32_pshufhw
-#define BSS_SSE_SHUFFLELO_EPI16 __builtin_ia32_pshuflw
-#define BSS_SSE_SHUFFLE_PD 
-#define BSS_SSE_SHUFFLE_PS 
-#define BSS_SSE_SETZERO_PD 
-#define BSS_SSE_SETZERO_PS 
-#define BSS_SSE_SETZERO_SI128 
-
-#define BSS_SSE_TPS_EPI32 __builtin_ia32_cvttps2dq //converts using truncation
-#define BSS_SSE_TPD_EPI32 _mm_cvttpd_epi32 //converts using truncation
-#define BSS_SSE_PS_EPI32 __builtin_ia32_cvtps2dq
-#define BSS_SSE_PD_EPI32 _mm_cvtpd_epi32
-#define BSS_SSE_EPI32_PS __builtin_ia32_cvtdq2ps
-#define BSS_SSE_PD_PS _mm_cvtpd_ps 
-#define BSS_SSE_M128 v4sf
-#define BSS_SSE_M128i v4si
-#define BSS_SSE_M128i64 v2di
-#define BSS_SSE_M128d v2df*/
-
-//#elif defined(BSS_COMPILER_MSC) || defined(BSS_COMPILER_INTEL) // VC++ or intel
 #define BSS_SSE_LOAD_APS _mm_load_ps
 #define BSS_SSE_LOAD_UPS _mm_loadu_ps
 #define BSS_SSE_SET_PS _mm_set_ps
@@ -114,9 +23,17 @@
 #define BSS_SSE_MAX_PS bss_mm_max_ps
 #define BSS_SSE_CMPEQ_PS _mm_cmpeq_ps
 #define BSS_SSE_CMPNEQ_PS _mm_cmpneq_ps
+
+#ifdef BSS_COMPILER_CLANG
+#define BSS_SSE_CMPLT_PS
+#define BSS_SSE_CMPLTE_PS
+#define BSS_SSE_CMPGT_PS
+#else
 #define BSS_SSE_CMPLT_PS _mm_cmplt_ps
 #define BSS_SSE_CMPLTE_PS _mm_cmple_ps
 #define BSS_SSE_CMPGT_PS _mm_cmpgt_ps
+#endif
+
 #define BSS_SSE_CMPGTE_PS _mm_cmpge_ps
 #define BSS_SSE_SS_F32 _mm_cvtss_f32
 
@@ -220,8 +137,7 @@
 #define BSS_SSE_M128i16 __m128i
 #define BSS_SSE_M128i __m128i
 #define BSS_SSE_M128i64 __m128i
-#define BSS_SSE_M128d __m128d 
-//#endif
+#define BSS_SSE_M128d __m128d
 
 #define BSS_SSE_SHUFFLE(x,y,z,w) ((w<<6) | (z<<4) | (y<<2) | x)
 
@@ -380,47 +296,47 @@ BSS_ALIGNED_STRUCT(16) sseVecT<double>
 
 // 8-bit signed integer operations
 template<>
-BSS_ALIGNED_STRUCT(16) sseVecT<int8_t>
+BSS_ALIGNED_STRUCT(16) sseVecT<char>
 {
-  BSS_FORCEINLINE sseVecT<int8_t>(BSS_SSE_M128i16 v) : xmm(v) {} //__fastcall is obviously useless here since we're dealing with xmm registers
-  BSS_FORCEINLINE sseVecT<int8_t>(int8_t v) : xmm(BSS_SSE_SET1_EPI8(v)) {}
-  //BSS_FORCEINLINE sseVecT<int8_t>(const int*BSS_RESTRICT v) : xmm(BSS_SSE_LOAD_ASI128(v)) { assert(!(((size_t)v)%16)); }
-  BSS_FORCEINLINE explicit sseVecT<int8_t>(const int8_t(&v)[16]) : xmm(BSS_SSE_LOAD_ASI128((BSS_SSE_M128i16*)v)) { assert(!(((size_t)v)%16)); }
-  BSS_FORCEINLINE explicit sseVecT<int8_t>(BSS_UNALIGNED<const int8_t> v) : xmm(BSS_SSE_LOAD_USI128((BSS_SSE_M128i16*)v._p)) {}
-  BSS_FORCEINLINE sseVecT<int8_t>(int8_t b1, int8_t b2, int8_t b3, int8_t b4, int8_t b5, int8_t b6, int8_t b7, int8_t b8, int8_t b9, int8_t b10,
-    int8_t b11, int8_t b12, int8_t b13, int8_t b14, int8_t b15, int8_t b16) : // This is the craziest constructor definition ever
+  BSS_FORCEINLINE sseVecT<char>(BSS_SSE_M128i16 v) : xmm(v) {} //__fastcall is obviously useless here since we're dealing with xmm registers
+  BSS_FORCEINLINE sseVecT<char>(char v) : xmm(BSS_SSE_SET1_EPI8(v)) {}
+  //BSS_FORCEINLINE sseVecT<char>(const int*BSS_RESTRICT v) : xmm(BSS_SSE_LOAD_ASI128(v)) { assert(!(((size_t)v)%16)); }
+  BSS_FORCEINLINE explicit sseVecT<char>(const char(&v)[16]) : xmm(BSS_SSE_LOAD_ASI128((BSS_SSE_M128i16*)v)) { assert(!(((size_t)v)%16)); }
+  BSS_FORCEINLINE explicit sseVecT<char>(BSS_UNALIGNED<const char> v) : xmm(BSS_SSE_LOAD_USI128((BSS_SSE_M128i16*)v._p)) {}
+  BSS_FORCEINLINE sseVecT<char>(char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10,
+    char b11, char b12, char b13, char b14, char b15, char b16) : // This is the craziest constructor definition ever
     xmm(BSS_SSE_SET_EPI8(b16, b15, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1)) {}
-  BSS_FORCEINLINE sseVecT<int8_t> operator+(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_ADD_EPI8(xmm, r.xmm)); } // These don't return const sseVecT<int8_t> because it makes things messy.
-  BSS_FORCEINLINE sseVecT<int8_t> operator-(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_SUB_EPI8(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator&(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_AND(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator|(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_OR(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator^(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_XOR(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator+=(const sseVecT<int8_t>& r) { xmm=BSS_SSE_ADD_EPI8(xmm, r.xmm); return *this; }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator-=(const sseVecT<int8_t>& r) { xmm=BSS_SSE_SUB_EPI8(xmm, r.xmm); return *this; }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator&=(const sseVecT<int8_t>& r) { xmm=BSS_SSE_AND(xmm, r.xmm); return *this; }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator|=(const sseVecT<int8_t>& r) { xmm=BSS_SSE_OR(xmm, r.xmm); return *this; }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator^=(const sseVecT<int8_t>& r) { xmm=BSS_SSE_XOR(xmm, r.xmm); return *this; }
+  BSS_FORCEINLINE sseVecT<char> operator+(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_ADD_EPI8(xmm, r.xmm)); } // These don't return const sseVecT<char> because it makes things messy.
+  BSS_FORCEINLINE sseVecT<char> operator-(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_SUB_EPI8(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator&(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_AND(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator|(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_OR(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator^(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_XOR(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char>& operator+=(const sseVecT<char>& r) { xmm=BSS_SSE_ADD_EPI8(xmm, r.xmm); return *this; }
+  BSS_FORCEINLINE sseVecT<char>& operator-=(const sseVecT<char>& r) { xmm=BSS_SSE_SUB_EPI8(xmm, r.xmm); return *this; }
+  BSS_FORCEINLINE sseVecT<char>& operator&=(const sseVecT<char>& r) { xmm=BSS_SSE_AND(xmm, r.xmm); return *this; }
+  BSS_FORCEINLINE sseVecT<char>& operator|=(const sseVecT<char>& r) { xmm=BSS_SSE_OR(xmm, r.xmm); return *this; }
+  BSS_FORCEINLINE sseVecT<char>& operator^=(const sseVecT<char>& r) { xmm=BSS_SSE_XOR(xmm, r.xmm); return *this; }
 
   BSS_FORCEINLINE operator BSS_SSE_M128i16() const { return xmm; }
-  BSS_FORCEINLINE sseVecT<int8_t> operator==(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_CMPEQ_EPI8(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator!=(const sseVecT<int8_t>& r) const { return !operator==(r); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator<(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_CMPLT_EPI8(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator<=(const sseVecT<int8_t>& r) const { return !operator>(r); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator>(const sseVecT<int8_t>& r) const { return sseVecT<int8_t>(BSS_SSE_CMPGT_EPI8(xmm, r.xmm)); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator>=(const sseVecT<int8_t>& r) const { return !operator<(r); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator~() const { return sseVecT<int8_t>(BSS_SSE_XOR(xmm, sseVecT<int8_t>(-1))); }
-  BSS_FORCEINLINE sseVecT<int8_t> operator!() const { return sseVecT<int8_t>(BSS_SSE_CMPEQ_EPI8(xmm, ZeroVector())); }
-  BSS_FORCEINLINE sseVecT<int8_t>& operator=(BSS_SSE_M128i16 r) { xmm=r; return *this; }
-  BSS_FORCEINLINE void operator>>(int8_t(&v)[16]) const { assert(!(((size_t)v)%16)); BSS_SSE_STORE_ASI128((BSS_SSE_M128i16*)v, xmm); }
-  BSS_FORCEINLINE void operator>>(BSS_UNALIGNED<int8_t> v) const { BSS_SSE_STORE_USI128((BSS_SSE_M128i16*)v._p, xmm); }
-  BSS_FORCEINLINE void operator>>(int8_t& v) const { v = BSS_SSE_SI128_SI8(xmm); }
-  static sseVecT<int8_t> ZeroVector() { return sseVecT<int8_t>(_mm_setzero_si128()); }
+  BSS_FORCEINLINE sseVecT<char> operator==(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_CMPEQ_EPI8(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator!=(const sseVecT<char>& r) const { return !operator==(r); }
+  BSS_FORCEINLINE sseVecT<char> operator<(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_CMPLT_EPI8(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator<=(const sseVecT<char>& r) const { return !operator>(r); }
+  BSS_FORCEINLINE sseVecT<char> operator>(const sseVecT<char>& r) const { return sseVecT<char>(BSS_SSE_CMPGT_EPI8(xmm, r.xmm)); }
+  BSS_FORCEINLINE sseVecT<char> operator>=(const sseVecT<char>& r) const { return !operator<(r); }
+  BSS_FORCEINLINE sseVecT<char> operator~() const { return sseVecT<char>(BSS_SSE_XOR(xmm, sseVecT<char>(-1))); }
+  BSS_FORCEINLINE sseVecT<char> operator!() const { return sseVecT<char>(BSS_SSE_CMPEQ_EPI8(xmm, ZeroVector())); }
+  BSS_FORCEINLINE sseVecT<char>& operator=(BSS_SSE_M128i16 r) { xmm=r; return *this; }
+  BSS_FORCEINLINE void operator>>(char(&v)[16]) const { assert(!(((size_t)v)%16)); BSS_SSE_STORE_ASI128((BSS_SSE_M128i16*)v, xmm); }
+  BSS_FORCEINLINE void operator>>(BSS_UNALIGNED<char> v) const { BSS_SSE_STORE_USI128((BSS_SSE_M128i16*)v._p, xmm); }
+  BSS_FORCEINLINE void operator>>(char& v) const { v = BSS_SSE_SI128_SI8(xmm); }
+  static sseVecT<char> ZeroVector() { return sseVecT<char>(_mm_setzero_si128()); }
   template<int shuffle>
-  static sseVecT<int8_t> Shuffle(const sseVecT<int8_t>& x) { return BSS_SSE_SHUFFLE_EPI32(x, shuffle); }
+  static sseVecT<char> Shuffle(const sseVecT<char>& x) { return BSS_SSE_SHUFFLE_EPI32(x, shuffle); }
   template<int shuffle>
-  static sseVecT<int8_t> ShuffleHi(const sseVecT<int8_t>& x) { return BSS_SSE_SHUFFLEHI_EPI16(x, shuffle); }
+  static sseVecT<char> ShuffleHi(const sseVecT<char>& x) { return BSS_SSE_SHUFFLEHI_EPI16(x, shuffle); }
   template<int shuffle>
-  static sseVecT<int8_t> ShuffleLo(const sseVecT<int8_t>& x) { return BSS_SSE_SHUFFLELO_EPI16(x, shuffle); }
+  static sseVecT<char> ShuffleLo(const sseVecT<char>& x) { return BSS_SSE_SHUFFLELO_EPI16(x, shuffle); }
 
   BSS_SSE_M128i8 xmm;
 };
@@ -599,7 +515,7 @@ BSS_ALIGNED_STRUCT(16) sseVecT<int64_t>
 
 typedef sseVecT<float> sseVec;
 typedef sseVecT<double> sseVecd;
-typedef sseVecT<int8_t> sseVeci8;
+typedef sseVecT<char> sseVeci8;
 typedef sseVecT<int16_t> sseVeci16;
 typedef sseVecT<int32_t> sseVeci;
 typedef sseVecT<int64_t> sseVeci64;
