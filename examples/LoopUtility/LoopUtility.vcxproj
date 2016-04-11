@@ -163,12 +163,6 @@
   <ItemGroup>
     <ClCompile Include="example.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\TinyOAL\TinyOAL.vcxproj">
-      <Project>{0894447c-c38c-4119-84e4-695144584082}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
