@@ -1,1 +1,0 @@
-The content in this "media" folder is part of the TinyOAL SDK and is released for demonstration purposes only. It is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License: http://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_US

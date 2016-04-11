@@ -7,21 +7,62 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\include">
-      <UniqueIdentifier>{a7509fcf-b0a2-4bd3-8a42-cd01ad0c6816}</UniqueIdentifier>
+    <Filter Include="include">
+      <UniqueIdentifier>{c4a27464-930d-44b2-a5af-aff739db7c41}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cAudioResourceFLAC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cAudioResourceMP3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cAudioResourceOGG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cAudioResourceWAV.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cFlacFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cMp3Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cOggFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cWaveFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cAudio.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cAudioResource.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cTinyOAL.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\TinyOAL_dlldef.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cAudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cAudioResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cAudioResourceFLAC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cAudioResourceMP3.cpp">
@@ -33,6 +74,9 @@
     <ClCompile Include="cAudioResourceWAV.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cFlacFunctions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="cMp3Functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,56 +86,12 @@
     <ClCompile Include="cTinyOAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadOAL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cWaveFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cFlacFunctions.cpp">
+    <ClCompile Include="LoadOAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cAudioResourceFLAC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cAudioResourceMP3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cAudioResourceOGG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cAudioResourceWAV.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cMp3Functions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cOggFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\cAudio.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\cAudioResource.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\cTinyOAL.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\TinyOAL_dlldef.h">
-      <Filter>Header Files\include</Filter>
-    </ClInclude>
-    <ClInclude Include="cWaveFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cFlacFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cAudioResourceFLAC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TinyOAL.rc">
