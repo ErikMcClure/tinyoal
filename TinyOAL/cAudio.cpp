@@ -7,7 +7,7 @@
 #include "openAL/loadoal.h"
 #include "cTinyOAL.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 cAudio::cAudio(const cAudio& copy)
 {

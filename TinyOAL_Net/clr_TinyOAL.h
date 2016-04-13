@@ -7,7 +7,7 @@
 
 #include "clr_AudioResource.h"
 
-namespace TinyOAL { class cTinyOAL; }
+namespace tinyoal { class cTinyOAL; }
 
 namespace TinyOAL_net {
   // Managed wrapper for cTinyOAL class 
@@ -42,7 +42,7 @@ namespace TinyOAL_net {
     static void SetSettingsStream(System::String^ data);
 
   private:
-    TinyOAL::cTinyOAL* _ref; //pointer to unmanaged instance
+    tinyoal::cTinyOAL* _ref; //pointer to unmanaged instance
   };
 }
 

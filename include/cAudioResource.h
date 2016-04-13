@@ -12,7 +12,7 @@
 #include "cAudio.h"
 #include <stdio.h>
 
-namespace TinyOAL {
+namespace tinyoal {
   // Holds information about a given audio resource. An audio resource is different from an actual cAudio instance, in that it holds the raw audio information, which is then ACCESSED by any number of cAudio instances. This prevents memory wasting. 
   class TINYOAL_DLLEXPORT cAudioResource : public bss_util::cRefCounter, public bss_util::LLBase<cAudioResource>
   {

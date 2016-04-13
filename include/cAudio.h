@@ -10,7 +10,7 @@
 #include "bss-util/cBitField.h"
 #include "bss-util/bss_util.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   typedef unsigned char TINYOAL_FLAG;
 
   enum TINYOAL_FLAGS : TINYOAL_FLAG

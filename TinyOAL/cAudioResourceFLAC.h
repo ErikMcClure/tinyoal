@@ -9,7 +9,7 @@
 #include "cAudioResource.h"
 #include "cFlacFunctions.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   struct DatStreamEx;
 
 	// This is a resource class for OGG files, and handles all the IO operations from the given buffer 

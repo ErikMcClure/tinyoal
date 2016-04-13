@@ -29,7 +29,7 @@
 #define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_flacDLL, n); \
 		if(!v) TINYOAL_LOGM("ERROR","Could not load " n)
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 cFlacFunctions::cFlacFunctions(const char* force)
 {

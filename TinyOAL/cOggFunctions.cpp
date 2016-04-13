@@ -31,7 +31,7 @@
 #define FREEDYNLIB(p) dlclose(p)
 #endif
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 cOggFunctions::cOggFunctions(const char* force)
 {

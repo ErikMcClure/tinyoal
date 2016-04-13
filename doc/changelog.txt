@@ -9,6 +9,7 @@
 - Added M4A codec example (windows only)
 - Fixed error when destroying the engine while audio samples were still playing
 - Standardized integer types to C++11
+- Changed namespace to be all lowercase
 
 1.0.3
 -----

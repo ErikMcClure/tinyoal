@@ -11,7 +11,7 @@
 #include <mferror.h>
 #include <Propvarutil.h>
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 #pragma comment(lib, "Mfuuid.lib")
 #pragma comment(lib, "Mfplat.lib")

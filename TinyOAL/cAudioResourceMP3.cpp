@@ -6,7 +6,7 @@
 #include "cWaveFunctions.h"
 #include "cTinyOAL.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
  bss_util::cBlockAlloc<DatStream> cAudioResourceMP3::_datalloc;
 

@@ -6,7 +6,7 @@
 #include "cTinyOAL.h"
 #include "openAL/loadoal.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 bss_util::cBlockAlloc<WAVEFILEINFO> cAudioResourceWAV::_allocwav(3);
 
 cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)

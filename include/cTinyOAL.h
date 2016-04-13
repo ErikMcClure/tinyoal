@@ -21,12 +21,12 @@
 #include "bss-util/cSingleton.h"
 #include "bss-util/cAVLtree.h"
 
-#define TINYOAL_LOG(level)(TinyOAL::cTinyOAL::Instance()->FormatLog(__FILE__,__LINE__) << (level) << ": ")
+#define TINYOAL_LOG(level)(tinyoal::cTinyOAL::Instance()->FormatLog(__FILE__,__LINE__) << (level) << ": ")
 #define TINYOAL_LOGM(level,message) (TINYOAL_LOG(level) << (message) << std::endl)
 
 struct OPENALFNTABLE;
 
-namespace TinyOAL {
+namespace tinyoal {
   static const VersionType TINYOAL_VERSION = { TINYOAL_VERSION_MAJOR,TINYOAL_VERSION_MINOR,TINYOAL_VERSION_REVISION };
 
   class cOggFunctions;

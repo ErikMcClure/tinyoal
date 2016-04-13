@@ -7,7 +7,7 @@
 #include "cWaveFunctions.h"
 #include "openAL/loadoal.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 bss_util::cBlockAlloc<OggVorbis_FileEx> cAudioResourceOGG::_allocogg(3);
 
 // Constructor that takes a data pointer, a length of data, and flags.

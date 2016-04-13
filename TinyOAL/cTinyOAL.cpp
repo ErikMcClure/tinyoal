@@ -18,7 +18,7 @@
 #include "cFlacFunctions.h"
 #include <fstream>
 
-using namespace TinyOAL;
+using namespace tinyoal;
 using namespace bss_util;
 
 #ifdef BSS_PLATFORM_WIN32

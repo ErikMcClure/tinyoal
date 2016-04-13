@@ -13,7 +13,7 @@
 #include "taginclude/xiphcomment.h"
 #include <time.h>
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 #pragma comment(lib, "tag.lib")
 

@@ -7,7 +7,7 @@
 #include "TOCHAR.h"
 
 using namespace TinyOAL_net;
-using namespace TinyOAL;
+using namespace tinyoal;
 
 clr_AudioResource::clr_AudioResource(cAudioResource* p) : _ref(p) { if(p) p->Grab(); }
 clr_AudioResource::clr_AudioResource(System::String^ file)

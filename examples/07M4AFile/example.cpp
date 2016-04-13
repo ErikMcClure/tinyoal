@@ -9,7 +9,7 @@
 #include "cTinyOAL.h"
 #include "cAudioResourceM4A.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 #ifdef BSS_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)

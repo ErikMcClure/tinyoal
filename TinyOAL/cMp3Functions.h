@@ -10,7 +10,7 @@
 typedef ptrdiff_t ssize_t;
 #include "mpg123/mpg123.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   typedef int (*LPMPGINIT)(void);
   typedef void (*LPMPGEXIT)(void);
   typedef mpg123_handle* (*LPMPGNEW)(const char*, int*);
