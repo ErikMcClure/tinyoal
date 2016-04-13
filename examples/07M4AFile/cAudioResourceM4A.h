@@ -9,7 +9,7 @@
 
 struct IMFSourceReader;
 
-namespace TinyOAL {
+namespace tinyoal {
   // This is a resource class for MP4/M4A files using windows media foundation
   class cAudioResourceM4A : public cAudioResource
   {

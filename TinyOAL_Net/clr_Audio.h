@@ -8,7 +8,7 @@
 #include <vcclr.h>
 #include <cstdint>
 
-namespace TinyOAL { class cAudio; }
+namespace tinyoal { class cAudio; }
 
 namespace TinyOAL_net {
   ref class clr_AudioResource;
@@ -18,7 +18,7 @@ namespace TinyOAL_net {
   public ref class clr_Audio
   {
   public:
-    explicit clr_Audio(TinyOAL::cAudio* p);
+    explicit clr_Audio(tinyoal::cAudio* p);
     clr_Audio(clr_AudioResource^ ref, unsigned char addflags);
     clr_Audio(clr_Audio^ copy);
     explicit clr_Audio(clr_AudioResource^ ref);
@@ -58,7 +58,7 @@ namespace TinyOAL_net {
     static const CLR_TINYOAL_FLAG TINYOAL_ISFILE=8;
 
   protected:
-    TinyOAL::cAudio* _ref; //pointer to unmanaged object
+    tinyoal::cAudio* _ref; //pointer to unmanaged object
     bool _managed;
   };
 }

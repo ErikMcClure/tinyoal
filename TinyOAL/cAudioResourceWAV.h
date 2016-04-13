@@ -9,7 +9,7 @@
 #include "cAudioResource.h"
 #include "cWaveFunctions.h"
 
-namespace TinyOAL {
+namespace tinyoal {
 	// This is a resource class for WAV files, and handles all the IO operations from the given buffer 
   class cAudioResourceWAV : public cAudioResource
   {

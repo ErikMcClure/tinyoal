@@ -9,7 +9,7 @@
 #include "cAudioResource.h"
 #include "cMp3Functions.h"
 
-namespace TinyOAL {
+namespace tinyoal {
 	// This is a resource class for MP3 files, and handles all the IO operations from the given buffer 
   class cAudioResourceMP3 : public cAudioResource
   {

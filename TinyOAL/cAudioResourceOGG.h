@@ -9,7 +9,7 @@
 #include "cAudioResource.h"
 #include "cOggFunctions.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   struct OggVorbis_FileEx { // To make things simpler, we append data streaming information to the end of the ogg file.
     OggVorbis_File ogg;
     DatStream stream;

@@ -5,7 +5,7 @@
 #include "cAudioResource.h"
 #include "cTinyOAL.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 bss_util::cHash<const char*, cAudioResource*, true> cAudioResource::_audiohash;
 bss_util::cBlockAlloc<cAudio> cAudioResource::_allocaudio(5);
 bss_util::cHash<unsigned char, cAudioResource::Codec> cAudioResource::_codecs;
@@ -189,7 +189,7 @@ cAudioResource::Codec* cAudioResource::GetCodec(unsigned char filetype)
 
 
 //8 functions - Four for parsing pure void*, and four for reading files
-size_t TinyOAL::dat_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
+size_t tinyoal::dat_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
   DatStream* data = (DatStream*)datasource;
   size_t retval = (data->datalength-dat_tell_func(datasource))/size;
@@ -199,7 +199,7 @@ size_t TinyOAL::dat_read_func(void *ptr, size_t size, size_t nmemb, void *dataso
   return retval;
 }
 
-int TinyOAL::dat_seek_func(void *datasource, int64_t offset, int whence) //Who the hell names a parameter "whence"?!
+int tinyoal::dat_seek_func(void *datasource, int64_t offset, int whence) //Who the hell names a parameter "whence"?!
 {
   DatStream* data = (DatStream*)datasource;
   int64_t pos=0;
@@ -225,33 +225,33 @@ int TinyOAL::dat_seek_func(void *datasource, int64_t offset, int whence) //Who t
   }
 }
 
-int TinyOAL::dat_close_func(void *datasource)
+int tinyoal::dat_close_func(void *datasource)
 {
   return 0; //We manage file opening and closing.
 }
 
-long TinyOAL::dat_tell_func(void *datasource)
+long tinyoal::dat_tell_func(void *datasource)
 {
   DatStream* data = (DatStream*)datasource;
   return data->streampos-data->data;
 }
 
-size_t TinyOAL::file_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
+size_t tinyoal::file_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
 	return fread(ptr, size, nmemb, (FILE*)datasource);
 }
 
-int TinyOAL::file_seek_func(void *datasource, int64_t offset, int whence)
+int tinyoal::file_seek_func(void *datasource, int64_t offset, int whence)
 {
 	return fseek((FILE*)datasource, (long)offset, whence);
 }
 
-int TinyOAL::file_close_func(void *datasource)
+int tinyoal::file_close_func(void *datasource)
 {
   return 0; //We manage file opening and closing.
 }
 
-long TinyOAL::file_tell_func(void *datasource)
+long tinyoal::file_tell_func(void *datasource)
 {
 	return ftell((FILE*)datasource);
 }

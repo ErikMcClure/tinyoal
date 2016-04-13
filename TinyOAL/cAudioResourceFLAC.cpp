@@ -7,7 +7,7 @@
 #include "cWaveFunctions.h"
 #include "openAL/loadoal.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 
 DatStreamEx* cAudioResourceFLAC::_freelist=0;
 

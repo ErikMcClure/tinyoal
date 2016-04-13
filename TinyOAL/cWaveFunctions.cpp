@@ -29,7 +29,7 @@
 #include "cTinyOAL.h"
 #include "openAL/loadoal.h"
 
-using namespace TinyOAL;
+using namespace tinyoal;
 using namespace bss_util;
 
 #pragma pack(push, 4)

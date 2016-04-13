@@ -18,7 +18,7 @@
 #define SLEEP(n) usleep(n*1000) //translate milliseconds to microseconds
 #endif
 
-using namespace TinyOAL;
+using namespace tinyoal;
 using namespace bss_util;
   
 const char* BSS_FASTCALL trimpath(const char* path)

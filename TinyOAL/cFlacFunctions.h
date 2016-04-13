@@ -8,7 +8,7 @@
 
 #include "flac/stream_decoder.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   typedef FLAC__StreamDecoder* (*LPFLACNEW)(void);
   typedef void (*LPFLACDELETE)(FLAC__StreamDecoder*);
 

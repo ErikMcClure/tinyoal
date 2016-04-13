@@ -8,7 +8,7 @@
 #include "TOCHAR.h"
 
 using namespace TinyOAL_net;
-using namespace TinyOAL;
+using namespace tinyoal;
 
 clr_TinyOAL::clr_TinyOAL() : _ref(new cTinyOAL()) {}
 clr_TinyOAL::clr_TinyOAL(int defaultbuffers) : _ref(new cTinyOAL(defaultbuffers)) {}

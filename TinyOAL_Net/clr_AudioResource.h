@@ -7,7 +7,7 @@
 
 #include "clr_Audio.h"
 
-namespace TinyOAL { class cAudioResource; }
+namespace tinyoal { class cAudioResource; }
 
 namespace TinyOAL_net {
   typedef unsigned char CLR_TINYOAL_FILETYPE;
@@ -16,7 +16,7 @@ namespace TinyOAL_net {
   public ref class clr_AudioResource
   {
   public:
-    explicit clr_AudioResource(TinyOAL::cAudioResource* p);
+    explicit clr_AudioResource(tinyoal::cAudioResource* p);
     explicit clr_AudioResource(System::String^ file);
     clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags);
     clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags, CLR_TINYOAL_FILETYPE filetype);
@@ -38,7 +38,7 @@ namespace TinyOAL_net {
     clr_Audio^ Play();
     inline bool IsValid() { return _ref != 0; }
 
-    inline operator TinyOAL::cAudioResource*() { return _ref; }
+    inline operator tinyoal::cAudioResource*() { return _ref; }
 
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_UNKNOWN = 0;
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_WAV = 1;
@@ -47,7 +47,7 @@ namespace TinyOAL_net {
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_FLAC = 4;
 
   protected:
-    TinyOAL::cAudioResource* _ref; //pointer to unmanaged object
+    tinyoal::cAudioResource* _ref; //pointer to unmanaged object
   };
 }
 

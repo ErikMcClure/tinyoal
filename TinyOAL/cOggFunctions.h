@@ -8,7 +8,7 @@
 
 #include "openAL/vorbisfile.h"
 
-namespace TinyOAL {
+namespace tinyoal {
   typedef int (*LPOVCLEAR)(OggVorbis_File *vf);
   typedef long (*LPOVREAD)(OggVorbis_File *vf,char *buffer,int length,int bigendianp,int word,int sgned,int *bitstream);
   typedef vorbis_info * (*LPOVINFO)(OggVorbis_File *vf,int link);

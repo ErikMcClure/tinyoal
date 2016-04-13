@@ -6,7 +6,7 @@
 #include "cAudio.h"
 
 using namespace TinyOAL_net;
-using namespace TinyOAL;
+using namespace tinyoal;
 
 clr_Audio::clr_Audio(clr_Audio^ copy) : _ref(!copy->_ref?0:new cAudio(*copy->_ref))
 {
