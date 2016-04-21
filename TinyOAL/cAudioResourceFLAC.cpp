@@ -90,7 +90,7 @@ unsigned long cAudioResourceFLAC::Read(void* stream, char* buffer, unsigned int 
   _internal._len=len;
   _internal._buffer=buffer;
   _internal._bytesread=0;
-  while(_internal._len>0 && !(eof=fn->fn_flac_get_state(ex->d)>=FLAC__STREAM_DECODER_END_OF_STREAM))
+  while(_internal._len>0 && !(eof=(fn->fn_flac_get_state(ex->d)>=FLAC__STREAM_DECODER_END_OF_STREAM)))
     fn->fn_flac_process_single(ex->d);
   _internal._len=0;
   if(_internal._cursample!=-1LL && !eof) //_cursample gets set by our write callback. If it's -1, then we didn't need to terminate early.
@@ -183,10 +183,10 @@ FLAC__StreamDecoderWriteStatus cAudioResourceFLAC::_cbwrite(const FLAC__StreamDe
   unsigned int bytes=num*persample;
   switch(bits)
   {
-  case 8: r_flacread<char>((char*)self->_buffer,buffer,num,channels); break;
-  case 16: r_flacread<short>((short*)self->_buffer,buffer,num,channels); break;
+  case 8: r_flacread<char>(reinterpret_cast<char*>(self->_buffer),buffer,num,channels); break;
+  case 16: r_flacread<short>(reinterpret_cast<short*>(self->_buffer),buffer,num,channels); break;
   case 24: //24-bit gets converted to 32-bit
-  case 32: r_flacread<float>((float*)self->_buffer,buffer,num,channels); break;
+  case 32: r_flacread<float>(reinterpret_cast<float*>(self->_buffer),buffer,num,channels); break;
   }
 
   self->_bytesread+=bytes;
