@@ -25,6 +25,7 @@
 #include <emmintrin.h> // for SSE intrinsics
 #include <float.h>
 #include <string>
+#include <stdio.h>
 #ifdef BSS_PLATFORM_POSIX
 #include <stdlib.h> // For abs(int) on POSIX systems
 #include <fpu_control.h> // for FPU control on POSIX systems
@@ -74,7 +75,8 @@ namespace bss_util {
     static const UNSIGNED UNSIGNED_MIN = 0;
     static const UNSIGNED UNSIGNED_MAX = (((UNSIGNED)2) << (BITS - 1)) - ((UNSIGNED)1); //these are all done carefully to ensure no overflow is ever utilized unless appropriate and it respects an arbitrary bit limit. We use 2<<(BITS-1) here to avoid shifting more bits than there are bits in the type.
     static const SIGNED SIGNED_MIN_RAW = (SIGNED)(((UNSIGNED)1) << (BITS - 1)); // When we have normal bit lengths (8,16, etc) this will correctly result in a negative value in two's complement.
-    static const SIGNED SIGNED_MIN = (((SIGNED)~0) << (BITS - 1)); // However if we have unusual bit lengths (3,19, etc) the raw bit representation will be technically correct in the context of that sized integer, but since we have to round to a real integer size to represent the number, the literal interpretation will be wrong. This yields the proper minimum value.
+    static const UNSIGNED SIGNED_MIN_HELPER = (((UNSIGNED)~0) << (BITS - 1)); // However if we have unusual bit lengths (3,19, etc) the raw bit representation will be technically correct in the context of that sized integer, but since we have to round to a real integer size to represent the number, the literal interpretation will be wrong. This yields the proper minimum value.
+    static const SIGNED SIGNED_MIN = (SIGNED)SIGNED_MIN_HELPER;
     static const SIGNED SIGNED_MAX = ((~SIGNED_MIN_RAW)&UNSIGNED_MAX);
   };
   template<typename T>
@@ -649,7 +651,21 @@ namespace bss_util {
   //{
   //  return FastSin(x+(float)PI_HALF);
   //}
-
+  template<typename T, bool nullterminate = false>
+  BSS_FORCEINLINE static std::pair<std::unique_ptr<T[]>, size_t> BSS_FASTCALL bssloadfile(const char* file)
+  {
+    FILE* f = 0;
+    WFOPEN(f, file, "rb");
+    fseek(f, 0, SEEK_END);
+    size_t ln = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    std::unique_ptr<T[]> a(new T[ln + !!nullterminate]);
+    fread(a.get(), sizeof(T), ln, f);
+    fclose(f);
+    if(nullterminate)
+      a[ln] = 0;
+    return std::pair<std::unique_ptr<T[]>, size_t>(std::move(a), ln + !!nullterminate);
+  }
   // Round a number up to the next power of 2 (32 -> 32, 33 -> 64, etc.)
   inline static uint64_t BSS_FASTCALL nextpow2(uint64_t v) noexcept
   {
@@ -711,7 +727,7 @@ namespace bss_util {
     const uint32_t b[] = {0x2, 0xC, 0xF0};
     const uint32_t S[] = {1, 2, 4};
 
-    register uint32_t r = 0; // result of bsslog2(v) will go here
+    uint32_t r = 0; // result of bsslog2(v) will go here
     if (v & b[2]) { v >>= S[2]; r |= S[2]; } 
     if (v & b[1]) { v >>= S[1]; r |= S[1]; } 
     if (v & b[0]) { v >>= S[0]; r |= S[0]; } 
@@ -723,7 +739,7 @@ namespace bss_util {
     const uint32_t b[] = {0x2, 0xC, 0xF0, 0xFF00};
     const uint32_t S[] = {1, 2, 4, 8};
 
-    register uint32_t r = 0; // result of bsslog2(v) will go here
+    uint32_t r = 0; // result of bsslog2(v) will go here
     if (v & b[3]) { v >>= S[3]; r |= S[3]; } 
     if (v & b[2]) { v >>= S[2]; r |= S[2]; } 
     if (v & b[1]) { v >>= S[1]; r |= S[1]; } 
@@ -737,7 +753,7 @@ namespace bss_util {
     const uint32_t b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000};
     const uint32_t S[] = {1, 2, 4, 8, 16};
 
-    register uint32_t r = 0; // result of bsslog2(v) will go here
+    uint32_t r = 0; // result of bsslog2(v) will go here
     if (v & b[4]) { v >>= S[4]; r |= S[4]; } 
     if (v & b[3]) { v >>= S[3]; r |= S[3]; } 
     if (v & b[2]) { v >>= S[2]; r |= S[2]; } 
@@ -759,7 +775,7 @@ namespace bss_util {
     const uint64_t b[] = {0x2, 0xC, 0xF0, 0xFF00, 0xFFFF0000, 0xFFFFFFFF00000000};
     const uint32_t S[] = {1, 2, 4, 8, 16, 32};
 
-    register uint32_t r = 0; // result of bsslog2(v) will go here
+    uint32_t r = 0; // result of bsslog2(v) will go here
     if (v & b[5]) { v >>= S[5]; r |= S[5]; } 
     if (v & b[4]) { v >>= S[4]; r |= S[4]; } 
     if (v & b[3]) { v >>= S[3]; r |= S[3]; } 
@@ -780,7 +796,7 @@ namespace bss_util {
     uint32_t r = (sizeof(uint32_t)<<3)-1-__builtin_clz(v);
 #else
     const uint32_t b[] = {0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000};
-    register uint32_t r = (v & b[0]) != 0;
+    uint32_t r = (v & b[0]) != 0;
     r |= ((v & b[4]) != 0) << 4;
     r |= ((v & b[3]) != 0) << 3;
     r |= ((v & b[2]) != 0) << 2;

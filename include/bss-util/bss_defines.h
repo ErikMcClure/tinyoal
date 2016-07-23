@@ -103,7 +103,7 @@ public: \
 #define VSCPRINTF(format,args) _vscprintf(format,args)
 #define VSCWPRINTF(format,args) _vscwprintf(format,args)
 #define FOPEN(f, path, mode) fopen_s(&f, path, mode)
-#define WFOPEN(f, path, mode) _wfopen_s(&f, path, mode)
+#define WFOPEN(f, path, mode) _wfopen_s(&f, cStrW(path).c_str(), cStrW(mode).c_str())
 #define MEMCPY(dst,size,src,count) memcpy_s(dst,size,src,count)
 #define STRNCPY(dst,size,src,count) strncpy_s(dst,size,src,count)
 #define WCSNCPY(dst,size,src,count) wcsncpy_s(dst,size,src,count)
@@ -119,6 +119,7 @@ public: \
 #define WCSTOK(str,delim,context) wcstok_s(str,delim,context)
 #define STRLWR(a) _strlwr(a)
 #define WCSLWR(a) _wcslwr(a)
+#define STRUPR(a) _strupr(a)
 #define SSCANF sscanf_s
 #define ITOAx0(v,buf,r) _itoa_s(v,buf,r)
 #define ITOA(v,buf,bufsize,r) _itoa_s(v,buf,bufsize,r)
@@ -156,6 +157,7 @@ public: \
 #define WCSTOK(str,delim,context) wcstok(str,delim,context) // For some reason, in linux, wcstok *IS* the threadsafe version
 #define STRLWR(a) strlwr(a)
 #define WCSLWR(a) wcslwr(a)
+#define STRUPR(a) strupr(a)
 #define SSCANF sscanf
 #define ITOAx0(v,buf,r) _itoa_r(v,buf,r)
 #define ITOA(v,buf,bufsize,r) itoa_r(v,buf,bufsize,r)

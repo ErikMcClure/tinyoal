@@ -26,14 +26,14 @@ using namespace bss_util;
 #include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.
-extern size_t BSS_FASTCALL UTF8toUTF16(const char* input,wchar_t* output, size_t buflen)
+extern size_t BSS_FASTCALL UTF8toUTF16(const char* input, ptrdiff_t srclen, wchar_t* output, size_t buflen)
 {
-  return (size_t)MultiByteToWideChar(CP_UTF8, 0, input, -1, output, !output?0:buflen);
+  return (size_t)MultiByteToWideChar(CP_UTF8, 0, input, srclen, output, !output?0:buflen);
 }
 
-extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, char* output, size_t buflen)
+extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t buflen)
 {
-  return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, -1, output, !output?0:buflen, NULL, NULL);
+  return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, srclen, output, !output?0:buflen, NULL, NULL);
 }
 #else //POSIX
 
