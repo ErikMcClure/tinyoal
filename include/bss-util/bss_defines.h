@@ -9,7 +9,7 @@
 // Version numbers
 #define BSS_VERSION_MAJOR 0
 #define BSS_VERSION_MINOR 4
-#define BSS_VERSION_REVISION 6
+#define BSS_VERSION_REVISION 7
 
 //sometimes the std versions of these are a bit overboard, so this redefines the MS version, except it will no longer cause conflicts everywhere
 #define bssmax(a,b)            (((a) > (b)) ? (a) : (b))
@@ -42,7 +42,7 @@
 #define RANDBOOLGEN() (rand()>(RAND_MAX>>1))
 #endif
 
-#define SAFESHIFT(v,s) ((s>0)?(v<<s):(v>>(-s))) //positive number shifts left, negative number shifts right, prevents undefined behavior.
+#define SAFESHIFT(v,s) (((s)>0)?((v)<<(s)):((v)>>(-(s)))) //positive number shifts left, negative number shifts right, prevents undefined behavior.
 #define T_GETBIT(type, bit) ((type)(((type)1)<<(((type)bit)%(sizeof(type)<<3)))) // Gets a bitmask using its 0-based index.
 //#define T_GETBITRANGE(type, low, high) ((type)((((2<<((high)-(low)))-1)<<(low))|(((2<<((high)-(low)))-1)>>(-(low)))|(((2<<((high)-(low)))-1)<<((low)%(sizeof(type)<<3)))))
 // Gets a bitmask for a range of bits. This range can be negative to start from the left end instead of the right.
