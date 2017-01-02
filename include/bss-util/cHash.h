@@ -1,4 +1,4 @@
-// Copyright ©2016 Black Sphere Studios
+// Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __C_HASH_H__BSS__
@@ -184,9 +184,9 @@ namespace bss_util {
       {
         if(!__ac_iseither(flags, i))
         {
-          new(keys + i) Key(copy.keys[i]);
+          new(keys + i) Key((const Key&)copy.keys[i]);
           if(IsMap)
-            new(vals + i) Data(copy.vals[i]);
+            new(vals + i) Data((const Data&)copy.vals[i]);
         }
       }
 

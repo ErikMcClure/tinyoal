@@ -1,4 +1,4 @@
-﻿// Copyright ©2016 Black Sphere Studios
+﻿// Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_DEFINES_H__
@@ -70,6 +70,10 @@
 #define BSS_FASTCALL BSS_COMPILER_FASTCALL
 #else
 #define BSS_FASTCALL BSS_COMPILER_STDCALL
+#undef MSC_FASTCALL
+#undef GCC_FASTCALL
+#define MSC_FASTCALL BSS_COMPILER_STDCALL
+#define GCC_FASTCALL BSS_COMPILER_STDCALL
 #endif
 
 #ifndef BSS_STATIC_LIB

@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up a wav file and play a simple sound.
  *
- * Copyright ©2016 Black Sphere Studios
+ * Copyright ©2017 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -29,7 +29,7 @@ int main()
   // Here, we load a sound resource. TinyOAL supports a wide range of formats, and this particular wave file is
   // stored using the u-Law format to save space. The high frequency artifacts you might hear are a result of
   // the u-Law algorithm. We didn't specify any flags, so by default this will be streamed from disk.
-  cAudioResource* songref = cAudioResource::Create("../media/idea549.wav",0);
+  cAudioResource* songref = cAudioResource::Create("../../media/idea549.wav",0);
   if(!songref) return 0; // If the file failed to exist or wasn't a recognizable format, Create will return NULL
 
   // Now we tell the resource to create a new instance of this sound, and start playing it. The sound instance
