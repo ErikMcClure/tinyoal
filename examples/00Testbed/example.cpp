@@ -3,7 +3,7 @@
  * This enables the wave writer backend and runs a series of tests to ensure TinyOAL
  * is working as intended.
  *
- * Copyright ©2016 Black Sphere Studios
+ * Copyright ©2017 Black Sphere Studios
  */
 
 #include "cTinyOAL.h"
@@ -208,19 +208,19 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
 
 TESTDEF::RETPAIR test_cAudioResourceWAV()
 {
-  return test_cAudioResource("../media/idea549.wav", "../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
+  return test_cAudioResource("../../media/idea549.wav", "../../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
 }
 TESTDEF::RETPAIR test_cAudioResourceOGG()
 {
-  return test_cAudioResource("../media/idea803.ogg", "../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
+  return test_cAudioResource("../../media/idea803.ogg", "../../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
 }
 TESTDEF::RETPAIR test_cAudioResourceMP3()
 {
-  return test_cAudioResource("../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
+  return test_cAudioResource("../../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
 }
 TESTDEF::RETPAIR test_cAudioResourceFLAC()
 {
-  return test_cAudioResource("../media/idea835.flac", "../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
+  return test_cAudioResource("../../media/idea835.flac", "../../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
 }
 int main()
 {

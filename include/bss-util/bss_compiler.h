@@ -1,4 +1,4 @@
-// Copyright ©2016 Black Sphere Studios
+// Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_COMPILER_H__
@@ -49,13 +49,14 @@
 #define BSS_FORCEINLINE inline
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGNED(sn, n) sn
-#define MSC_FASTCALL BSS_FASTCALL
+#define MSC_FASTCALL BSS_COMPILER_FASTCALL
 #define GCC_FASTCALL 
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
 #define BSS_UNREACHABLE() 
 #define BSS_ASSUME(x) 
 #define BSS_EXPLICITSTATIC static
+#define BSS_SSE_ENABLED
 
 #elif defined(__clang__) // Clang (must be before GCC, because clang also pretends it's GCC)
 #define BSS_COMPILER_CLANG
@@ -75,10 +76,11 @@
 #define BSS_VARIADIC_TEMPLATES
 
 #define MSC_FASTCALL 
-#define GCC_FASTCALL BSS_FASTCALL
+#define GCC_FASTCALL BSS_COMPILER_FASTCALL
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
 #define BSS_EXPLICITSTATIC // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
+//#define BSS_SSE_ENABLED
 
 #elif defined __GNUC__ // GCC
 #define BSS_COMPILER_GCC
@@ -98,10 +100,11 @@
 #define BSS_VARIADIC_TEMPLATES
 
 #define MSC_FASTCALL 
-#define GCC_FASTCALL BSS_FASTCALL
+#define GCC_FASTCALL BSS_COMPILER_FASTCALL
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
 #define BSS_EXPLICITSTATIC // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
+#define BSS_SSE_ENABLED
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
@@ -133,9 +136,11 @@
 #define BSS_ALIGNED(sn, n) BSS_ALIGN(n) sn
 #define BSS_VERIFY_HEAP _ASSERTE(_CrtCheckMemory())
 #define FUNCPTRCC(m,CC) CC m
-#define MSC_FASTCALL BSS_FASTCALL
+#define MSC_FASTCALL BSS_COMPILER_FASTCALL
 #define GCC_FASTCALL 
 #define BSS_EXPLICITSTATIC static // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
+#define BSS_SSE_ENABLED
+
 #define BSS_UNREACHABLE() __assume(0)
 #define BSS_ASSUME(x) __assume(x)
 #if (_MANAGED == 1) || (_M_CEE == 1)
@@ -228,6 +233,10 @@
 #if defined(DEBUG) || defined(_DEBUG)
 #define BSS_DEBUG
 #endif
+#endif
+
+#ifdef BSS_DISABLE_SSE 
+#undef BSS_SSE_ENABLED
 #endif
 
 #endif

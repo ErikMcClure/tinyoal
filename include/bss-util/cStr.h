@@ -1,4 +1,4 @@
-// Copyright ©2016 Black Sphere Studios
+// Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __CSTR_H__BSS__
@@ -109,7 +109,8 @@ class BSS_COMPILER_DLLEXPORT cStrT : public std::basic_string<T, std::char_trait
   typedef std::basic_string<T, std::char_traits<T>, Alloc> BASE;
 
 public:
-  explicit inline cStrT(size_t length = 1) : BASE() { BASE::reserve(length); } //an implicit constructor here would be bad
+  inline cStrT() : BASE() {}
+  explicit inline cStrT(size_t length) : BASE() { BASE::reserve(length); } //an implicit constructor here would be bad
   inline cStrT(const BASE& copy) : BASE(copy) {}
   inline cStrT(BASE&& mov) : BASE(std::move(mov)) {}
   inline cStrT(const cStrT& copy) : BASE(copy) {}
