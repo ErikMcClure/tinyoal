@@ -203,13 +203,13 @@ public:
     }
   }
   template<typename I, typename F> // F = I(const T* s)
-  static BSS_FORCEINLINE size_t BSS_FASTCALL ParseTokens(const T* str, const T* delim, std::vector<I>& vec, F parser)
+  static BSS_FORCEINLINE size_t ParseTokens(const T* str, const T* delim, std::vector<I>& vec, F parser)
   {
     cStrT<T> buf(str);
     return ParseTokens<I, F>(buf.UnsafeString(), delim, vec, parser);
   }
   template<typename I, typename F> // F = I(const T* s)
-  static size_t BSS_FASTCALL ParseTokens(T* str, const T* delim, std::vector<I>& vec, F parser)
+  static size_t ParseTokens(T* str, const T* delim, std::vector<I>& vec, F parser)
   {
     T* ct;
     T* cur = CSTR_CT<T>::STOK(str, delim, &ct);
@@ -235,7 +235,7 @@ public:
     return r;
   }
 
-  BSS_FORCEINLINE static cStrT<T, Alloc> cStrTF(const T* string, va_list vl)
+  inline static cStrT<T, Alloc> cStrTF(const T* string, va_list vl)
   {
     if(!string)
       return cStrT<T, Alloc>();
@@ -246,6 +246,7 @@ public:
     va_list vltemp;
     va_copy(vltemp, vl);
     size_t _length = (size_t)CSTR_CT<T>::VPCF(string, vltemp); // If we didn't copy vl here, it would get modified by vsnprintf and blow up.
+    va_end(vltemp);
 #else
     size_t _length = (size_t)CSTR_CT<T>::VPCF(string, vl); // This ensures VPCF doesn't modify our original va_list
 #endif
@@ -259,7 +260,7 @@ private:
   void operator[](std::allocator<char>&) BSS_DELETEFUNC
     BSS_FORCEINLINE CHAR* _internal_ptr() { return const_cast<CHAR*>(BASE::data()); }
   BSS_FORCEINLINE const CHAR* _internal_ptr() const { return BASE::data(); }
-  BSS_FORCEINLINE void BSS_FASTCALL _convstr(const OTHER_C* src, ptrdiff_t len)
+  BSS_FORCEINLINE void _convstr(const OTHER_C* src, ptrdiff_t len)
   {
     size_t r = CSTR_CT<T>::CONV(src, len, 0, 0);
     if(r == (size_t)-1) return; // If invalid, bail
@@ -268,7 +269,7 @@ private:
     if(r == (size_t)-1) return; // If somehow still invalid, bail again
     BASE::resize(r - 1); // resize to actual number of characters instead of simply the maximum (disregard null terminator)
   }
-  BSS_FORCEINLINE void BSS_FASTCALL _convstr2(const OTHER_C2* src, ptrdiff_t len)
+  BSS_FORCEINLINE void _convstr2(const OTHER_C2* src, ptrdiff_t len)
   {
     size_t r = CSTR_CT<T>::CONV2(src, len, 0, 0);
     if(r == (size_t)-1) return; // If invalid, bail
@@ -278,21 +279,21 @@ private:
     BASE::resize(r - 1); // resize to actual number of characters instead of simply the maximum (disregard null terminator)
   }
 
-  inline static T* BSS_FASTCALL _ltrim(T* str) { for(; *str>0 && *str<33; ++str); return str; }
-  inline static T* BSS_FASTCALL _rtrim(T* str, size_t size) { T* inter = str + size; for(; inter>str && *inter<33; --inter); *(++inter) = 0; return str; }
+  inline static T* _ltrim(T* str) { for(; *str>0 && *str<33; ++str); return str; }
+  inline static T* _rtrim(T* str, size_t size) { T* inter = str + size; for(; inter>str && *inter<33; --inter); *(++inter) = 0; return str; }
 
 };
 #pragma warning(pop)
 
 #ifdef BSS_PLATFORM_WIN32
 typedef cStrT<wchar_t, std::allocator<wchar_t>> cStrW;
-inline cStrW cStrWF(const wchar_t* string, ...) { va_list vl; va_start(vl, string); return cStrW::cStrTF(string, vl); va_end(vl); }
+inline cStrW cStrWF(const wchar_t* string, ...) { va_list vl; va_start(vl, string); cStrW r = cStrW::cStrTF(string, vl); va_end(vl); return r; }
 typedef wchar_t bsschar;
 #else
 typedef char bsschar;
 #endif
 typedef cStrT<char, std::allocator<char>> cStr;
-inline cStr cStrF(const char* string, ...) { va_list vl; va_start(vl, string); return cStr::cStrTF(string, vl); va_end(vl); }
+inline cStr cStrF(const char* string, ...) { va_list vl; va_start(vl, string); cStr r = cStr::cStrTF(string, vl); va_end(vl); return r; }
 
 #ifdef _UNICODE
 typedef cStrW TStr;

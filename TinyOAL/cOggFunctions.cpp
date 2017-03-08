@@ -54,18 +54,18 @@ cOggFunctions::cOggFunctions(const char* force)
 		fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, "ov_pcm_total");
 		//fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, "ov_comment");
 
-		if(!fn_ov_clear) TINYOAL_LOGM("ERROR","Could not load ov_clear");
-		if(!fn_ov_read) TINYOAL_LOGM("ERROR","Could not load ov_read");
-		if(!fn_ov_info) TINYOAL_LOGM("ERROR","Could not load ov_info");
-		if(!fn_ov_open_callbacks) TINYOAL_LOGM("ERROR","Could not load ov_open_callbacks");
-		if(!fn_ov_time_seek) TINYOAL_LOGM("ERROR","Could not load ov_time_seek");
-		if(!fn_ov_pcm_seek) TINYOAL_LOGM("ERROR","Could not load ov_pcm_seek");
-		if(!fn_ov_pcm_tell) TINYOAL_LOGM("ERROR","Could not load ov_pcm_tell");
-		if(!fn_ov_pcm_total) TINYOAL_LOGM("ERROR","Could not load ov_pcm_total");
-		//if(!fn_ov_comment) TINYOAL_LOGM("ERROR","Could not load ov_comment");
+		if(!fn_ov_clear) TINYOAL_LOG(1,"Could not load ov_clear");
+		if(!fn_ov_read) TINYOAL_LOG(1,"Could not load ov_read");
+		if(!fn_ov_info) TINYOAL_LOG(1,"Could not load ov_info");
+		if(!fn_ov_open_callbacks) TINYOAL_LOG(1,"Could not load ov_open_callbacks");
+		if(!fn_ov_time_seek) TINYOAL_LOG(1,"Could not load ov_time_seek");
+		if(!fn_ov_pcm_seek) TINYOAL_LOG(1,"Could not load ov_pcm_seek");
+		if(!fn_ov_pcm_tell) TINYOAL_LOG(1,"Could not load ov_pcm_tell");
+		if(!fn_ov_pcm_total) TINYOAL_LOG(1,"Could not load ov_pcm_total");
+		//if(!fn_ov_comment) TINYOAL_LOG(1,"Could not load ov_comment");
 	}
   else
-    TINYOAL_LOGM("ERROR","Could not find the OGG Vorbis DLL (or it may be missing one of its dependencies)");
+    TINYOAL_LOG(1,"Could not find the OGG Vorbis DLL (or it may be missing one of its dependencies)");
 }
 
 cOggFunctions::~cOggFunctions()

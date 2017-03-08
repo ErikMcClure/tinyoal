@@ -15,19 +15,19 @@ namespace bss_util {
   template<class T, ARRAY_TYPE ArrayType, typename Alloc>
   struct __cHashBaseAlloc
   {
-    inline static T* _realloc(khint32_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return (T*)Alloc::allocate(new_n_buckets * sizeof(T), (char*)src); }
+    inline static T* _realloc(khint8_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return (T*)Alloc::allocate(new_n_buckets * sizeof(T), (char*)src); }
   };
 
   template<class T, typename Alloc>
   struct __cHashBaseAlloc<T, CARRAY_CONSTRUCT, Alloc>
   {
-    inline static T* _realloc(khint32_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return (T*)Alloc::allocate(new_n_buckets * sizeof(T), (char*)src); }
+    inline static T* _realloc(khint8_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return (T*)Alloc::allocate(new_n_buckets * sizeof(T), (char*)src); }
   };
 
   template<class T, typename Alloc>
   struct __cHashBaseAlloc<T, CARRAY_SAFE, Alloc>
   {
-    inline static T* _realloc(khint32_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept
+    inline static T* _realloc(khint8_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept
     {
       T* n = (T*)Alloc::allocate(new_n_buckets * sizeof(T), 0);
       if(n != nullptr)
@@ -46,7 +46,7 @@ namespace bss_util {
   template<class T, typename Alloc>
   struct __cHashBaseAlloc<T, CARRAY_MOVE, Alloc>
   {
-    inline static T* _realloc(khint32_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return __cHashBaseAlloc<T, CARRAY_SAFE, Alloc>(flags, src, new_n_buckets, n_buckets); }
+    inline static T* _realloc(khint8_t* flags, T* src, khint_t new_n_buckets, khint_t n_buckets) noexcept { return __cHashBaseAlloc<T, CARRAY_SAFE, Alloc>(flags, src, new_n_buckets, n_buckets); }
   };
 
   template<class T, bool integral>
@@ -127,7 +127,7 @@ namespace bss_util {
               vals[i].~Data();
           }
         }
-        memset(flags, 0xaa, ((n_buckets >> 4) + 1) * sizeof(khint32_t));
+        memset(flags, 2, n_buckets);
         size = n_occupied = 0;
       }
     }
@@ -144,6 +144,8 @@ namespace bss_util {
     inline typename std::enable_if<U, GET>::type Get(const Key& key) const { return GetValue(Iterator(key)); }
     template<bool U = IsMap>
     inline typename std::enable_if<U, Data&>::type UnsafeValue(khiter_t i) const { return vals[i]; }
+    template<bool U = IsMap>
+    inline typename std::enable_if<U, Data&>::type& MutableValue(khiter_t i) { return vals[i]; }
     inline bool SetValue(khiter_t iterator, const Data& newvalue) { return _setvalue<const Data&>(iterator, newvalue); }
     inline bool SetValue(khiter_t iterator, Data&& newvalue) { return _setvalue<Data&&>(iterator, std::move(newvalue)); }
     inline bool Set(const Key& key, const Data& newvalue) { return _setvalue<const Data&>(Iterator(key), newvalue); }
@@ -177,8 +179,9 @@ namespace bss_util {
     cHashBase& operator =(const cHashBase& copy)
     {
       Clear();
-      _resize(copy.n_buckets - 1); // _resize adds one to the chosen prime number so this will result in the correct assignment.
-      memcpy(flags, copy.flags, ((n_buckets >> 4) + 1) * sizeof(khint32_t));
+      _resize(copy.n_buckets);
+      assert(n_buckets == copy.n_buckets);
+      memcpy(flags, copy.flags, n_buckets);
 
       for(khint_t i = 0; i < n_buckets; ++i)
       {
@@ -247,54 +250,49 @@ namespace bss_util {
     }
     template<typename U>
     inline bool _setvalue(khiter_t i, U && newvalue) { if(!ExistsIter(i)) return false; vals[i] = std::forward<U>(newvalue); return true; }
-    void _resize(khint_t new_n_buckets)
+    char _resize(khint_t new_n_buckets)
     {
-      khint32_t *new_flags = 0;
+      khint8_t *new_flags = 0;
       khint_t j = 1;
       {
-        khint_t t = __ac_HASH_PRIME_SIZE - 1;
-        while(__ac_prime_list[t] > new_n_buckets) --t;
-        new_n_buckets = __ac_prime_list[t + 1];
-        if(size >= (khint_t)(new_n_buckets * __ac_HASH_UPPER + 0.5)) j = 0;
-        else
-        {
-          new_flags = (khint32_t*)Alloc::allocate(((new_n_buckets >> 4) + 1) * sizeof(khint32_t), 0);
-          memset(new_flags, 0xaa, ((new_n_buckets >> 4) + 1) * sizeof(khint32_t));
-          if(new_n_buckets > n_buckets)
-          {
-            keys = __cHashBaseAlloc<Key, ArrayType, Alloc>::_realloc(flags, keys, new_n_buckets, n_buckets);
-            if(IsMap)
-              vals = __cHashBaseAlloc<Data, ArrayType, Alloc>::_realloc(flags, vals, new_n_buckets, n_buckets);
-          }
+        kroundup32(new_n_buckets);
+        if(new_n_buckets < 4) new_n_buckets = 32;
+        if(size >= (khint_t)(new_n_buckets * __ac_HASH_UPPER + 0.5)) j = 0;	/* requested size is too small */
+        else { /* hash table size to be changed (shrink or expand); rehash */
+          new_flags = (khint8_t*)Alloc::allocate(new_n_buckets);
+          if(!new_flags) return -1;
+          memset(new_flags, 2, new_n_buckets);
+          if(n_buckets < new_n_buckets) {	/* expand */
+            Key *new_keys = __cHashBaseAlloc<Key, ArrayType, Alloc>::_realloc(flags, keys, new_n_buckets, n_buckets);
+            if(!new_keys) { Alloc::deallocate((char*)new_flags); return -1; }
+            keys = new_keys;
+            if(IsMap) {
+              Data *new_vals = __cHashBaseAlloc<Data, ArrayType, Alloc>::_realloc(flags, vals, new_n_buckets, n_buckets);
+              if(!new_vals) { Alloc::deallocate((char*)new_flags); return -1; }
+              vals = new_vals;
+            }
+          } /* otherwise shrink */
         }
       }
-      if(j)
-      {
-        for(j = 0; j != n_buckets; ++j)
-        {
-          if(__ac_iseither(flags, j) == 0)
-          {
+      if(j) { /* rehashing is needed */
+        for(j = 0; j != n_buckets; ++j) {
+          if(__ac_iseither(flags, j) == 0) {
             Key key(std::move(keys[j]));
             Data val;
+            khint_t new_mask;
+            new_mask = new_n_buckets - 1;
             if(IsMap) val = std::move(vals[j]);
             __ac_set_isdel_true(flags, j);
-            while(1)
-            {
-              khint_t inc, k, i;
+            while(1) { /* kick-out process; sort of like in Cuckoo hashing */
+              khint_t k, i, step = 0;
               k = __hash_func(key);
-              i = k % new_n_buckets;
-              inc = 1 + k % (new_n_buckets - 1);
-              while(!__ac_isempty(new_flags, i))
-              {
-                if(i + inc >= new_n_buckets) i = i + inc - new_n_buckets;
-                else i += inc;
-              }
+              i = k & new_mask;
+              while(!__ac_isempty(new_flags, i)) i = (i + (++step)) & new_mask;
               __ac_set_isempty_false(new_flags, i);
-              if(i < n_buckets && __ac_iseither(flags, i) == 0)
-              {
+              if(i < n_buckets && __ac_iseither(flags, i) == 0) { /* kick out the existing element */
                 rswap(keys[i], key);
                 if(IsMap) rswap(vals[i], val);
-                __ac_set_isdel_true(flags, i);
+                __ac_set_isdel_true(flags, i); /* mark it as deleted in the old hash table */
               }
               else // this code only runs if this bucket doesn't exist, so initialize
               {
@@ -305,88 +303,85 @@ namespace bss_util {
             }
           }
         }
-        if(n_buckets > new_n_buckets)
-        {
+        if(n_buckets > new_n_buckets) { /* shrink the hash table */
           keys = __cHashBaseAlloc<Key, ArrayType, Alloc>::_realloc(flags, keys, new_n_buckets, n_buckets);
           if(IsMap)
             vals = __cHashBaseAlloc<Data, ArrayType, Alloc>::_realloc(flags, vals, new_n_buckets, n_buckets);
         }
-        Alloc::deallocate((char*)flags);
+        Alloc::deallocate((char*)flags); /* free the working space */
         flags = new_flags;
         n_buckets = new_n_buckets;
         n_occupied = size;
         upper_bound = (khint_t)(n_buckets * __ac_HASH_UPPER + 0.5);
       }
+      return 0;
     }
 
     template<typename U>
     khint_t _put(U && key, int* ret)
     {
       khint_t x;
-      if(n_occupied >= upper_bound)
+      if(n_occupied >= upper_bound) { /* update the hash table */
+        if(n_buckets > (size << 1)) {
+          \
+            if(_resize(n_buckets - 1) < 0) { /* clear "deleted" elements */
+              *ret = -1; return n_buckets;
+            }
+        }
+        else if(_resize(n_buckets + 1) < 0) { /* expand the hash table */
+          *ret = -1; return n_buckets;
+        }
+      } /* TODO: to implement automatically shrinking; resize() already support shrinking */
       {
-        if(n_buckets > (size << 1)) _resize(n_buckets - 1);
-        else _resize(n_buckets + 1);
-      }
-      {
-        khint_t inc, k, i, site, last;
-        x = site = n_buckets; k = __hash_func(key); i = k % n_buckets;
-        if(__ac_isempty(flags, i)) x = i;
-        else
-        {
-          inc = 1 + k % (n_buckets - 1); last = i;
-          while(!__ac_isempty(flags, i) && (__ac_isdel(flags, i) || !__hash_equal(keys[i], key)))
-          {
+        khint_t k, i, site, last, mask = n_buckets - 1, step = 0;
+        x = site = n_buckets; k = __hash_func(key); i = k & mask;
+        if(__ac_isempty(flags, i)) x = i; /* for speed up */
+        else {
+          last = i;
+          while(!__ac_isempty(flags, i) && (__ac_isdel(flags, i) || !__hash_equal(keys[i], key))) {
             if(__ac_isdel(flags, i)) site = i;
-            if(i + inc >= n_buckets) i = i + inc - n_buckets;
-            else i += inc;
+            i = (i + (++step)) & mask;
             if(i == last) { x = site; break; }
           }
-          if(x == n_buckets)
-          {
+          if(x == n_buckets) {
             if(__ac_isempty(flags, i) && site != n_buckets) x = site;
             else x = i;
           }
         }
       }
-      if(__ac_isempty(flags, x))
-      {
+      if(__ac_isempty(flags, x)) { /* not present at all */
         new(keys + x) Key(std::move(key));
         __ac_set_isboth_false(flags, x);
         ++size; ++n_occupied;
         *ret = 1;
       }
-      else if(__ac_isdel(flags, x))
-      {
+      else if(__ac_isdel(flags, x)) { /* deleted */
         new(keys + x) Key(std::move(key));
         __ac_set_isboth_false(flags, x);
         ++size;
         *ret = 2;
       }
-      else *ret = 0;
+      else *ret = 0; /* Don't touch keys[x] if present and not deleted */
       return x;
     }
     khint_t _get(const Key& key) const
     {
-      if(n_buckets)
-      {
-        khint_t inc, k, i, last;
-        k = __hash_func(key); i = k % n_buckets;
-        inc = 1 + k % (n_buckets - 1); last = i;
-        while(!__ac_isempty(flags, i) && (__ac_isdel(flags, i) || !__hash_equal(keys[i], key)))
-        {
-          if(i + inc >= n_buckets) i = i + inc - n_buckets;
-          else i += inc;
-          if(i == last) return n_buckets;
-        }
-        return __ac_iseither(flags, i) ? n_buckets : i;
+      if(n_buckets) {
+          khint_t k, i, last, mask, step = 0; 
+          mask = n_buckets - 1;
+          k = __hash_func(key); i = k & mask;
+          last = i;
+          while(!__ac_isempty(flags, i) && (__ac_isdel(flags, i) || !__hash_equal(keys[i], key))) {
+              i = (i + (++step)) & mask;
+              if(i == last) return n_buckets;
+          }
+            return __ac_iseither(flags, i) ? n_buckets : i;
       }
       else return 0;
     }
     inline void _delete(khint_t x)
     {
-      if(x != n_buckets && !__ac_iseither(flags, x))
-      {
+      if(x != n_buckets && !__ac_iseither(flags, x)) {
         keys[x].~Key();
         if(IsMap)
           vals[x].~Data();
@@ -394,9 +389,8 @@ namespace bss_util {
         --size;
       }
     }
-
     khint_t n_buckets, size, n_occupied, upper_bound;
-    khint32_t* flags;
+    khint8_t* flags;
     Key* keys;
     Data* vals;
   };
@@ -406,13 +400,14 @@ namespace bss_util {
   template<typename T>
   inline bool khint_equalfunc(const T& a, const T& b) { return a == b; }
 
-  inline static khint_t KH_INT64_HASHFUNC(int64_t key) { return (khint32_t)((key) >> 33 ^ (key) ^ (key) << 11); }
-  template<class T>
-  BSS_FORCEINLINE khint_t KH_INT_HASHFUNC(T key) { return (khint32_t)key; }
-  inline static khint_t KH_STR_HASHFUNC(const char * s) { khint_t h = *s; if(h) for(++s; *s; ++s) h = (h << 5) - h + *s; return h; }
-  inline static khint_t KH_STRINS_HASHFUNC(const char *s) { khint_t h = ((*s)>64 && (*s)<91) ? (*s) + 32 : *s;	if(h) for(++s; *s; ++s) h = (h << 5) - h + (((*s)>64 && (*s)<91) ? (*s) + 32 : *s); return h; }
-  inline static khint_t KH_STRW_HASHFUNC(const wchar_t * s) { khint_t h = *s; if(h) for(++s; *s; ++s) h = (h << 5) - h + *s; return h; }
-  inline static khint_t KH_STRWINS_HASHFUNC(const wchar_t *s) { khint_t h = towlower(*s); if(h) for(++s; *s; ++s) h = (h << 5) - h + towlower(*s); return h; }
+  inline khint_t KH_INT64_HASHFUNC(int64_t key) { return kh_int64_hash_func(key); }
+  template<class T> BSS_FORCEINLINE khint_t KH_INT_HASHFUNC(T key) { return (khint32_t)key; }
+  template<> BSS_FORCEINLINE khint_t KH_INT_HASHFUNC<unsigned int>(unsigned int key) { return kh_int_hash_func2(key); }
+  template<> BSS_FORCEINLINE khint_t KH_INT_HASHFUNC<int>(int key) { return kh_int_hash_func2(key); }
+  inline khint_t KH_STR_HASHFUNC(const char * s) { khint_t h = *s; if(h) for(++s; *s; ++s) h = (h << 5) - h + *s; return h; }
+  inline khint_t KH_STRINS_HASHFUNC(const char *s) { khint_t h = ((*s)>64 && (*s)<91) ? (*s) + 32 : *s;	if(h) for(++s; *s; ++s) h = (h << 5) - h + (((*s)>64 && (*s)<91) ? (*s) + 32 : *s); return h; }
+  inline khint_t KH_STRW_HASHFUNC(const wchar_t * s) { khint_t h = *s; if(h) for(++s; *s; ++s) h = (h << 5) - h + *s; return h; }
+  inline khint_t KH_STRWINS_HASHFUNC(const wchar_t *s) { khint_t h = towlower(*s); if(h) for(++s; *s; ++s) h = (h << 5) - h + towlower(*s); return h; }
   template<class T>
   BSS_FORCEINLINE khint_t KH_POINTER_HASHFUNC(T p) {
 #ifdef BSS_64BIT
@@ -423,40 +418,42 @@ namespace bss_util {
   }
   template<typename T, int I> struct KH_AUTO_HELPER { };
   template<typename T> struct KH_AUTO_HELPER<T, 1> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_POINTER_HASHFUNC<T>(k); } };
-  template<typename T> struct KH_AUTO_HELPER<T, 2> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_INT_HASHFUNC<T>((int32_t)k); } };
+  template<typename T> struct KH_AUTO_HELPER<T, 2> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_INT_HASHFUNC<T>(k); } };
   template<typename T> struct KH_AUTO_HELPER<T, 4> { BSS_FORCEINLINE static khint_t hash(T k) { return KH_INT64_HASHFUNC((int64_t)k); } };
 
   template<typename T>
-  static BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC(const T& k) { return KH_AUTO_HELPER<T, std::is_pointer<T>::value + (std::is_integral<T>::value * 2 * (1 + (sizeof(T) == 8)))>::hash(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<cStr>(const cStr& k) { return KH_STR_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const char*>(const char* const& k) { return KH_STR_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<char*>(char* const& k) { return KH_STR_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const wchar_t*>(const wchar_t* const& k) { return KH_STRW_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<wchar_t*>(wchar_t* const& k) { return KH_STRW_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<double>(const double& k) { return KH_INT64_HASHFUNC(*(int64_t*)&k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<float>(const float& k) { return *(khint32_t*)&k; }
-  template<typename T> static BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC(const T& k) { return KH_STRINS_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<cStr>(const cStr& k) { return KH_STRINS_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<const wchar_t*>(const wchar_t* const& k) { return KH_STRWINS_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<wchar_t*>(wchar_t* const& k) { return KH_STRWINS_HASHFUNC(k); }
+  BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC(const T& k) { return KH_AUTO_HELPER<T, std::is_pointer<T>::value + (std::is_integral<T>::value * 2 * (1 + (sizeof(T) == 8)))>::hash(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<cStr>(const cStr& k) { return KH_STR_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const char*>(const char* const& k) { return KH_STR_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<char*>(char* const& k) { return KH_STR_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<const wchar_t*>(const wchar_t* const& k) { return KH_STRW_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<wchar_t*>(wchar_t* const& k) { return KH_STRW_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<double>(const double& k) { return KH_INT64_HASHFUNC(*(int64_t*)&k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<float>(const float& k) { return *(khint32_t*)&k; }
+  template<typename T> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC(const T& k) { return KH_STRINS_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<cStr>(const cStr& k) { return KH_STRINS_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<const wchar_t*>(const wchar_t* const& k) { return KH_STRWINS_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<wchar_t*>(wchar_t* const& k) { return KH_STRWINS_HASHFUNC(k); }
 
   template<typename U, typename V> struct KH_AUTO_HELPER<std::pair<U, V>, 0> { BSS_FORCEINLINE static khint_t hash(std::pair<U, V> k) { return KH_INT64_HASHFUNC(uint64_t(KH_AUTO_HASHFUNC<U>(k.first)) | (uint64_t(KH_AUTO_HASHFUNC<V>(k.second)) << 32)); } };
 
   template<typename T>
-  static BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC(T const& a, T const& b) { return a == b; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<cStr>(cStr const& a, cStr const& b) { return strcmp(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const char*>(const char* const& a, const char* const& b) { return strcmp(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const wchar_t*>(const wchar_t* const& a, const wchar_t* const& b) { return wcscmp(a, b) == 0; }
-  template<typename T> static BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC(T const& a, T const& b) { return STRICMP(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<cStr>(cStr const& a, cStr const& b) { return STRICMP(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<const wchar_t*>(const wchar_t* const& a, const wchar_t* const& b) { return WCSICMP(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<wchar_t*>(wchar_t* const& a, wchar_t* const& b) { return WCSICMP(a, b) == 0; }
+  BSS_FORCEINLINE bool KH_INT_EQUALFUNC(T const& a, T const& b) { return a == b; }
+  template<typename T>
+  BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC(T const& a, T const& b) { return a == b; }
+  template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<cStr>(cStr const& a, cStr const& b) { return strcmp(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const char*>(const char* const& a, const char* const& b) { return strcmp(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<const wchar_t*>(const wchar_t* const& a, const wchar_t* const& b) { return wcscmp(a, b) == 0; }
+  template<typename T> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC(T const& a, T const& b) { return STRICMP(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<cStr>(cStr const& a, cStr const& b) { return STRICMP(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<const wchar_t*>(const wchar_t* const& a, const wchar_t* const& b) { return WCSICMP(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<wchar_t*>(wchar_t* const& a, wchar_t* const& b) { return WCSICMP(a, b) == 0; }
 
 #ifdef BSS_PLATFORM_WIN32
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<cStrW>(const cStrW& k) { return KH_STRW_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<cStrW>(const cStrW& k) { return KH_STRWINS_HASHFUNC(k); }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<cStrW>(cStrW const& a, cStrW const& b) { return wcscmp(a, b) == 0; }
-  template<> BSS_EXPLICITSTATIC BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<cStrW>(cStrW const& a, cStrW const& b) { return WCSICMP(a, b) == 0; }
+  template<> BSS_FORCEINLINE khint_t KH_AUTO_HASHFUNC<cStrW>(const cStrW& k) { return KH_STRW_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE khint_t KH_AUTOINS_HASHFUNC<cStrW>(const cStrW& k) { return KH_STRWINS_HASHFUNC(k); }
+  template<> BSS_FORCEINLINE bool KH_AUTO_EQUALFUNC<cStrW>(cStrW const& a, cStrW const& b) { return wcscmp(a, b) == 0; }
+  template<> BSS_FORCEINLINE bool KH_AUTOINS_EQUALFUNC<cStrW>(cStrW const& a, cStrW const& b) { return WCSICMP(a, b) == 0; }
 #endif
 
   template<typename T, bool I> struct __cKh_KHGET { typedef typename std::remove_pointer<T>::type* KHGET; static const uint32_t INV = 0; };

@@ -20,9 +20,9 @@
 #include "cAudioResource.h"
 #include "bss-util/cSingleton.h"
 #include "bss-util/cAVLtree.h"
+#include <stdarg.h>
 
-#define TINYOAL_LOG(level)(tinyoal::cTinyOAL::Instance()->FormatLog(__FILE__,__LINE__) << (level) << ": ")
-#define TINYOAL_LOGM(level,message) (TINYOAL_LOG(level) << (message) << std::endl)
+#define TINYOAL_LOG(level, format, ...) tinyoal::cTinyOAL::Instance()->Log(__FILE__,__LINE__, level, format, __VA_ARGS__)
 
 struct OPENALFNTABLE;
 
@@ -38,23 +38,22 @@ namespace tinyoal {
 	// This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
   class TINYOAL_DLLEXPORT cTinyOAL : protected bss_util::cSingleton<cTinyOAL>
   {
+    typedef int(*FNLOG)(const char*, unsigned int, unsigned char, const char*, va_list);
+
   public:
     // Constructors
-    cTinyOAL(unsigned char defnumbuf=4, std::ostream* errout=0, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
-    cTinyOAL(const char* logfile, unsigned char defnumbuf, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
+    cTinyOAL(unsigned char defnumbuf=4, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
     ~cTinyOAL();
 		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
     // to this update function can never exceed the length of a buffer, or the sound will cut out.
     unsigned int Update();
-		// Gets the error out stream 
-    inline std::ostream& ErrOut() { return *_errout; }
     // Creates an instance of a sound either from an existing resource or by creating a new resource
     inline cAudio* PlaySound(cAudioResource* resource, TINYOAL_FLAG flags) { return !resource?0:resource->Play(flags|TINYOAL_ISPLAYING); }
     inline cAudio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,flags),flags); }
     inline cAudio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(data,len,flags),flags); }
     inline cAudio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,len,flags),flags); }
-    // Gets the formatted error out stream 
-    std::ostream& BSS_FASTCALL FormatLog(const char* FILE, unsigned int LINE);
+    // Writes a line to the log using the logging function
+    int Log(const char* FILE, unsigned int LINE, unsigned char level, const char* format, ...);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
     static cTinyOAL* Instance();
     // Gets the name of the default device
@@ -63,6 +62,8 @@ namespace tinyoal {
     bool SetDevice(const char* device);
     // Gets a null-seperated list of all available devices, terminated by a double null character.
     const char* GetDevices();
+    // Sets the logging function, returns the previous one.
+    FNLOG SetLogging(FNLOG fnLog);
     // Handy function for figuring out formats
     static unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear);
     // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on windows)
@@ -80,14 +81,15 @@ namespace tinyoal {
     friend class cAudio;
     friend class cAudioResource;
 
-    void BSS_FASTCALL _construct(std::ostream* errout,const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
-    void BSS_FASTCALL _addaudio(cAudio* ref, cAudioResource* res);
-    void BSS_FASTCALL _removeaudio(cAudio* ref, cAudioResource* res);
-    char* BSS_FASTCALL _allocdecoder(unsigned int sz);
-    void BSS_FASTCALL _deallocdecoder(char* p, unsigned int sz);
+    void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
+    void _addaudio(cAudio* ref, cAudioResource* res);
+    void _removeaudio(cAudio* ref, cAudioResource* res);
+    char* _allocdecoder(unsigned int sz);
+    void _deallocdecoder(char* p, unsigned int sz);
 
-    std::ostream* _errout; //outstream that controls where the errors go
-    std::filebuf* _errbuf; //used as backup
+    static int DefaultLog(const char* FILE, unsigned int LINE, unsigned char level, const char* format, va_list args);
+
+    FNLOG _fnLog;
     cAudioResource* _activereslist;
     cAudioResource* _reslist;
     bss_util::cBlockAllocVoid _bufalloc;

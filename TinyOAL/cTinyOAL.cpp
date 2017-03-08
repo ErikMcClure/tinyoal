@@ -17,6 +17,8 @@
 #include "cWaveFunctions.h"
 #include "cFlacFunctions.h"
 #include <fstream>
+#include <memory>
+#include <stdio.h>
 
 using namespace tinyoal;
 using namespace bss_util;
@@ -26,12 +28,12 @@ using namespace bss_util;
 #include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss_util library just for its fast convert functions.
-extern size_t BSS_FASTCALL UTF8toUTF16(const char* input, ptrdiff_t srclen, wchar_t* output, size_t buflen)
+extern size_t UTF8toUTF16(const char* input, ptrdiff_t srclen, wchar_t* output, size_t buflen)
 {
   return (size_t)MultiByteToWideChar(CP_UTF8, 0, input, srclen, output, !output?0:buflen);
 }
 
-extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t buflen)
+extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t buflen)
 {
   return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, srclen, output, !output?0:buflen, NULL, NULL);
 }
@@ -39,17 +41,11 @@ extern size_t BSS_FASTCALL UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, c
 
 #endif
 
-cTinyOAL::cTinyOAL(unsigned char defnumbuf, std::ostream* errout, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
-  cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
-  oalFuncs(0)
+cTinyOAL::cTinyOAL(unsigned char defnumbuf, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
+  cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
+  oalFuncs(0), _fnLog(&DefaultLog)
 {
-  _construct(errout,"TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
-}
-cTinyOAL::cTinyOAL(const char* logfile, unsigned char defnumbuf, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
-  cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), _errbuf(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
-  oalFuncs(0)
-{
-  _construct(0,!logfile?"TinyOAL_log.txt":logfile,forceOAL,forceOGG,forceFLAC,forceMP3);
+  _construct("TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
 }
 
 cTinyOAL::~cTinyOAL()
@@ -57,15 +53,6 @@ cTinyOAL::~cTinyOAL()
   // Destroy managed pointers 
   while(_activereslist) delete _activereslist;
   while(_reslist) delete _reslist;
-
-  if(_errbuf) //if this is not 0, it means we used it as a backup error output and we need to blow it up
-  {
-    _errbuf->close();
-    delete _errbuf;
-    delete _errout; //If we created _errbuf, we also created this, so blow it up
-    _errbuf = 0; //just in case
-    _errout = 0;
-  } //otherwise _errout is just a pointer that we don't want to mess with
 
   if(oalFuncs) //If _functions doesn't exist, we don't need to do (or are capable of doing) this
   {
@@ -101,16 +88,45 @@ unsigned int cTinyOAL::Update()
   }
   return a;
 }
-std::ostream& BSS_FASTCALL cTinyOAL::FormatLog(const char* FILE, unsigned int LINE)
-{
-	const char* r=strrchr(FILE,'/');
-	const char* r2=strrchr(FILE,'\\');
-  r=bssmax(r,r2);
-  FILE = (!r)?FILE:(r+1);
 
-  (*_errout) << '(' << FILE << ':' << LINE << ") ";
-  return *_errout;
+int cTinyOAL::Log(const char* file, unsigned int line, unsigned char level, const char* format, ...)
+{
+  va_list vl;
+  va_start(vl, format);
+  int r = _fnLog(file, line, level, format, vl);
+  va_end(vl);
+  return r;
 }
+int cTinyOAL::DefaultLog(const char* file, unsigned int line, unsigned char level, const char* format, va_list args)
+{
+  static std::unique_ptr<std::FILE, decltype(&std::fclose)> f(std::fopen("tinyoal.log", "wb"), &std::fclose);
+  const char* r = strrchr(file, '/');
+  const char* r2 = strrchr(file, '\\');
+  r = bssmax(r, r2);
+  file = (!r) ? file : (r + 1);
+
+  const char* lvl = "UNKNOWN";
+  switch(level)
+  {
+  case 0: lvl = "FATAL"; break;
+  case 1: lvl = "ERROR"; break;
+  case 2: lvl = "WARNING"; break;
+  case 3: lvl = "NOTICE"; break;
+  case 4: lvl = "INFO"; break;
+  case 5: lvl = "DEBUG"; break;
+  }
+
+  int ret = 0;
+  if(f.get())
+  {
+    ret += fprintf(f.get(), "(%s:%u) %s: ", file, line, lvl);
+    ret += vfprintf(f.get(), format, args);
+    ret += fwrite("\n", 1, 1, f.get());
+    fflush(f.get());
+  }
+  return ret;
+}
+
 cTinyOAL* cTinyOAL::Instance() { return _instance; }
 
 typedef struct
@@ -138,32 +154,23 @@ bool cTinyOAL::SetDevice(const char* device)
   ALCdevice* pDevice = oalFuncs->alcOpenDevice(device);
 	if (!pDevice)
 	{
-    TINYOAL_LOG("ERROR") << "Failed to open device: " << device;
+    TINYOAL_LOG(1, "Failed to open device: %s", device);
     return false;
   }
 	ALCcontext* pContext = oalFuncs->alcCreateContext(pDevice, NULL);
 	if(pContext)
 	{
-    TINYOAL_LOG("INFO") << "Opened Device: " << device << std::endl;
+    TINYOAL_LOG(4, "Opened Device: %s", device);
 		oalFuncs->alcMakeContextCurrent(pContext);
     return true;
 	}
 	oalFuncs->alcCloseDevice(pDevice);
-  TINYOAL_LOG("ERROR") << "Failed to create context for " << device << std::endl;
+  TINYOAL_LOG(1, "Failed to create context for %s", device);
   return false;
 }
 
-void cTinyOAL::_construct(std::ostream* errout,const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3)
+void cTinyOAL::_construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3)
 {
-  if(!errout) //if errout is zero, produce a default filestream to write to
-  {
-    _errbuf = new std::filebuf();
-    _errout = new std::ostream(_errbuf);
-    _errbuf->open(logfile, std::ios_base::trunc|std::ios_base::out); //clear and open file for writing
-  }
-  else
-    _errout = errout;
-  
   oalFuncs=0;
   OPENALFNTABLE* functmp = new OPENALFNTABLE();
 
@@ -178,7 +185,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile, const char* 
 		if (ALFunction.alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT")) {
 			char* devices = (char *)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 			const char* defaultDeviceName = (char *)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-      TINYOAL_LOG("INFO") << "Default device name is: " << defaultDeviceName << std::endl;
+      TINYOAL_LOG(4, "Default device name is: %s", defaultDeviceName);
 			size_t index = 0;
 			// go through device list (each device terminated with a single NULL, list terminated with double NULL)
 			while ((*devices) != NULL) {
@@ -227,7 +234,7 @@ void cTinyOAL::_construct(std::ostream* errout,const char* logfile, const char* 
   
   oalFuncs = functmp;
 	if(!vDeviceInfo.size())
-    TINYOAL_LOG("ERROR") << "No devices in device list!" << std::endl;
+    TINYOAL_LOG(1, "No devices in device list!");
   else if(SetDevice(vDeviceInfo[defaultDeviceIndex].strDeviceName.c_str()))
     functmp=0;
   
@@ -275,7 +282,7 @@ unsigned int cTinyOAL::GetFormat(unsigned short channels, unsigned short bits, b
   return 0;
 }
 
-void BSS_FASTCALL cTinyOAL::_addaudio(cAudio* ref, cAudioResource* res)
+void cTinyOAL::_addaudio(cAudio* ref, cAudioResource* res)
 {
   if(!res->_activelist) // If true we need to move it
   {
@@ -286,7 +293,7 @@ void BSS_FASTCALL cTinyOAL::_addaudio(cAudio* ref, cAudioResource* res)
   bss_util::LLAdd(ref,res->_activelist,res->_activelistend);
   ++res->_numactive;
 }
-void BSS_FASTCALL cTinyOAL::_removeaudio(cAudio* ref, cAudioResource* res)
+void cTinyOAL::_removeaudio(cAudio* ref, cAudioResource* res)
 {
   bss_util::LLRemove(ref,res->_activelist,res->_activelistend);
   bss_util::LLAdd(ref,res->_inactivelist);
@@ -298,29 +305,29 @@ void BSS_FASTCALL cTinyOAL::_removeaudio(cAudio* ref, cAudioResource* res)
   }
 }
 
-char* BSS_FASTCALL cTinyOAL::_allocdecoder(unsigned int sz)
+char* cTinyOAL::_allocdecoder(unsigned int sz)
 {
   auto p = _treealloc.GetRef(sz);
   if(!p)
   {
-    TINYOAL_LOG("INFO") << "Created allocation pool of size " << sz << std::endl;
+    TINYOAL_LOG(4, "Created allocation pool of size %u", sz);
     _treealloc.Insert(sz,std::unique_ptr<bss_util::cBlockAllocVoid>(new cBlockAllocVoid(sz,3)));
     p = _treealloc.GetRef(sz);
   }
   return !p?0:(char*)(*p)->alloc(1);
 }
-void BSS_FASTCALL cTinyOAL::_deallocdecoder(char* s, unsigned int sz)
+void cTinyOAL::_deallocdecoder(char* s, unsigned int sz)
 {
   auto p = _treealloc.GetRef(sz);
   if(p) (*p)->dealloc(s);
-  else TINYOAL_LOG("WARNING") << "decoder buffer deallocation failure." << std::endl;
+  else TINYOAL_LOG(2, "decoder buffer deallocation failure.");
 }
 
 void cTinyOAL::SetSettings(const char* file)
 {
   FILE* f;
   FOPEN(f,file,"rb");
-  if(!f) { TINYOAL_LOG("WARNING") << "Failed to open source config file for reading" << std::endl; return; }
+  if(!f) { TINYOAL_LOG(2, "Failed to open source config file for reading."); return; }
   fseek(f,0,SEEK_END);
   long len=ftell(f);
   fseek(f,0,SEEK_SET);
@@ -353,7 +360,7 @@ void cTinyOAL::SetSettingsStream(const char* data)
 #endif
   FILE* f;
   FOPEN(f,magic,"wb");
-  if(!f) { TINYOAL_LOG("WARNING") << "Failed to open destination config file for writing" << std::endl; return; }
+  if(!f) { TINYOAL_LOG(2, "Failed to open destination config file for writing."); return; }
   if(data) fwrite(data,1,strlen(data),f);
   fclose(f);
 }

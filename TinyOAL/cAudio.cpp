@@ -22,7 +22,7 @@ cAudio::cAudio(const cAudio& copy)
   prev = 0;
   next = 0;
 
-  if(!_source) { TINYOAL_LOGM("WARNING","NULL cAudioResource passed to cAudio"); return; }
+  if(!_source) { TINYOAL_LOG(2,"NULL cAudioResource passed to cAudio"); return; }
   _source->Grab();
   bss_util::LLAdd<cAudio>(this,_source->_inactivelist);
   
@@ -38,7 +38,7 @@ cAudio::cAudio(const cAudio& copy)
       _fillbuffers(); // Fill all the Buffers with decoded audio data
     }
     else
-      TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
+      TINYOAL_LOG(1,"Failed to allocate memory for decoded audio data");
   }
 
   if(_flags&TINYOAL_ISPLAYING) {
@@ -74,7 +74,7 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
   prev = 0;
   next = 0;
 
-  if(!ref) { TINYOAL_LOGM("WARNING","NULL cAudioResource passed to cAudio"); return; }
+  if(!ref) { TINYOAL_LOG(2,"NULL cAudioResource passed to cAudio"); return; }
   ref->Grab();
   _looptime=ref->GetLoopPoint();
   _flags+=ref->GetFlags();
@@ -91,10 +91,10 @@ cAudio::cAudio(cAudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) : _l
       _fillbuffers(); // Fill all the Buffers with decoded audio data
     }
     else
-      TINYOAL_LOGM("ERROR","Failed to allocate memory for decoded audio data");
+      TINYOAL_LOG(1,"Failed to allocate memory for decoded audio data");
   }
   else
-    TINYOAL_LOGM("WARNING","Stream request failed");
+    TINYOAL_LOG(2,"Stream request failed");
 
 
   if(_flags&TINYOAL_ISPLAYING) {
@@ -254,7 +254,7 @@ void cAudio::_getsource()
     cTinyOAL::Instance()->oalFuncs->alGenSources(1, &uiSource);
     if(cTinyOAL::Instance()->oalFuncs->alGetError() != AL_NO_ERROR)
     {
-      TINYOAL_LOGM("ERROR","Failed to generate source!");
+      TINYOAL_LOG(1,"Failed to generate source!");
       //TODO steal source from other audio instead
     }
 

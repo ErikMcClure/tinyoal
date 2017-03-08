@@ -23,7 +23,7 @@ using namespace tinyoal;
     err=cTinyOAL::Instance()->mp3Funcs->fn_mpgFormat(h, freq,(int)_channels,enc);
   _freq=freq;
   if(err!=MPG123_OK)
-    TINYOAL_LOGM("ERROR","Failed to get format information from MP3");
+    TINYOAL_LOG(1,"Failed to get format information from MP3");
   else
   {
     _samplebits=(enc==MPG123_ENC_SIGNED_16)?16:32;
@@ -45,7 +45,7 @@ void* cAudioResourceMP3::OpenStream()
   int err;
   mpg123_handle* h = fn->fn_mpgNew(0,&err);
   if(!h || err!=MPG123_OK) {
-    TINYOAL_LOGM("ERROR","Failed to create new mpg instance");
+    TINYOAL_LOG(1,"Failed to create new mpg instance");
     return 0;
   }
 
@@ -64,7 +64,7 @@ void* cAudioResourceMP3::OpenStream()
     err=fn->fn_mpgOpenHandle(h,dat);
   }
   if(err!=MPG123_OK) { 
-    TINYOAL_LOGM("ERROR","Failed to open mpg handle");
+    TINYOAL_LOG(1,"Failed to open mpg handle");
     fn->fn_mpgClose(h); 
     fn->fn_mpgDelete(h); 
     return 0; 
@@ -98,7 +98,7 @@ unsigned long cAudioResourceMP3::_read(void* stream, char* buffer, unsigned int 
   }
   eof=(err==MPG123_DONE);
   if(err!=MPG123_DONE && err!=0)
-    TINYOAL_LOGM("Warning", "Error while decoding mp3");
+    TINYOAL_LOG(1, "Error while decoding mp3");
   return done;
 }
 unsigned long cAudioResourceMP3::Read(void* stream, char* buffer, unsigned int len, bool& eof)
@@ -113,7 +113,7 @@ bool cAudioResourceMP3::Skip(void* stream, uint64_t samples)
 {
   off_t err = cTinyOAL::Instance()->mp3Funcs->fn_mpgSeek((mpg123_handle*)stream,samples,SEEK_SET);
   if(err>=0) return true;
-  TINYOAL_LOG("WARNING") << "fn_mpgSeek failed with error code " << err << std::endl;
+  TINYOAL_LOG(2, "fn_mpgSeek failed with error code %i", (int)err);
   return false;
 }
 uint64_t cAudioResourceMP3::Tell(void* stream)
@@ -148,7 +148,7 @@ std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int
   int err;
   mpg123_handle* h;
   if(!fn || !(h = fn->fn_mpgNew(0,&err)) || err!=MPG123_OK) {
-    TINYOAL_LOGM("ERROR","Failed to create new mpg instance");
+    TINYOAL_LOG(1,"Failed to create new mpg instance");
     return std::pair<void*,unsigned int>((void*)0,0);
   }
 
@@ -169,7 +169,7 @@ std::pair<void*,unsigned int> cAudioResourceMP3::ToWave(void* data, unsigned int
     err=fn->fn_mpgOpenHandle(h,&dat);
   }
   auto fnabort = [](mpg123_handle* h, const char* error) -> std::pair<void*,unsigned int> {
-    TINYOAL_LOGM("ERROR",error);
+    TINYOAL_LOG(1,error);
     cTinyOAL::Instance()->mp3Funcs->fn_mpgClose(h); 
     cTinyOAL::Instance()->mp3Funcs->fn_mpgDelete(h); 
     return std::pair<void*,unsigned int>((void*)0,0); 

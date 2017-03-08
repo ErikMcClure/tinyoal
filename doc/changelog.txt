@@ -2,6 +2,11 @@
 * TinyOAL Changelog *
 *********************
 
+1.0.5
+-----
+- Visual Studio 2017 update
+- Changed logging behavior to use a replaceable function pointer
+
 1.0.4
 -----
 - Split filetype out from flags

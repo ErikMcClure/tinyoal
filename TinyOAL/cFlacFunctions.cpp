@@ -27,7 +27,7 @@
 #endif
 
 #define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_flacDLL, n); \
-		if(!v) TINYOAL_LOGM("ERROR","Could not load " n)
+		if(!v) TINYOAL_LOG(1,"Could not load " n)
 
 using namespace tinyoal;
 
@@ -81,7 +81,7 @@ cFlacFunctions::cFlacFunctions(const char* force)
     DYNFUNC(fn_flac_seek,LPFLACSEEK,"FLAC__stream_decoder_seek_absolute");
 	}
   else
-    TINYOAL_LOGM("ERROR","Could not find the libflac DLL (or it may be missing one of its dependencies)");
+    TINYOAL_LOG(1,"Could not find the libflac DLL (or it may be missing one of its dependencies)");
 }
 
 cFlacFunctions::~cFlacFunctions()

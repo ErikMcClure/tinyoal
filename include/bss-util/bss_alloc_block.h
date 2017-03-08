@@ -32,28 +32,34 @@ namespace bss_util {
     }
     inline ~cBlockAllocVoid()
     {
-      FIXEDLIST_NODE* hold=_root;
-      while((_root=hold)!=0)
+      FIXEDLIST_NODE* hold;
+      while(_root != nullptr)
       {
-        hold=_root->next;
-        free(_root);
+        hold = _root;
+        _root = _root->next;
+        free(hold);
       }
     }
-    inline void* BSS_FASTCALL alloc(size_t num) noexcept
+    inline void* alloc(size_t num) noexcept
     {
       assert(num==1);
 #ifdef BSS_DISABLE_CUSTOM_ALLOCATORS
       return malloc(num*_sz);
 #endif
-      if(!_freelist) _allocchunk(fbnext(_root->size/_sz)*_sz);
-      assert(_freelist!=0);
+      if(!_freelist)
+      {
+        _allocchunk(fbnext(_root->size / _sz)*_sz);
+        assert(_freelist != 0);
+        if(!_freelist)
+          return nullptr;
+      }
 
       void* ret=_freelist;
       _freelist=*((void**)_freelist);
       assert(_validpointer(ret));
       return ret;
     }
-    inline void BSS_FASTCALL dealloc(void* p) noexcept
+    inline void dealloc(void* p) noexcept
     {
 #ifdef BSS_DISABLE_CUSTOM_ALLOCATORS
       delete p; return;
@@ -94,9 +100,10 @@ namespace bss_util {
       return false;
     }
 #endif
-    inline void BSS_FASTCALL _allocchunk(size_t nsize) noexcept
+    inline void _allocchunk(size_t nsize) noexcept
     {
-      FIXEDLIST_NODE* retval=(FIXEDLIST_NODE*)malloc(sizeof(FIXEDLIST_NODE)+nsize);
+      FIXEDLIST_NODE* retval=reinterpret_cast<FIXEDLIST_NODE*>(malloc(sizeof(FIXEDLIST_NODE)+nsize));
+      if(!retval) return;
       retval->next=_root;
       retval->size=nsize;
       //#pragma message(TODO "DEBUG REMOVE")
@@ -105,7 +112,7 @@ namespace bss_util {
       _root=retval;
     }
 
-    BSS_FORCEINLINE void BSS_FASTCALL _initchunk(const FIXEDLIST_NODE* chunk) noexcept
+    BSS_FORCEINLINE void _initchunk(const FIXEDLIST_NODE* chunk) noexcept
     {
       uint8_t* memend=((uint8_t*)(chunk+1))+chunk->size;
       for(uint8_t* memref=(((uint8_t*)(chunk+1))); memref<memend; memref+=_sz)
@@ -128,7 +135,7 @@ namespace bss_util {
   public:
     inline cBlockAlloc(cBlockAlloc&& mov) : cBlockAllocVoid(std::move(mov)) {}
     inline explicit cBlockAlloc(size_t init=8) : cBlockAllocVoid(sizeof(T), init) { static_assert((sizeof(T)>=sizeof(void*)), "T cannot be less than the size of a pointer"); }
-    inline T* BSS_FASTCALL alloc(size_t num) noexcept { return (T*)cBlockAllocVoid::alloc(num); }
+    inline T* alloc(size_t num) noexcept { return (T*)cBlockAllocVoid::alloc(num); }
   };
 
   template<typename T>

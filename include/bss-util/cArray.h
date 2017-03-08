@@ -53,7 +53,7 @@ namespace bss_util {
 
   // Helper function for inserting a range into a simple array
   template<class T, typename CType = size_t>
-  static inline void InsertRangeSimple(T* a, CType length, CType index, const T* t, CType tsize) noexcept
+  inline void InsertRangeSimple(T* a, CType length, CType index, const T* t, CType tsize) noexcept
   {
     assert(index >= 0 && length >= index);
     memmove(a + index + tsize, a + index, sizeof(T)*(length - index));
@@ -61,7 +61,7 @@ namespace bss_util {
   }
 
   template<class T, typename CType = size_t>
-  static inline void RemoveRangeSimple(T* a, CType length, CType index, CType range) noexcept
+  inline void RemoveRangeSimple(T* a, CType length, CType index, CType range) noexcept
   {
     assert(index >= 0 && length > index);
     memmove(a + index, a + index + range, sizeof(T)*(length - index - range));
@@ -135,7 +135,7 @@ namespace bss_util {
   struct BSS_COMPILER_DLLEXPORT cArrayInternal
   {
     static void _copymove(T* BSS_RESTRICT dest, T* BSS_RESTRICT src, CType n) noexcept { if(dest == nullptr) return; assert(dest != src); _copy(dest, src, n); }
-    static void _copy(T* BSS_RESTRICT dest, const T* BSS_RESTRICT src, CType n) noexcept { if(dest == nullptr) return; assert(dest != src); memcpy(dest, src, sizeof(T)*n); }
+    static void _copy(T* BSS_RESTRICT dest, const T* BSS_RESTRICT src, CType n) noexcept { if(dest == nullptr || src == nullptr || !n) return; assert(dest != src); memcpy(dest, src, sizeof(T)*n); }
     template<typename U>
     static void _insert(T* a, CType length, CType index, U && t) noexcept
     {
@@ -159,7 +159,7 @@ namespace bss_util {
   {
     static void _copymove(T* BSS_RESTRICT dest, T* BSS_RESTRICT src, CType n) noexcept { if(dest == nullptr) return; assert(dest != src); memcpy(dest, src, sizeof(T)*n); }
     static void _copy(T* BSS_RESTRICT dest, const T* BSS_RESTRICT src, CType n) noexcept {
-      if(dest == nullptr) return;
+      if(dest == nullptr || src == nullptr || !n) return;
       assert(dest != src);
       for(CType i = 0; i < n; ++i)
         new(dest + i) T(src[i]);
@@ -190,7 +190,7 @@ namespace bss_util {
   {
     static void _copymove(T* BSS_RESTRICT dest, T* BSS_RESTRICT src, CType n) noexcept
     {
-      if(dest == nullptr) return;
+      if(dest == nullptr || src == nullptr || !n) return;
       assert(dest != src);
       for(CType i = 0; i < n; ++i)
         new(dest + i) T(std::move(src[i]));
@@ -198,7 +198,7 @@ namespace bss_util {
     }
     static void _copy(T* BSS_RESTRICT dest, const T* BSS_RESTRICT src, CType n) noexcept
     {
-      if(dest == nullptr) return;
+      if(dest == nullptr || src == nullptr || !n) return;
       assert(dest != src);
       for(CType i = 0; i < n; ++i)
         new(dest + i) T(src[i]);
