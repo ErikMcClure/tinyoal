@@ -17,7 +17,7 @@ cAudioResourceFLAC::cAudioResourceFLAC(void* data, unsigned int datalength, TINY
   DatStreamEx* ex = (DatStreamEx*)_openstream(true);
   if(!ex) return;
   if(!fn->fn_flac_process_single(ex->d)) // Lets us pick up all this metadata
-    TINYOAL_LOGM("WARNING","Failed to preprocess first frame");
+    TINYOAL_LOG(2,"Failed to preprocess first frame");
   _freq=fn->fn_flac_get_sample_rate(ex->d);
   _channels=fn->fn_flac_get_channels(ex->d);
   _samplebits=fn->fn_flac_get_bits_per_sample(ex->d);
@@ -38,7 +38,7 @@ void* cAudioResourceFLAC::OpenStream()
 void* cAudioResourceFLAC::_openstream(bool empty)
 {
   auto fn = cTinyOAL::Instance()->flacFuncs;
-  if(!fn) { TINYOAL_LOGM("ERROR","flacFuncs is NULL, cannot open stream"); return 0; }
+  if(!fn) { TINYOAL_LOG(1,"flacFuncs is NULL, cannot open stream"); return 0; }
   DatStreamEx* stream = _getstream();
   stream->p=&_internal;
   stream->cursample=0;
@@ -52,9 +52,9 @@ void* cAudioResourceFLAC::_openstream(bool empty)
     stream->stream.data=stream->stream.streampos=(const char*)_data;
     err=fn->fn_flac_init_stream(stream->d,&_cbread,&_cbseek,&_cbtell,&_cblength,&_cbeof,empty?&_cbemptywrite:&_cbwrite,&_cbmeta,&_cberror,stream);
   }
-  if(err!=0) { TINYOAL_LOG("WARNING") << "fn_flac_init_stream failed with error code " << err << std::endl; CloseStream(stream); return 0; }
+  if(err!=0) { TINYOAL_LOG(2, "fn_flac_init_stream failed with error code %i", (int)err); CloseStream(stream); return 0; }
   if(!fn->fn_flac_process_until_metadata_end(stream->d))
-    TINYOAL_LOGM("INFO","fn_flac_process_until_metadata_end failed in _openstream()");
+    TINYOAL_LOG(4,"fn_flac_process_until_metadata_end failed in _openstream()");
 
   return stream;
 }
@@ -95,7 +95,7 @@ unsigned long cAudioResourceFLAC::Read(void* stream, char* buffer, unsigned int 
   _internal._len=0;
   if(_internal._cursample!=-1LL && !eof) //_cursample gets set by our write callback. If it's -1, then we didn't need to terminate early.
     if(!fn->fn_flac_seek(ex->d,_internal._cursample))
-      TINYOAL_LOG("INFO") << "fn_flac_seek failed to seek to " << _internal._cursample << std::endl;
+      TINYOAL_LOG(4, "fn_flac_seek failed to seek to %llu", _internal._cursample);
   return _internal._bytesread;
 }
 bool cAudioResourceFLAC::Reset(void* stream)
@@ -103,7 +103,7 @@ bool cAudioResourceFLAC::Reset(void* stream)
   ((DatStreamEx*)stream)->cursample=0;
   if(cTinyOAL::Instance()->flacFuncs->fn_flac_reset(((DatStreamEx*)stream)->d)!=0)
     return true;
-  TINYOAL_LOGM("WARNING","fn_flac_reset failed");
+  TINYOAL_LOG(2,"fn_flac_reset failed");
   return false;
 }
 bool cAudioResourceFLAC::Skip(void* stream, uint64_t samples)
@@ -113,7 +113,7 @@ bool cAudioResourceFLAC::Skip(void* stream, uint64_t samples)
   ((DatStreamEx*)stream)->cursample=samples;
   if(cTinyOAL::Instance()->flacFuncs->fn_flac_seek(((DatStreamEx*)stream)->d,samples)!=0)
     return true;
-  TINYOAL_LOG("WARNING") << "fn_flac_seek failed to seek to " << samples << std::endl;
+  TINYOAL_LOG(2, "fn_flac_seek failed to seek to %llu", samples);
   if(cTinyOAL::Instance()->flacFuncs->fn_flac_get_state(((DatStreamEx*)stream)->d) == FLAC__STREAM_DECODER_SEEK_ERROR)
     Reset(stream); // FLAC requires us to reset or flush the stream if seeking fails with FLAC__STREAM_DECODER_SEEK_ERROR
   return false;
@@ -124,23 +124,23 @@ uint64_t cAudioResourceFLAC::Tell(void* stream)
 }
 void cAudioResourceFLAC::_cberror(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status, void *client_data)
 {
-  const char* s="Unknown error";
   switch(status)
   {
   case FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC:
-    s="An error in the stream caused the decoder to lose synchronization.";
+    TINYOAL_LOG(2, "(FLAC CODEC ERROR) An error in the stream caused the decoder to lose synchronization.");
     break;
   case FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER:
-    s="The decoder encountered a corrupted frame header.";
+    TINYOAL_LOG(2, "(FLAC CODEC ERROR) The decoder encountered a corrupted frame header.");
     break;
   case FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH:
-    s="The frame's data did not match the CRC in the footer.";
+    TINYOAL_LOG(2, "(FLAC CODEC ERROR) The frame's data did not match the CRC in the footer.");
     break;
   case FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM:
-    s="The decoder encountered reserved fields in use in the stream.";
+    TINYOAL_LOG(2, "(FLAC CODEC ERROR) The decoder encountered reserved fields in use in the stream.");
     break;
+  default:
+    TINYOAL_LOG(2, "Unknown FLAC CODEC ERROR %i", (int)status);
   }
-  TINYOAL_LOG("WARNING (FLAC CODEC ERROR)") << s << std::endl;
 }
 void cAudioResourceFLAC::_cbmeta(const FLAC__StreamDecoder *decoder, const FLAC__StreamMetadata *metadata, void *client_data)
 {
@@ -221,7 +221,7 @@ std::pair<void*,unsigned int> cAudioResourceFLAC::ToWave(void* data, unsigned in
 {
   static const std::pair<void*,unsigned int> NULLRET((void*)0,0);
   auto fn = cTinyOAL::Instance()->flacFuncs;
-  if(!fn) { TINYOAL_LOGM("ERROR","flacFuncs is NULL, cannot open stream"); return NULLRET; }
+  if(!fn) { TINYOAL_LOG(1,"flacFuncs is NULL, cannot open stream"); return NULLRET; }
   DatStreamEx* stream = _getstream();
   if(!stream) return NULLRET;
   INTERNAL internal;
@@ -237,13 +237,13 @@ std::pair<void*,unsigned int> cAudioResourceFLAC::ToWave(void* data, unsigned in
     stream->stream.data=stream->stream.streampos=(const char*)data;
     err=fn->fn_flac_init_stream(stream->d,&_cbread,&_cbseek,&_cbtell,&_cblength,&_cbeof,&_cbwrite,&_cbmeta,&_cberror,stream);
   }
-  if(err!=0) { TINYOAL_LOG("WARNING") << "fn_flac_init_stream failed with error code " << err << std::endl; _closestream(stream); return NULLRET; }
+  if(err!=0) { TINYOAL_LOG(2, "fn_flac_init_stream failed with error code %i", (int)err); _closestream(stream); return NULLRET; }
   if(!fn->fn_flac_process_until_metadata_end(stream->d))
-    TINYOAL_LOGM("INFO","fn_flac_process_until_metadata_end failed in _openstream()");
+    TINYOAL_LOG(4,"fn_flac_process_until_metadata_end failed in _openstream()");
 
   internal._len=0;
   if(!fn->fn_flac_process_single(stream->d)) // Lets us pick up all this metadata
-    TINYOAL_LOGM("WARNING","Failed to preprocess first frame");
+    TINYOAL_LOG(2,"Failed to preprocess first frame");
   unsigned int channels=fn->fn_flac_get_channels(stream->d);
   unsigned int samplebits=fn->fn_flac_get_bits_per_sample(stream->d);
   if(samplebits==24) samplebits=32;

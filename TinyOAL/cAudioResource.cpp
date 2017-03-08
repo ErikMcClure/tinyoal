@@ -56,7 +56,7 @@ cAudio* cAudioResource::Play(TINYOAL_FLAG flags)
 }
 
 //This function does NOT check to see if fileheader is 8 characters long
-unsigned char BSS_FASTCALL cAudioResource::_getfiletype(const char* fileheader)
+unsigned char cAudioResource::_getfiletype(const char* fileheader)
 { 
   auto iter = _codecs.begin();
   while(iter.IsValid())
@@ -94,8 +94,8 @@ cAudioResource* cAudioResource::Create(const void* data, unsigned int datalength
 {
   if(!data || datalength < 8) //bad file pointer
   {
-    if(!data) TINYOAL_LOGM("WARNING", "NULL pointer passed in to cAudioResource::Create()");
-    else TINYOAL_LOGM("WARNING", "datalength equal to 0 in cAudioResource::Create()");
+    if(!data) TINYOAL_LOG(2, "NULL pointer passed in to cAudioResource::Create()");
+    else TINYOAL_LOG(2, "datalength equal to 0 in cAudioResource::Create()");
     return 0;
   }
 
@@ -118,7 +118,7 @@ cAudioResource* cAudioResource::_force(void* data, unsigned int datalength, TINY
   Codec* c = GetCodec(filetype);
   if(!c)
   {
-    TINYOAL_LOG("WARNING") << data << " is using an unknown or unrecognized format, or may be corrupt." << std::endl;
+    TINYOAL_LOG(2, "%p is using an unknown or unrecognized format, or may be corrupt.", data);
     return 0;
   }
   std::pair<void*, unsigned int> d = c->towave(data, datalength, flags);
@@ -130,8 +130,8 @@ cAudioResource* cAudioResource::_fcreate(FILE* file, unsigned int datalength, TI
 {
   if(!file || datalength < 8) //bad file pointer
   {
-    if(!file) TINYOAL_LOGM("WARNING", "NULL pointer passed in to cAudioResource::Create()");
-    else TINYOAL_LOGM("WARNING", "datalength equal to 0 in cAudioResource::Create()");
+    if(!file) TINYOAL_LOG(2, "NULL pointer passed in to cAudioResource::Create()");
+    else TINYOAL_LOG(2, "datalength equal to 0 in cAudioResource::Create()");
     return 0;
   }
 
@@ -163,10 +163,10 @@ cAudioResource* cAudioResource::_create(void* data, unsigned int datalength, TIN
   Codec* c = GetCodec(filetype);
   if(!c)
   {
-    TINYOAL_LOG("WARNING") << data << " is using an unknown or unrecognized format, or may be corrupt." << std::endl;
+    TINYOAL_LOG(2, "%p is using an unknown or unrecognized format, or may be corrupt.", data);
     return 0; //Unknown format
   }
-  TINYOAL_LOG("INFO") << "Loading " << (void*)data << " with codec ID " << filetype << std::endl;
+  TINYOAL_LOG(4, "Loading %p with codec ID %i", data, (int)filetype);
   size_t len = c->construct(0, 0, 0, 0, 0);
   r = (cAudioResource*)malloc(len);
   c->construct(r, data, datalength, flags, loop);

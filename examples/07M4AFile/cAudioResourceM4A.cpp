@@ -21,9 +21,9 @@ using namespace tinyoal;
 cAudioResourceM4A::cAudioResourceM4A(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_M4A, loop)
 {
   if(FAILED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
-    TINYOAL_LOGM("ERROR", "SSMF: failed to initialize COM");
+    TINYOAL_LOG(1, "SSMF: failed to initialize COM");
   if(FAILED(MFStartup(MF_VERSION)))
-    TINYOAL_LOGM("ERROR", "SSMF: failed to initialize Media Foundation");
+    TINYOAL_LOG(1, "SSMF: failed to initialize Media Foundation");
 }
 cAudioResourceM4A::~cAudioResourceM4A()
 {
@@ -40,7 +40,7 @@ void* cAudioResourceM4A::OpenStream()
   IMFSourceReader* reader;
   HRESULT hr = MFCreateSourceReaderFromByteStream(mfstream, NULL, &reader);
   if(FAILED(hr)) {
-    TINYOAL_LOG("ERROR") << "SSMF: Error opening input file with error: " << HRESULT_CODE(hr) << std::endl;
+    TINYOAL_LOG(1, "SSMF: Error opening input file with error: %i", HRESULT_CODE(hr));
     return 0;
   }
 
@@ -50,7 +50,7 @@ void* cAudioResourceM4A::OpenStream()
   IMFMediaType* type;
   if(FAILED(reader->GetNativeMediaType(MF_SOURCE_READER_FIRST_AUDIO_STREAM, 0, &type)))
   {
-    TINYOAL_LOG("ERROR") << "SSMF: failed to retrieve native media type: " << HRESULT_CODE(hr) << std::endl;
+    TINYOAL_LOG(1, "SSMF: failed to retrieve native media type: %i", HRESULT_CODE(hr));
     return 0;
   }
 
@@ -72,7 +72,7 @@ void* cAudioResourceM4A::OpenStream()
   _format = cTinyOAL::GetFormat(_channels, _samplebits, false);
 
   if(FAILED(MFCreateMediaType(&type))) {
-    TINYOAL_LOG("ERROR") << "SSMF: failed to create media type: " << HRESULT_CODE(hr) << std::endl;
+    TINYOAL_LOG(1, "SSMF: failed to create media type: %i", HRESULT_CODE(hr));
     return 0;
   }
 
@@ -178,7 +178,7 @@ bool cAudioResourceM4A::Skip(void* stream, uint64_t samples)
   s->buf.resize(0);
 
   if(FAILED(s->reader->Flush(MF_SOURCE_READER_FIRST_AUDIO_STREAM)))
-    TINYOAL_LOGM("WARNING", "SSMF: failed to flush before seek");
+    TINYOAL_LOG(2, "SSMF: failed to flush before seek");
 
   //int64_t seekTarget = samples / _channels;
   s->cur = static_cast<int64_t>((static_cast<double>(samples) / _freq) * 1e7);

@@ -27,7 +27,7 @@
 #endif
 
 #define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_mpgDLL, n); \
-		if(!v) TINYOAL_LOGM("ERROR","Could not load " n)
+		if(!v) TINYOAL_LOG(1,"Could not load " n)
 
 using namespace tinyoal;
 
@@ -62,14 +62,14 @@ cMp3Functions::cMp3Functions(const char* force)
     DYNFUNC(fn_mpgReplaceReader,LPMPGREPLACEREADER,"mpg123_replace_reader_handle");
     
     if(!fn_mpgInit || fn_mpgInit()!=MPG123_OK) {
-      TINYOAL_LOGM("ERROR","Failed to initialize mpg123");
+      TINYOAL_LOG(1,"Failed to initialize mpg123");
       if(fn_mpgExit!=0) fn_mpgExit();
       FREEDYNLIB(_mpgDLL);
       memset(this,0,sizeof(cMp3Functions));
     }
   }
   else
-    TINYOAL_LOGM("ERROR","Could not find the mpg123 DLL (or it may be missing one of its dependencies)");
+    TINYOAL_LOG(1,"Could not find the mpg123 DLL (or it may be missing one of its dependencies)");
 }
 
 cMp3Functions::~cMp3Functions()

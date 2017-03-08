@@ -27,7 +27,7 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
   }
 
   if(cTinyOAL::Instance()->waveFuncs->Open((_flags&TINYOAL_ISFILE)?_data:&_sentinel.stream, &_sentinel, callbacks)!=0)
-    TINYOAL_LOGM("ERROR","Could not find file");
+    TINYOAL_LOG(1,"Could not find file");
 	
   cTinyOAL::Instance()->waveFuncs->Seek(_sentinel,0);
 
@@ -51,7 +51,7 @@ cAudioResourceWAV::cAudioResourceWAV(void* data, unsigned int datalength, TINYOA
 
 	if(!_format)
   {
-    TINYOAL_LOGM("ERROR","Failed to find format information, or unsupported format");
+    TINYOAL_LOG(1,"Failed to find format information, or unsupported format");
     memset(&_sentinel,0,sizeof(WAVEFILEINFO));
   }
 }

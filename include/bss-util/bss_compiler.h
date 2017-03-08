@@ -55,8 +55,8 @@
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
 #define BSS_UNREACHABLE() 
 #define BSS_ASSUME(x) 
-#define BSS_EXPLICITSTATIC static
 #define BSS_SSE_ENABLED
+#define BSS_COMPILER_HAS_TIME_GET
 
 #elif defined(__clang__) // Clang (must be before GCC, because clang also pretends it's GCC)
 #define BSS_COMPILER_CLANG
@@ -69,17 +69,17 @@
 #define BSS_COMPILER_FASTCALL __attribute__((fastcall))
 #define BSS_COMPILER_STDCALL __attribute__((stdcall))
 #define BSS_COMPILER_NAKED __attribute__((naked)) // Will only work on ARM, AVR, MCORE, RX and SPU. 
-#define BSS_FORCEINLINE __attribute__((always_inline))
+#define BSS_FORCEINLINE __attribute__((always_inline)) inline
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGN(n) __attribute__((aligned(n)))
 #define BSS_ALIGNED(sn, n) sn BSS_ALIGN(n)
 #define BSS_VARIADIC_TEMPLATES
+#define BSS_COMPILER_HAS_TIME_GET
 
 #define MSC_FASTCALL 
 #define GCC_FASTCALL BSS_COMPILER_FASTCALL
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
-#define BSS_EXPLICITSTATIC // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
 //#define BSS_SSE_ENABLED
 
 #elif defined __GNUC__ // GCC
@@ -93,17 +93,20 @@
 #define BSS_COMPILER_FASTCALL __attribute__((fastcall))
 #define BSS_COMPILER_STDCALL __attribute__((stdcall))
 #define BSS_COMPILER_NAKED __attribute__((naked)) // Will only work on ARM, AVR, MCORE, RX and SPU. 
-#define BSS_FORCEINLINE __attribute__((always_inline))
+#define BSS_FORCEINLINE __attribute__((always_inline)) inline
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGN(n) __attribute__((aligned(n)))
 #define BSS_ALIGNED(sn, n) sn BSS_ALIGN(n)
 #define BSS_VARIADIC_TEMPLATES
 
+#if __GNUC__ >= 5 && __GNUC_MINOR__ >= 1
+#define BSS_COMPILER_HAS_TIME_GET
+#endif
+
 #define MSC_FASTCALL 
 #define GCC_FASTCALL BSS_COMPILER_FASTCALL
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
 #define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
-#define BSS_EXPLICITSTATIC // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
 #define BSS_SSE_ENABLED
 
 #ifndef __has_builtin
@@ -138,8 +141,8 @@
 #define FUNCPTRCC(m,CC) CC m
 #define MSC_FASTCALL BSS_COMPILER_FASTCALL
 #define GCC_FASTCALL 
-#define BSS_EXPLICITSTATIC static // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
 #define BSS_SSE_ENABLED
+#define BSS_COMPILER_HAS_TIME_GET
 
 #define BSS_UNREACHABLE() __assume(0)
 #define BSS_ASSUME(x) __assume(x)

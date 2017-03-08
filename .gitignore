@@ -5,6 +5,7 @@
 *TinyOAL_log.txt
 *.opendb
 *.VC.db
+*.log
 bin/
 bin32/
 TinyOAL/TinyOAL.aps
@@ -35,3 +36,4 @@ examples/LoopUtility/Win32/
 media/
 !media/license.txt
 examples/loopexample.zip
+.vs/

@@ -21,7 +21,7 @@
 using namespace tinyoal;
 using namespace bss_util;
   
-const char* BSS_FASTCALL trimpath(const char* path)
+const char* trimpath(const char* path)
 {
 	const char* r=strrchr(path,'/');
 	const char* r2=strrchr(path,'\\');

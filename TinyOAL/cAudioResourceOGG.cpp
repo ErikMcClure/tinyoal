@@ -34,7 +34,7 @@ cAudioResourceOGG::cAudioResourceOGG(void* data, unsigned int datalength, TINYOA
 
 	// If the format never got set, error.
 	if(!_format)
-    TINYOAL_LOGM("ERROR","Failed to find format information, or unsupported format");
+    TINYOAL_LOG(1,"Failed to find format information, or unsupported format");
 
   uint64_t fileloop = ogg->GetLoopStart(&f->ogg);
   if(fileloop!=-1LL) _loop=fileloop; // Only overwrite our loop point with the file loop point if it actually had one.
@@ -61,7 +61,7 @@ bool cAudioResourceOGG::_openstream(OggVorbis_FileEx* r)
   cOggFunctions* ogg = cTinyOAL::Instance()->oggFuncs;
 
   if(!ogg || !ogg->fn_ov_open_callbacks || ogg->fn_ov_open_callbacks((_flags&TINYOAL_ISFILE)?_data:&r->stream,&r->ogg,0,0,_callbacks)!=0) {
-    TINYOAL_LOGM("ERROR","Failed to create file stream");
+    TINYOAL_LOG(1,"Failed to create file stream");
     return false;
   }
   return true;
@@ -135,7 +135,7 @@ bool cAudioResourceOGG::Skip(void* stream, uint64_t samples)
 {
   if(!stream) return false;
   if(!cTinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream,(ogg_int64_t)samples)) return true;
-  else TINYOAL_LOG("WARNING") << "Seek failed to skip to " << samples << std::endl;
+  else TINYOAL_LOG(2, "Seek failed to skip to %llu", samples);
   if(!samples) return Reset(stream); // If we fail to seek, but we want to loop to the start, attempt to reset the stream instead.
   return false;
 }
@@ -184,7 +184,7 @@ std::pair<void*,unsigned int> cAudioResourceOGG::ToWave(void* data, unsigned int
   cOggFunctions* ogg = cTinyOAL::Instance()->oggFuncs;
 
   if(!ogg || !ogg->fn_ov_open_callbacks || ogg->fn_ov_open_callbacks((flags&TINYOAL_ISFILE)?data:&r.stream,&r.ogg,0,0,callbacks)!=0) {
-    TINYOAL_LOGM("ERROR","Failed to create file stream");
+    TINYOAL_LOG(1,"Failed to create file stream");
     return std::pair<void*,unsigned int>((void*)0,0); 
   }
 
