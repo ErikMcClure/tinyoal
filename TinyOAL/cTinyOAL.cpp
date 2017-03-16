@@ -41,9 +41,9 @@ extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, 
 
 #endif
 
-cTinyOAL::cTinyOAL(unsigned char defnumbuf, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) : 
+cTinyOAL::cTinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) :
   cSingleton<cTinyOAL>(this), _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
-  oalFuncs(0), _fnLog(&DefaultLog)
+  oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog)
 {
   _construct("TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
 }
