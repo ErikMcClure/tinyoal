@@ -42,7 +42,7 @@ namespace tinyoal {
 
   public:
     // Constructors
-    cTinyOAL(unsigned char defnumbuf=4, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
+    cTinyOAL(unsigned char defnumbuf=4, FNLOG fnLog = 0, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
     ~cTinyOAL();
 		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
     // to this update function can never exceed the length of a buffer, or the sound will cut out.
@@ -53,7 +53,7 @@ namespace tinyoal {
     inline cAudio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(data,len,flags),flags); }
     inline cAudio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(cAudioResource::Create(file,len,flags),flags); }
     // Writes a line to the log using the logging function
-    int Log(const char* FILE, unsigned int LINE, unsigned char level, const char* format, ...);
+    int Log(const char* file, unsigned int line, unsigned char level, const char* format, ...);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
     static cTinyOAL* Instance();
     // Gets the name of the default device
