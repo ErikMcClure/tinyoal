@@ -42,16 +42,16 @@
     <ClInclude Include="cWaveFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\cAudio.h">
+    <ClInclude Include="..\include\tinyoal\cAudio.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\cAudioResource.h">
+    <ClInclude Include="..\include\tinyoal\cAudioResource.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\cTinyOAL.h">
+    <ClInclude Include="..\include\tinyoal\cTinyOAL.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\TinyOAL_dlldef.h">
+    <ClInclude Include="..\include\tinyoal\TinyOAL_dlldef.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

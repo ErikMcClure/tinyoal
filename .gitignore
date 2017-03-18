@@ -6,6 +6,7 @@
 *.opendb
 *.VC.db
 *.log
+*.user
 /bin/
 /bin32/
 /TinyOAL/TinyOAL.aps
