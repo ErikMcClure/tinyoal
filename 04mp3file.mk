@@ -4,7 +4,7 @@ BUILDDIR := examples/bin
 OBJDIR := examples/bin/obj
 C_SRCS := $(wildcard $(SRCDIR)/*.c)
 CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp)
-INCLUDE_DIRS := include
+INCLUDE_DIRS := include/tinyoal
 LIBRARY_DIRS := 
 LIBRARIES := dl tinyoal
 
