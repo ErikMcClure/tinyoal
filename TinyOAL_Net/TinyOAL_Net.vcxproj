@@ -23,6 +23,7 @@
     <RootNamespace>AAE_Net</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
