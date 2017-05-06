@@ -92,7 +92,7 @@ namespace tinyoal {
     static AudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static AudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static AudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
-    static unsigned char _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
+    static unsigned char _getFiletype(const char* fileheader); // fileheader must be at least 4 characters long
     static bss::Hash<const char*, AudioResource*, true> _audiohash;
     static bss::BlockAlloc<Audio> _allocaudio;
     static bss::Hash<unsigned char, Codec> _codecs;

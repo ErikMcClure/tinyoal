@@ -36,7 +36,7 @@ namespace tinyoal {
   struct ALSoftSettings;
 
 	// This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
-  class TINYOAL_DLLEXPORT TinyOAL : protected bss::Singleton<TinyOAL>
+  class TINYOAL_DLLEXPORT TinyOAL : public bss::Singleton<TinyOAL>
   {
     typedef int(*FNLOG)(const char*, unsigned int, unsigned char, const char*, va_list);
 
@@ -82,10 +82,10 @@ namespace tinyoal {
     friend class AudioResource;
 
     void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
-    void _addaudio(Audio* ref, AudioResource* res);
-    void _removeaudio(Audio* ref, AudioResource* res);
-    char* _allocdecoder(unsigned int sz);
-    void _deallocdecoder(char* p, unsigned int sz);
+    void _addAudio(Audio* ref, AudioResource* res);
+    void _removeAudio(Audio* ref, AudioResource* res);
+    char* _allocDecoder(unsigned int sz);
+    void _deallocDecoder(char* p, unsigned int sz);
 
     static int DefaultLog(const char* FILE, unsigned int LINE, unsigned char level, const char* format, va_list args);
 

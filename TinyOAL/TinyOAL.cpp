@@ -41,9 +41,10 @@ extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, 
 
 #endif
 
+TinyOAL* Singleton<TinyOAL>::_instance = 0;
+
 TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) :
-  Singleton<TinyOAL>(this), _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5),
-  oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog)
+  _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog)
 {
   _construct("TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
 }
@@ -282,7 +283,7 @@ unsigned int TinyOAL::GetFormat(unsigned short channels, unsigned short bits, bo
   return 0;
 }
 
-void TinyOAL::_addaudio(Audio* ref, AudioResource* res)
+void TinyOAL::_addAudio(Audio* ref, AudioResource* res)
 {
   if(!res->_activelist) // If true we need to move it
   {
@@ -293,7 +294,7 @@ void TinyOAL::_addaudio(Audio* ref, AudioResource* res)
   bss::LLAdd(ref,res->_activelist,res->_activelistend);
   ++res->_numactive;
 }
-void TinyOAL::_removeaudio(Audio* ref, AudioResource* res)
+void TinyOAL::_removeAudio(Audio* ref, AudioResource* res)
 {
   bss::LLRemove(ref,res->_activelist,res->_activelistend);
   bss::LLAdd(ref,res->_inactivelist);
@@ -305,7 +306,7 @@ void TinyOAL::_removeaudio(Audio* ref, AudioResource* res)
   }
 }
 
-char* TinyOAL::_allocdecoder(unsigned int sz)
+char* TinyOAL::_allocDecoder(unsigned int sz)
 {
   auto p = _treealloc.GetRef(sz);
   if(!p)
@@ -316,7 +317,7 @@ char* TinyOAL::_allocdecoder(unsigned int sz)
   }
   return !p?0:(char*)(*p)->alloc(1);
 }
-void TinyOAL::_deallocdecoder(char* s, unsigned int sz)
+void TinyOAL::_deallocDecoder(char* s, unsigned int sz)
 {
   auto p = _treealloc.GetRef(sz);
   if(p) (*p)->dealloc(s);

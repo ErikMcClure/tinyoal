@@ -2,10 +2,12 @@
 * TinyOAL Changelog *
 *********************
 
-1.0.5
+1.1.0
 -----
 - Visual Studio 2017 update
 - Changed logging behavior to use a replaceable function pointer
+- Removed all prefixes and changed private functions to camelCase
+- Updated bss::Singleton usage
 
 1.0.4
 -----

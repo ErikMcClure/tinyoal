@@ -73,13 +73,13 @@ namespace tinyoal {
 
   protected:
     void _stop();
-    void _processbuffers();
+    void _processBuffers();
     bool _streaming() const;
-    void _applyall(); //In case we have to reset our openAL source, this reapplies all volume/pitch/location modifications
-    void _fillbuffers();
-    void _getsource();
-    void _queuebuffers();
-    unsigned long _readbuf();
+    void _applyAll(); //In case we have to reset our openAL source, this reapplies all volume/pitch/location modifications
+    void _fillBuffers();
+    void _getSource();
+    void _queueBuffers();
+    unsigned long _readBuffer();
 
     AudioResource* _source;
     void* _stream;

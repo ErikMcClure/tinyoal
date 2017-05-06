@@ -56,7 +56,7 @@ Audio* AudioResource::Play(TINYOAL_FLAG flags)
 }
 
 //This function does NOT check to see if fileheader is 8 characters long
-unsigned char AudioResource::_getfiletype(const char* fileheader)
+unsigned char AudioResource::_getFiletype(const char* fileheader)
 { 
   auto iter = _codecs.begin();
   while(iter.IsValid())
@@ -100,7 +100,7 @@ AudioResource* AudioResource::Create(const void* data, unsigned int datalength, 
   }
 
   if(!filetype)
-    filetype = _getfiletype((const char*)data);
+    filetype = _getFiletype((const char*)data);
   
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
     return _force(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
@@ -140,7 +140,7 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
     char fheader[8]={0};
     fread(fheader, 1, 8,file);
     fseek(file, -8, SEEK_CUR); // reset file pointer (do NOT use set here or we'll lose the relative positioning
-    filetype = _getfiletype(fheader);
+    filetype = _getFiletype(fheader);
   }
 
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
