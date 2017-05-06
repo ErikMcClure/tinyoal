@@ -6,12 +6,12 @@
 #define __TINYOAL_DLLDEF_H__TOAL__
 
 #define TINYOAL_VERSION_MAJOR 1
-#define TINYOAL_VERSION_MINOR 0
-#define TINYOAL_VERSION_REVISION 5
+#define TINYOAL_VERSION_MINOR 1
+#define TINYOAL_VERSION_REVISION 0
 
 #ifndef _WINRESRC_
 
-#include "bss-util/bss_compiler.h"
+#include "bss-util/compiler.h"
 
 #ifdef TINYOAL_STATICLIB
 #define TINYOAL_DLLEXPORT 

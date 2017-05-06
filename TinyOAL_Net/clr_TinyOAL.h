@@ -7,17 +7,16 @@
 
 #include "clr_AudioResource.h"
 
-namespace tinyoal { class cTinyOAL; }
+namespace tinyoal { class TinyOAL; }
 
 namespace TinyOAL_net {
-  // Managed wrapper for cTinyOAL class 
+  // Managed wrapper for TinyOAL class 
   public ref class clr_TinyOAL
   {
   public:
     clr_TinyOAL();
     clr_TinyOAL(int defaultbuffers);
-    clr_TinyOAL(int defaultbuffers, System::String^ logfile);
-    clr_TinyOAL(int defaultbuffers, System::String^ logfile, System::String^ forceOAL, System::String^ forceOGG, System::String^ forceFLAC, System::String^ forceMP3);
+    clr_TinyOAL(int defaultbuffers, System::String^ forceOAL, System::String^ forceOGG, System::String^ forceFLAC, System::String^ forceMP3);
     ~clr_TinyOAL();
     !clr_TinyOAL();
     // This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
@@ -42,7 +41,7 @@ namespace TinyOAL_net {
     static void SetSettingsStream(System::String^ data);
 
   private:
-    tinyoal::cTinyOAL* _ref; //pointer to unmanaged instance
+    tinyoal::TinyOAL* _ref; //pointer to unmanaged instance
   };
 }
 

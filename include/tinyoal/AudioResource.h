@@ -2,19 +2,19 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#ifndef __C_AUDIO_RESOURCE_H__TOAL__
-#define __C_AUDIO_RESOURCE_H__TOAL__
+#ifndef __AUDIO_RESOURCE_H__TOAL__
+#define __AUDIO_RESOURCE_H__TOAL__
 
-#include "bss-util/cHash.h"
-#include "bss-util/cRefCounter.h"
-#include "bss-util/cStr.h"
-#include "bss-util/bss_alloc_block.h"
-#include "cAudio.h"
+#include "bss-util/Hash.h"
+#include "bss-util/RefCounter.h"
+#include "bss-util/Str.h"
+#include "bss-util/BlockAlloc.h"
+#include "Audio.h"
 #include <stdio.h>
 
 namespace tinyoal {
-  // Holds information about a given audio resource. An audio resource is different from an actual cAudio instance, in that it holds the raw audio information, which is then ACCESSED by any number of cAudio instances. This prevents memory wasting. 
-  class TINYOAL_DLLEXPORT cAudioResource : public bss_util::cRefCounter, public bss_util::LLBase<cAudioResource>
+  // Holds information about a given audio resource. An audio resource is different from an actual Audio instance, in that it holds the raw audio information, which is then ACCESSED by any number of Audio instances. This prevents memory wasting. 
+  class TINYOAL_DLLEXPORT AudioResource : public bss::RefCounter, public bss::LLBase<AudioResource>
   {
   public:
     virtual void* OpenStream()=0; // This returns a pointer to the internal stream on success, or NULL on failure 
@@ -48,19 +48,19 @@ namespace tinyoal {
     inline uint64_t GetTotalSamples() const { return _total; }
     inline double GetLength() const { return ToSeconds(_total); }
     inline unsigned short GetBitsPerSample() const { return _samplebits; }
-    inline cAudio* GetActiveInstances() const { return _activelist; }
-    inline cAudio* GetInactiveInstances() const { return _inactivelist; }
+    inline Audio* GetActiveInstances() const { return _activelist; }
+    inline Audio* GetInactiveInstances() const { return _inactivelist; }
     inline unsigned int GetNumActive() const { return _numactive; }
     inline unsigned int GetMaxActive() const { return _maxactive; }
     inline void SetMaxActive(unsigned int max=0) { _maxactive=max; }
     virtual void DestroyThis(); // Make sure we get deleted in the right DLL
-    cAudio* Play(TINYOAL_FLAG flags=TINYOAL_ISPLAYING);
+    Audio* Play(TINYOAL_FLAG flags=TINYOAL_ISPLAYING);
 
-    // Creates a cAudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
-    static cAudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
-    static cAudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    // Creates a AudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
+    static AudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    static AudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
-    static cAudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    static AudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
 
     typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
     typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
@@ -77,29 +77,29 @@ namespace tinyoal {
     static Codec* GetCodec(unsigned char filetype);
 
   protected:
-    friend class cAudio;
-    friend class cTinyOAL;
+    friend class Audio;
+    friend class TinyOAL;
 
 #ifdef BSS_COMPILER_MSC2010
-    cAudioResource(const cAudioResource& copy) : _filetype(TINYOAL_FILETYPE_UNKNOWN) { assert(false); }
+    AudioResource(const AudioResource& copy) : _filetype(TINYOAL_FILETYPE_UNKNOWN) { assert(false); }
 #else
-    cAudioResource(const cAudioResource& copy) = delete;
+    AudioResource(const AudioResource& copy) = delete;
 #endif
-    cAudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop);
-    virtual ~cAudioResource();
+    AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop);
+    virtual ~AudioResource();
     void _destruct();
 
-    static cAudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
-    static cAudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
-    static cAudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
+    static AudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
+    static AudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
+    static AudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static unsigned char _getfiletype(const char* fileheader); // fileheader must be at least 4 characters long
-    static bss_util::cHash<const char*, cAudioResource*, true> _audiohash;
-    static bss_util::cBlockAlloc<cAudio> _allocaudio;
-    static bss_util::cHash<unsigned char, Codec> _codecs;
+    static bss::Hash<const char*, AudioResource*, true> _audiohash;
+    static bss::BlockAlloc<Audio> _allocaudio;
+    static bss::Hash<unsigned char, Codec> _codecs;
 
     void* _data;
     size_t _datalength;
-    bss_util::cBitField<TINYOAL_FLAG> _flags;
+    bss::BitField<TINYOAL_FLAG> _flags;
     const TINYOAL_FILETYPE _filetype;
     unsigned int _freq;
 	  unsigned int _channels;
@@ -108,10 +108,10 @@ namespace tinyoal {
     unsigned short _samplebits;
     uint64_t _loop;
     uint64_t _total; // total number of samples
-    cStr _hash;
-    cAudio* _activelist;
-    cAudio* _activelistend;
-    cAudio* _inactivelist;
+    bss::Str _hash;
+    Audio* _activelist;
+    Audio* _activelistend;
+    Audio* _inactivelist;
     unsigned int _numactive;
     unsigned int _maxactive;
   };

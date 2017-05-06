@@ -203,31 +203,31 @@ xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Com
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\tinyoal\cAudio.h" />
-    <ClInclude Include="..\include\tinyoal\cAudioResource.h" />
-    <ClInclude Include="..\include\tinyoal\cTinyOAL.h" />
+    <ClInclude Include="..\include\tinyoal\Audio.h" />
+    <ClInclude Include="..\include\tinyoal\AudioResource.h" />
+    <ClInclude Include="..\include\tinyoal\TinyOAL.h" />
     <ClInclude Include="..\include\tinyoal\TinyOAL_dlldef.h" />
-    <ClInclude Include="cAudioResourceFLAC.h" />
-    <ClInclude Include="cAudioResourceMP3.h" />
-    <ClInclude Include="cAudioResourceOGG.h" />
-    <ClInclude Include="cAudioResourceWAV.h" />
-    <ClInclude Include="cFlacFunctions.h" />
-    <ClInclude Include="cMp3Functions.h" />
-    <ClInclude Include="cOggFunctions.h" />
-    <ClInclude Include="cWaveFunctions.h" />
+    <ClInclude Include="AudioResourceFLAC.h" />
+    <ClInclude Include="AudioResourceMP3.h" />
+    <ClInclude Include="AudioResourceOGG.h" />
+    <ClInclude Include="AudioResourceWAV.h" />
+    <ClInclude Include="FlacFunctions.h" />
+    <ClInclude Include="Mp3Functions.h" />
+    <ClInclude Include="OggFunctions.h" />
+    <ClInclude Include="WaveFunctions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cAudio.cpp" />
-    <ClCompile Include="cAudioResource.cpp" />
-    <ClCompile Include="cAudioResourceFLAC.cpp" />
-    <ClCompile Include="cAudioResourceMP3.cpp" />
-    <ClCompile Include="cAudioResourceOGG.cpp" />
-    <ClCompile Include="cAudioResourceWAV.cpp" />
-    <ClCompile Include="cFlacFunctions.cpp" />
-    <ClCompile Include="cMp3Functions.cpp" />
-    <ClCompile Include="cOggFunctions.cpp" />
-    <ClCompile Include="cTinyOAL.cpp" />
-    <ClCompile Include="cWaveFunctions.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioResource.cpp" />
+    <ClCompile Include="AudioResourceFLAC.cpp" />
+    <ClCompile Include="AudioResourceMP3.cpp" />
+    <ClCompile Include="AudioResourceOGG.cpp" />
+    <ClCompile Include="AudioResourceWAV.cpp" />
+    <ClCompile Include="FlacFunctions.cpp" />
+    <ClCompile Include="Mp3Functions.cpp" />
+    <ClCompile Include="OggFunctions.cpp" />
+    <ClCompile Include="TinyOAL.cpp" />
+    <ClCompile Include="WaveFunctions.cpp" />
     <ClCompile Include="LoadOAL.cpp" />
   </ItemGroup>
   <ItemGroup>

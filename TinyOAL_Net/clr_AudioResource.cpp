@@ -3,37 +3,37 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "clr_TinyOAL.h"
-#include "cAudioResource.h"
+#include "AudioResource.h"
 #include "TOCHAR.h"
 
 using namespace TinyOAL_net;
 using namespace tinyoal;
 
-clr_AudioResource::clr_AudioResource(cAudioResource* p) : _ref(p) { if(p) p->Grab(); }
+clr_AudioResource::clr_AudioResource(AudioResource* p) : _ref(p) { if(p) p->Grab(); }
 clr_AudioResource::clr_AudioResource(System::String^ file)
 {
   TOCHAR(file);
-  _ref=cAudioResource::Create((char*)pstr);
+  _ref=AudioResource::Create((char*)pstr);
 }
 clr_AudioResource::clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags)
 {
   TOCHAR(file);
-  _ref = cAudioResource::Create((char*)pstr, flags);
+  _ref = AudioResource::Create((char*)pstr, flags);
 }
 clr_AudioResource::clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL_FLAG flags)
 {
   pin_ptr<const unsigned char> pstr = &data[0];
-  _ref = cAudioResource::Create((const void*)pstr, flags);
+  _ref = AudioResource::Create((const void*)pstr, flags);
 }
 clr_AudioResource::clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags, CLR_TINYOAL_FILETYPE filetype)
 {
   TOCHAR(file);
-  _ref = cAudioResource::Create((char*)pstr, flags, filetype);
+  _ref = AudioResource::Create((char*)pstr, flags, filetype);
 }
 clr_AudioResource::clr_AudioResource(cli::array<System::Byte>^ data, CLR_TINYOAL_FLAG flags, CLR_TINYOAL_FILETYPE filetype)
 {
   pin_ptr<const unsigned char> pstr = &data[0];
-  _ref = cAudioResource::Create((const void*)pstr, flags, filetype);
+  _ref = AudioResource::Create((const void*)pstr, flags, filetype);
 }
 clr_AudioResource::~clr_AudioResource() { this->!clr_AudioResource(); }
 clr_AudioResource::!clr_AudioResource() { if(_ref) _ref->Drop(); }

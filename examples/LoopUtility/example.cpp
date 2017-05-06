@@ -5,9 +5,9 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "cTinyOAL.h"
+#include "TinyOAL.h"
 #include <iostream>
-#include "cOggFunctions.h"
+#include "OggFunctions.h"
 #include "taginclude/fileref.h"
 #include "taginclude/vorbisfile.h"
 #include "taginclude/xiphcomment.h"
@@ -20,7 +20,7 @@ using namespace tinyoal;
 int main()
 {
   //Initialize the engine with default number of buffers
-  cTinyOAL engine;
+  TinyOAL engine;
   std::cout << "TinyOAL Loop Utility" << std::endl << std::endl;
 
   char file[256]={0};
@@ -35,7 +35,7 @@ int main()
   }
   fclose(ftest);
 
-  cAudio song(cAudioResource::Create(file));
+  Audio song(AudioResource::Create(file));
 
   std::cout << "Do you want to play this OGG file? [y/n]: ";
   char c;

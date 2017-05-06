@@ -6,7 +6,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "cTinyOAL.h"
+#include "TinyOAL.h"
 
 using namespace tinyoal;
 
@@ -19,15 +19,15 @@ using namespace tinyoal;
 
 int main()
 {
-  cTinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
-  cTinyOAL engine;
+  TinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
+  TinyOAL engine;
   
   // TinyOAL attempts to use file headers to detect the filetype, and does not rely on extensions. However, this
   // doesn't always work, espiecally for MP3 files, which do not have well-defined file headers. The MP3 being
   // loaded here has a corrupt first header, and won't be recognized by TinyOAL as an MP3 file. To get around this,
   // we pass in TINYOAL_FILETYPE_MP3 to force TinyOAL to attempt loading the file as an MP3. mpg123 can then skip the
   // initial corrupt header and play the rest of the MP3.
-  cAudio song(cAudioResource::Create("../../media/idea894.mp3", 0, cAudioResource::TINYOAL_FILETYPE_MP3), TINYOAL_ISPLAYING);
+  Audio song(AudioResource::Create("../../media/idea894.mp3", 0, AudioResource::TINYOAL_FILETYPE_MP3), TINYOAL_ISPLAYING);
 
   while(engine.Update())
     SLEEP(1);
@@ -40,7 +40,7 @@ int main()
   // instance derived from that source. However, if the file in question has embedded metadata that contains a loop
   // point, that value will override whatever you pass into the constructor here. If this is a problem, you can
   // always set the loop point in the audio resource itself, or set it on each individual instance.
-  cAudio loop(cAudioResource::Create("../../media/idea813.mp3",0,1524096),TINYOAL_ISPLAYING);
+  Audio loop(AudioResource::Create("../../media/idea813.mp3",0,1524096),TINYOAL_ISPLAYING);
   
   while(engine.Update())
     SLEEP(1);
