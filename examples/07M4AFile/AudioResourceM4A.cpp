@@ -2,8 +2,8 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#include "cAudioResourceM4A.h"
-#include "cTinyOAL.h"
+#include "AudioResourceM4A.h"
+#include "TinyOAL.h"
 #include <Windows.h>
 #include <mfapi.h>
 #include <mfidl.h>
@@ -18,20 +18,20 @@ using namespace tinyoal;
 #pragma comment(lib, "Mfreadwrite.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-cAudioResourceM4A::cAudioResourceM4A(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : cAudioResource(data, datalength, flags, TINYOAL_FILETYPE_M4A, loop)
+AudioResourceM4A::AudioResourceM4A(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : AudioResource(data, datalength, flags, TINYOAL_FILETYPE_M4A, loop)
 {
   if(FAILED(CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
     TINYOAL_LOG(1, "SSMF: failed to initialize COM");
   if(FAILED(MFStartup(MF_VERSION)))
     TINYOAL_LOG(1, "SSMF: failed to initialize Media Foundation");
 }
-cAudioResourceM4A::~cAudioResourceM4A()
+AudioResourceM4A::~AudioResourceM4A()
 {
   MFShutdown();
   CoUninitialize();
   _destruct();
 }
-void* cAudioResourceM4A::OpenStream()
+void* AudioResourceM4A::OpenStream()
 {
   sMP4* r = new sMP4();
   IStream* stream = SHCreateMemStream((const BYTE*)_data, _datalength);
@@ -69,7 +69,7 @@ void* cAudioResourceM4A::OpenStream()
   if(!_samplebits)
     _samplebits = 16;
 
-  _format = cTinyOAL::GetFormat(_channels, _samplebits, false);
+  _format = TinyOAL::GetFormat(_channels, _samplebits, false);
 
   if(FAILED(MFCreateMediaType(&type))) {
     TINYOAL_LOG(1, "SSMF: failed to create media type: %i", HRESULT_CODE(hr));
@@ -106,13 +106,13 @@ void* cAudioResourceM4A::OpenStream()
   Skip(r, 0); // skips headers
   return r;
 }
-void cAudioResourceM4A::CloseStream(void* stream)
+void AudioResourceM4A::CloseStream(void* stream)
 {
   sMP4* s = (sMP4*)stream;
   s->reader->Release();
   delete s;
 }
-unsigned long cAudioResourceM4A::Read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceM4A::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {
   sMP4* s = (sMP4*)stream;
 
@@ -168,11 +168,11 @@ unsigned long cAudioResourceM4A::Read(void* stream, char* buffer, unsigned int l
 
   return read;
 }
-bool cAudioResourceM4A::Reset(void* stream)
+bool AudioResourceM4A::Reset(void* stream)
 {
   return Skip(stream, 0);
 }
-bool cAudioResourceM4A::Skip(void* stream, uint64_t samples)
+bool AudioResourceM4A::Skip(void* stream, uint64_t samples)
 {
   sMP4* s = (sMP4*)stream;
   s->buf.resize(0);
@@ -190,23 +190,23 @@ bool cAudioResourceM4A::Skip(void* stream, uint64_t samples)
   PropVariantClear(&prop);
   return true;
 }
-uint64_t cAudioResourceM4A::Tell(void* stream)
+uint64_t AudioResourceM4A::Tell(void* stream)
 {
   sMP4* s = (sMP4*)stream;
   return (s->cur*_freq)/1e7;
 }
 
-size_t cAudioResourceM4A::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
+size_t AudioResourceM4A::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
-  if(p) new(p) cAudioResourceM4A(data, datalength, flags, loop);
-  return sizeof(cAudioResourceM4A);
+  if(p) new(p) AudioResourceM4A(data, datalength, flags, loop);
+  return sizeof(AudioResourceM4A);
 }
-bool cAudioResourceM4A::ScanHeader(const char* fileheader)
+bool AudioResourceM4A::ScanHeader(const char* fileheader)
 {
   return !strncmp(fileheader + 4, "ftyp", 4);
 }
 
-std::pair<void*, unsigned int> cAudioResourceM4A::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+std::pair<void*, unsigned int> AudioResourceM4A::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
   std::pair<void*, unsigned int> d(0, 0);
   return d;

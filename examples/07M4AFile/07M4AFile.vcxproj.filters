@@ -18,12 +18,12 @@
     <ClCompile Include="example.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cAudioResourceM4A.cpp">
+    <ClCompile Include="AudioResourceM4A.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cAudioResourceM4A.h">
+    <ClInclude Include="AudioResourceM4A.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

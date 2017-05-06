@@ -3,23 +3,23 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "clr_TinyOAL.h"
-#include "cAudio.h"
+#include "Audio.h"
 
 using namespace TinyOAL_net;
 using namespace tinyoal;
 
-clr_Audio::clr_Audio(clr_Audio^ copy) : _ref(!copy->_ref?0:new cAudio(*copy->_ref))
+clr_Audio::clr_Audio(clr_Audio^ copy) : _ref(!copy->_ref?0:new Audio(*copy->_ref))
 {
   _managed=!_ref?false:((_ref->GetFlags()&TINYOAL_MANAGED)!=0);
 }
-clr_Audio::clr_Audio(clr_AudioResource^ ref, unsigned char addflags) : _ref(new cAudio(ref,addflags))
+clr_Audio::clr_Audio(clr_AudioResource^ ref, unsigned char addflags) : _ref(new Audio(ref,addflags))
 { 
   _managed=(_ref->GetFlags()&TINYOAL_MANAGED)!=0;
 }
-clr_Audio::clr_Audio(clr_AudioResource^ ref) : _managed((ref->Flags&TINYOAL_MANAGED)!=0), _ref(new cAudio(ref))
+clr_Audio::clr_Audio(clr_AudioResource^ ref) : _managed((ref->Flags&TINYOAL_MANAGED)!=0), _ref(new Audio(ref))
 {
 }
-clr_Audio::clr_Audio(cAudio* p) : _managed(!p?false:(p->GetFlags()&TINYOAL_MANAGED)!=0), _ref(p)
+clr_Audio::clr_Audio(Audio* p) : _managed(!p?false:(p->GetFlags()&TINYOAL_MANAGED)!=0), _ref(p)
 {
 }
 clr_Audio::~clr_Audio() { this->!clr_Audio(); }

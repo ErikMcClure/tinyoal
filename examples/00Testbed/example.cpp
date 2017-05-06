@@ -6,7 +6,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "cTinyOAL.h"
+#include "TinyOAL.h"
 #include <iostream>
 #include <fstream>
 #include <time.h>
@@ -19,7 +19,7 @@
 #endif
 
 using namespace tinyoal;
-using namespace bss_util;
+using namespace bss;
   
 const char* trimpath(const char* path)
 {
@@ -53,19 +53,19 @@ struct TESTDEF
 #define TESTALLFOUR(s,a) TEST(((s)[0]==(a)) && ((s)[1]==(a)) && ((s)[2]==(a)) && ((s)[3]==(a)))
 #define TESTRELFOUR(s,a,b,c,d) TEST(fcompare((s)[0],(a)) && fcompare((s)[1],(b)) && fcompare((s)[2],(c)) && fcompare((s)[3],(d)))
 
-TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, const char* strlog, double length)
+TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const char* strlog, double length)
 {
   BEGINTEST;
-  static cTinyOAL engine("TinyOAL.txt", 4); // Initialize the engine with default number of buffers
+  static TinyOAL engine(4); // Initialize the engine with default number of buffers
 
-  cAudioResource* resnorm = cAudioResource::Create(RES, 0);
-  cAudioResource* rescopy = cAudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY);
-  cAudioResource* reswave = cAudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE);
+  AudioResource* resnorm = AudioResource::Create(RES, 0);
+  AudioResource* rescopy = AudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY);
+  AudioResource* reswave = AudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE);
   TEST(resnorm != 0);
   TEST(rescopy != 0);
   TEST(reswave != 0);
 
-  auto fn = [&](cAudio* r, cAudioResource* res, TINYOAL_FLAG managed) {
+  auto fn = [&](Audio* r, AudioResource* res, TINYOAL_FLAG managed) {
     TEST(r != 0);
     TEST(r->IsPlaying());
     r->Pause();
@@ -90,11 +90,11 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
     TEST(r->Play());
     TEST(r->IsPlaying());
     TEST(r->Update());
-    cAudio cr(*r);
+    Audio cr(*r);
     //TEST(cr.IsWhere()==r->IsWhere()); // This is too time-dependent
     TEST(cr.IsPlaying());
     TEST(cr.GetResource() == res);
-    cAudio mv(std::move(*r));
+    Audio mv(std::move(*r));
     r->Stop();
     TEST(mv.IsPlaying());
     mv.Stop();
@@ -117,7 +117,7 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
     TEST(res->GetChannels() == 2);
     TEST(res->GetBufSize() > 0);
     TEST(res->GetFormat() > 0);
-    TEST(res->GetBitsPerSample() == (res->GetFileType() == cAudioResource::TINYOAL_FILETYPE_WAV) ? 8 : 16);
+    TEST(res->GetBitsPerSample() == (res->GetFileType() == AudioResource::TINYOAL_FILETYPE_WAV) ? 8 : 16);
     TEST(res->GetActiveInstances() == &cr);
     TEST(res->GetInactiveInstances() == &mv);
     mv.Play();
@@ -131,7 +131,7 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
     while(res->GetActiveInstances())
       res->GetActiveInstances()->Stop();
 
-    cAudio* hold[32]; // Simulate source exhaustion
+    Audio* hold[32]; // Simulate source exhaustion
     for(int i = 0; i < 32; ++i)
       hold[i] = res->Play();
 
@@ -152,7 +152,7 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
       hold[i]->Stop();
     }
 
-    if(res->GetFileType() != cAudioResource::TINYOAL_FILETYPE_MP3) //skip this test for MP3 because the seamless loop messes things up
+    if(res->GetFileType() != AudioResource::TINYOAL_FILETYPE_MP3) //skip this test for MP3 because the seamless loop messes things up
     {
       TEST(res->GetLength() == length);
     }
@@ -163,7 +163,7 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
   };
   fn(resnorm->Play(), resnorm, TINYOAL_MANAGED);
   fn(rescopy->Play(), rescopy, TINYOAL_MANAGED);
-  cAudio inst(reswave, TINYOAL_ISPLAYING);
+  Audio inst(reswave, TINYOAL_ISPLAYING);
   fn(&inst, reswave, 0);
 
   resnorm->Drop();
@@ -172,14 +172,14 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
 
   if(SEAMLESS)
   {
-    cAudioResource* loop = cAudioResource::Create(SEAMLESS, 0, 0, 0);
-    cAudioResource* loopcopy = cAudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY, 0, 0);
-    cAudioResource* loopwave = cAudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE, 0, 0);
+    AudioResource* loop = AudioResource::Create(SEAMLESS, 0, 0, 0);
+    AudioResource* loopcopy = AudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY, 0, 0);
+    AudioResource* loopwave = AudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE, 0, 0);
     TEST(loop != 0);
     TEST(loopcopy != 0);
     TEST(loopwave != 0);
 
-    auto fn2 = [&](cAudio* r, cAudioResource* res) {
+    auto fn2 = [&](Audio* r, AudioResource* res) {
       TEST(!res->GetLoopPoint());
       TEST(!r->GetLoopPoint());
       TEST(r->IsPlaying());
@@ -206,35 +206,35 @@ TESTDEF::RETPAIR test_cAudioResource(const char* RES, const char* SEAMLESS, cons
   ENDTEST;
 }
 
-TESTDEF::RETPAIR test_cAudioResourceWAV()
+TESTDEF::RETPAIR test_AudioResourceWAV()
 {
-  return test_cAudioResource("../../media/idea549.wav", "../../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
+  return test_AudioResource("../../media/idea549.wav", "../../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
 }
-TESTDEF::RETPAIR test_cAudioResourceOGG()
+TESTDEF::RETPAIR test_AudioResourceOGG()
 {
-  return test_cAudioResource("../../media/idea803.ogg", "../../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
+  return test_AudioResource("../../media/idea803.ogg", "../../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
 }
-TESTDEF::RETPAIR test_cAudioResourceMP3()
+TESTDEF::RETPAIR test_AudioResourceMP3()
 {
-  return test_cAudioResource("../../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
+  return test_AudioResource("../../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
 }
-TESTDEF::RETPAIR test_cAudioResourceFLAC()
+TESTDEF::RETPAIR test_AudioResourceFLAC()
 {
-  return test_cAudioResource("../../media/idea835.flac", "../../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
+  return test_AudioResource("../../media/idea835.flac", "../../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
 }
 int main()
 {
   // We set up openAL to use the wave writer backend, and reduce the max sources count to 16 so we can overload it.
-  cTinyOAL::SetSettingsStream("drivers = wave\nsources=16\n\n[wave]\nfile=out.wav");
+  TinyOAL::SetSettingsStream("drivers = wave\nsources=16\n\n[wave]\nfile=out.wav");
   //ForceWin64Crash();
   //SetWorkDirToCur();
   srand(time(NULL));
 
   TESTDEF tests[] = {
-    { "cAudioResourceWAV.h", &test_cAudioResourceWAV },
-    { "cAudioResourceOGG.h", &test_cAudioResourceOGG },
-    { "cAudioResourceMP3.h", &test_cAudioResourceMP3 },
-    { "cAudioResourceFLAC.h", &test_cAudioResourceFLAC },
+    { "AudioResourceWAV.h", &test_AudioResourceWAV },
+    { "AudioResourceOGG.h", &test_AudioResourceOGG },
+    { "AudioResourceMP3.h", &test_AudioResourceMP3 },
+    { "AudioResourceFLAC.h", &test_AudioResourceFLAC },
   };
   
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -251,7 +251,7 @@ int main()
     numpassed=tests[i].FUNC(); //First is total, second is succeeded
     if(numpassed.first!=numpassed.second) failures.push_back(i);
 
-    printf("%-*s %*s %-*s\n",COLUMNS[0],tests[i].NAME, COLUMNS[1],cStrF("%u/%u",numpassed.second,numpassed.first).c_str(), COLUMNS[2],(numpassed.first==numpassed.second)?"PASS":"FAIL");
+    printf("%-*s %*s %-*s\n",COLUMNS[0],tests[i].NAME, COLUMNS[1], bss::StrF("%u/%u",numpassed.second,numpassed.first).c_str(), COLUMNS[2],(numpassed.first==numpassed.second)?"PASS":"FAIL");
   }
 
   if(failures.empty())
@@ -267,6 +267,6 @@ int main()
   std::cout << "\nPress Enter to exit the program." << std::endl;
   std::cin.get();
 
-  cTinyOAL::SetSettingsStream(0); // Removes the settings file we just put in.
+  TinyOAL::SetSettingsStream(0); // Removes the settings file we just put in.
   return 0;
 }

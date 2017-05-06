@@ -7,16 +7,16 @@
 
 #include "clr_Audio.h"
 
-namespace tinyoal { class cAudioResource; }
+namespace tinyoal { class AudioResource; }
 
 namespace TinyOAL_net {
   typedef unsigned char CLR_TINYOAL_FILETYPE;
 
-  /* Managed wrapper for cAudio class. Due to the nature of the audio engine, no other Managed wrappers are actually necessary. */
+  /* Managed wrapper for Audio class. Due to the nature of the audio engine, no other Managed wrappers are actually necessary. */
   public ref class clr_AudioResource
   {
   public:
-    explicit clr_AudioResource(tinyoal::cAudioResource* p);
+    explicit clr_AudioResource(tinyoal::AudioResource* p);
     explicit clr_AudioResource(System::String^ file);
     clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags);
     clr_AudioResource(System::String^ file, CLR_TINYOAL_FLAG flags, CLR_TINYOAL_FILETYPE filetype);
@@ -38,7 +38,7 @@ namespace TinyOAL_net {
     clr_Audio^ Play();
     inline bool IsValid() { return _ref != 0; }
 
-    inline operator tinyoal::cAudioResource*() { return _ref; }
+    inline operator tinyoal::AudioResource*() { return _ref; }
 
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_UNKNOWN = 0;
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_WAV = 1;
@@ -47,7 +47,7 @@ namespace TinyOAL_net {
     static const CLR_TINYOAL_FILETYPE TINYOAL_FILETYPE_FLAC = 4;
 
   protected:
-    tinyoal::cAudioResource* _ref; //pointer to unmanaged object
+    tinyoal::AudioResource* _ref; //pointer to unmanaged object
   };
 }
 

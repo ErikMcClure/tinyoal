@@ -8,17 +8,17 @@
 #include <vcclr.h>
 #include <cstdint>
 
-namespace tinyoal { class cAudio; }
+namespace tinyoal { class Audio; }
 
 namespace TinyOAL_net {
   ref class clr_AudioResource;
   typedef unsigned char CLR_TINYOAL_FLAG;
 
-	/* Managed wrapper for cAudio class. Due to the nature of the audio engine, no other Managed wrappers are actually necessary. */
+	/* Managed wrapper for Audio class. Due to the nature of the audio engine, no other Managed wrappers are actually necessary. */
   public ref class clr_Audio
   {
   public:
-    explicit clr_Audio(tinyoal::cAudio* p);
+    explicit clr_Audio(tinyoal::Audio* p);
     clr_Audio(clr_AudioResource^ ref, unsigned char addflags);
     clr_Audio(clr_Audio^ copy);
     explicit clr_Audio(clr_AudioResource^ ref);
@@ -48,17 +48,17 @@ namespace TinyOAL_net {
     void SetLoopPointSeconds(double seconds);
     // Get Flags 
     property CLR_TINYOAL_FLAG Flags { CLR_TINYOAL_FLAG get(); }
-    // Grab reference to audio resource used by this cAudio instance 
+    // Grab reference to audio resource used by this Audio instance 
     clr_AudioResource^ GetResource();
 
-		//The following flags are taken from cAudio.h AUDIO_FLAGS enum class
+		//The following flags are taken from Audio.h AUDIO_FLAGS enum class
     static const CLR_TINYOAL_FLAG TINYOAL_COPYINTOMEMORY=1; // This will copy whatever you're loading into internal memory
     static const CLR_TINYOAL_FLAG TINYOAL_ISPLAYING=2; // Indicates the audio is playing. If specified in the constructor, will cause the instance to start playing immediately.
     static const CLR_TINYOAL_FLAG TINYOAL_MANAGED=4; // Instance will be deleted by the engine when it stops playing
     static const CLR_TINYOAL_FLAG TINYOAL_ISFILE=8;
 
   protected:
-    tinyoal::cAudio* _ref; //pointer to unmanaged object
+    tinyoal::Audio* _ref; //pointer to unmanaged object
     bool _managed;
   };
 }

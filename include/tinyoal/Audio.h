@@ -2,12 +2,12 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#ifndef __C_AUDIO_H__TOAL__
-#define __C_AUDIO_H__TOAL__
+#ifndef __AUDIO_H__TOAL__
+#define __AUDIO_H__TOAL__
 
 #include "TinyOAL_dlldef.h"
 #include "bss-util/LLBase.h"
-#include "bss-util/cBitField.h"
+#include "bss-util/BitField.h"
 #include "bss-util/bss_util.h"
 
 namespace tinyoal {
@@ -22,17 +22,17 @@ namespace tinyoal {
     TINYOAL_FORCETOWAVE=16+1, // Forces the resource to be copied into memory as an uncompressed wave for efficient playback. Implies TINYOAL_COPYINTOMEMORY
   };
 
-  class cAudioResource;
+  class AudioResource;
   
-  class TINYOAL_DLLEXPORT cAudio : public bss_util::LLBase<cAudio>
+  class TINYOAL_DLLEXPORT Audio : public bss::LLBase<Audio>
   {
   public:
     // Constructors
-    cAudio(const cAudio& copy);
-    cAudio(cAudio&& mov);
-    explicit cAudio(cAudioResource* ref, TINYOAL_FLAG addflags=0, void* userdata=0);
+    Audio(const Audio& copy);
+    Audio(Audio&& mov);
+    explicit Audio(AudioResource* ref, TINYOAL_FLAG addflags=0, void* userdata=0);
     // Destructor 
-    ~cAudio();
+    ~Audio();
 		// Updates the stream buffers, returns false if, after updating the buffers, the sound is no longer playing.
     bool Update();
 		// Plays an audio stream 
@@ -63,13 +63,13 @@ namespace tinyoal {
     inline uint64_t GetLoopPoint() const { return _looptime; }
     // Get Flags 
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
-    // Grab reference to audio resource used by this cAudio instance 
-    inline cAudioResource* GetResource() const { return _source; }
+    // Grab reference to audio resource used by this Audio instance 
+    inline AudioResource* GetResource() const { return _source; }
     // Invalidates this instance by setting _stream and _source to NULL
     void Invalidate();
 
     void* userdata;
-    void (*ONDESTROY)(cAudio* ref);
+    void (*ONDESTROY)(Audio* ref);
 
   protected:
     void _stop();
@@ -81,12 +81,12 @@ namespace tinyoal {
     void _queuebuffers();
     unsigned long _readbuf();
 
-    cAudioResource* _source;
+    AudioResource* _source;
     void* _stream;
     float _pos[3];
     float _vol;
     float _pitch;
-    bss_util::cBitField<TINYOAL_FLAG> _flags;
+    bss::BitField<TINYOAL_FLAG> _flags;
     uint64_t _looptime;
     unsigned int uiSource;
     unsigned int* uiBuffers;

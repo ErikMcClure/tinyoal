@@ -5,7 +5,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "cTinyOAL.h"
+#include "TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)
@@ -18,18 +18,18 @@ using namespace tinyoal;
 
 int main()
 {
-  cTinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
+  TinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
 
   // We initialize the engine here with the default number of buffers. You can also specify the error log file.
-  cTinyOAL engine(4);
+  TinyOAL engine(4);
   // The engine will use the default device at first, but you can get a null-seperated list of devices with 
   // GetDevices(), and change the device to one of your choosing with SetDevice().
-  std::vector<cStr> devices = cStr::Explode(0,engine.GetDevices());
+  std::vector<bss::Str> devices = bss::Str::Explode(0,engine.GetDevices());
 
   // Here, we load a sound resource. TinyOAL supports a wide range of formats, and this particular wave file is
   // stored using the u-Law format to save space. The high frequency artifacts you might hear are a result of
   // the u-Law algorithm. We didn't specify any flags, so by default this will be streamed from disk.
-  cAudioResource* songref = cAudioResource::Create("../../media/idea549.wav",0);
+  AudioResource* songref = AudioResource::Create("../../media/idea549.wav",0);
   if(!songref) return 0; // If the file failed to exist or wasn't a recognizable format, Create will return NULL
 
   // Now we tell the resource to create a new instance of this sound, and start playing it. The sound instance
@@ -43,7 +43,7 @@ int main()
   while(engine.Update()) 
     SLEEP(100);
   
-  songref->Play(); // We tell the resource to create another cAudio instance right before we exit. This won't
+  songref->Play(); // We tell the resource to create another Audio instance right before we exit. This won't
                    // cause any problems, because the engine cleans up after itself. You don't need to worry
                    // about any dangling references, because all sounds will simply stop playing.
   
