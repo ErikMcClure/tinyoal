@@ -5,7 +5,7 @@
 #include "OggFunctions.h"
 #include "bss-util/bss_util.h"
 #include "bss-util/Str.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include <ostream>
 
 #ifdef BSS_PLATFORM_WIN32
@@ -25,6 +25,8 @@
 #define FREEDYNLIB(p) FreeLibrary((HMODULE)p)
 #else
 #include <dlfcn.h>
+#define OGG_MODULE_ALT "vorbisfile.so.3"
+#define OGG_MODULE32 "libvorbisfile.so.3"
 #define OGG_MODULE "libvorbisfile.so.3"
 #define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
 #define GETDYNFUNC(p,s) dlsym(p,s)

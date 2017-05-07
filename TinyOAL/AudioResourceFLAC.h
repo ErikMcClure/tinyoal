@@ -6,7 +6,7 @@
 #ifndef __AUDIO_RESOURCE_FLAC_H__TOAL__
 #define __AUDIO_RESOURCE_FLAC_H__TOAL__
 
-#include "AudioResource.h"
+#include "tinyoal/AudioResource.h"
 #include "FlacFunctions.h"
 
 namespace tinyoal {

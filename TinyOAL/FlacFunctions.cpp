@@ -4,7 +4,7 @@
 
 #include "FlacFunctions.h"
 #include "bss-util/bss_util.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
 #include "bss-util/win32_includes.h"

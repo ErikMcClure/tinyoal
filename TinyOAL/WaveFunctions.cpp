@@ -26,7 +26,7 @@
 #include "bss-util/sseVec.h"
 #include <string.h> //STRNICMP
 #include "openAL/alext.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include "openAL/loadoal.h"
 
 using namespace tinyoal;
@@ -121,7 +121,7 @@ WaveFunctions::WAVERESULT WaveFunctions::Read(WAVEFILEINFO& wave, void *data, si
   }
 	return WR_OK;
 }
-WaveFunctions::WAVERESULT WaveFunctions::Seek(WAVEFILEINFO& wave, int64_t offset)
+WaveFunctions::WAVERESULT WaveFunctions::Seek(WAVEFILEINFO& wave, long long int offset)
 {
   if(!wave.source) return WR_INVALIDPARAM;
   wave.callbacks.seek_func(wave.source, wave.offset + offset, SEEK_SET);

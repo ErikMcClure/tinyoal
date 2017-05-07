@@ -23,7 +23,7 @@
  */
 
 #include "openAL/loadoal.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include <ostream>
 
 void* g_hOpenALDLL = NULL;

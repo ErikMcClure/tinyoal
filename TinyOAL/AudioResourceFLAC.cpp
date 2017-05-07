@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "AudioResourceFLAC.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include "WaveFunctions.h"
 #include "openAL/loadoal.h"
 

@@ -4,7 +4,7 @@
 
 #include "AudioResourceMP3.h"
 #include "WaveFunctions.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;
 

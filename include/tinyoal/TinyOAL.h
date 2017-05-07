@@ -22,7 +22,7 @@
 #include "bss-util/AVLTree.h"
 #include <stdarg.h>
 
-#define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__,__LINE__, level, format, __VA_ARGS__)
+#define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__,__LINE__, level, format, ##__VA_ARGS__)
 
 struct OPENALFNTABLE;
 

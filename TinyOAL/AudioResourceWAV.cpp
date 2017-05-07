@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "AudioResourceWAV.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include "openAL/loadoal.h"
 
 using namespace tinyoal;

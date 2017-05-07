@@ -8,7 +8,6 @@ all:
 	make -f 03properties.mk
 	make -f 04mp3file.mk
 	make -f 05flacfile.mk
-	cp -f bin/libtinyoal.so examples/bin/libtinyoal.so
 	
 clean:
 	make clean -f tinyoal.mk
@@ -18,7 +17,6 @@ clean:
 	make clean -f 03properties.mk
 	make clean -f 04mp3file.mk
 	make clean -f 05flacfile.mk
-	-@ rm examples/bin/libtinyoal.so
 	
 dist: all distclean
 	-@ rm ../tinyoal-posix.tar.gz
@@ -41,4 +39,3 @@ debug:
 	make debug -f 03properties.mk
 	make debug -f 04mp3file.mk
 	make debug -f 05flacfile.mk
-	cp -f bin/libtinyoal.so examples/bin/libtinyoal.so

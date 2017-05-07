@@ -5,7 +5,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;
 
