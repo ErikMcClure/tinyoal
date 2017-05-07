@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "clr_TinyOAL.h"
-#include "Audio.h"
+#include "tinyoal/Audio.h"
 
 using namespace TinyOAL_net;
 using namespace tinyoal;

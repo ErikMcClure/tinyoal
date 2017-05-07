@@ -1,10 +1,10 @@
 TARGET := 03Properties
 SRCDIR := examples/03Properties
-BUILDDIR := examples/bin
-OBJDIR := examples/bin/obj
+BUILDDIR := bin
+OBJDIR := bin/obj
 C_SRCS := $(wildcard $(SRCDIR)/*.c)
 CXX_SRCS := $(wildcard $(SRCDIR)/*.cpp)
-INCLUDE_DIRS := include/tinyoal
+INCLUDE_DIRS := include
 LIBRARY_DIRS := 
 LIBRARIES := dl tinyoal
 

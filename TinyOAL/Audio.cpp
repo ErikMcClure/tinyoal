@@ -2,10 +2,10 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#include "Audio.h"
-#include "AudioResource.h"
+#include "tinyoal/Audio.h"
+#include "tinyoal/AudioResource.h"
 #include "openAL/loadoal.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;
 

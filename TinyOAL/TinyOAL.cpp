@@ -2,7 +2,7 @@
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include "openAL/al.h"
 #include "openAL/alc.h"
 #include "openAL/alext.h"
@@ -11,7 +11,7 @@
 #include "AudioResourceOGG.h"
 #include "AudioResourceMP3.h"
 #include "AudioResourceFLAC.h"
-#include "Audio.h"
+#include "tinyoal/Audio.h"
 #include "OggFunctions.h"
 #include "Mp3Functions.h"
 #include "WaveFunctions.h"
@@ -41,6 +41,7 @@ extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, 
 
 #endif
 
+template<>
 TinyOAL* Singleton<TinyOAL>::_instance = 0;
 
 TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) :

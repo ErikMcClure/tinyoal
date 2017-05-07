@@ -6,7 +6,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include "AudioResourceM4A.h"
 
 using namespace tinyoal;

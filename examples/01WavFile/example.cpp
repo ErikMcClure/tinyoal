@@ -5,7 +5,7 @@
  * Copyright ©2017 Black Sphere Studios
  */
 
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)

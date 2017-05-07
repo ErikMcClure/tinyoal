@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "AudioResourceM4A.h"
-#include "TinyOAL.h"
+#include "tinyoal/TinyOAL.h"
 #include <Windows.h>
 #include <mfapi.h>
 #include <mfidl.h>

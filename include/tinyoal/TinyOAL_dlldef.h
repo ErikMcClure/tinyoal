@@ -13,14 +13,14 @@
 
 #include "bss-util/compiler.h"
 
-#ifdef TINYOAL_STATICLIB
-#define TINYOAL_DLLEXPORT 
-#else
+#ifndef TINYOAL_STATICLIB
 #ifdef TINYOAL_EXPORTS
 #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLEXPORT
 #else
 #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLIMPORT
 #endif
+#else
+#define TINYOAL_DLLEXPORT
 #endif
 
 #endif

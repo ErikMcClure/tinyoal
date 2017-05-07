@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "clr_TinyOAL.h"
-#include "AudioResource.h"
+#include "tinyoal/AudioResource.h"
 #include "TOCHAR.h"
 
 using namespace TinyOAL_net;
