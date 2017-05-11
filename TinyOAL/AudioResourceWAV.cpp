@@ -52,7 +52,7 @@ AudioResourceWAV::AudioResourceWAV(void* data, unsigned int datalength, TINYOAL_
 	if(!_format)
   {
     TINYOAL_LOG(1,"Failed to find format information, or unsupported format");
-    memset(&_sentinel,0,sizeof(WAVEFILEINFO));
+    bss::bssFill(_sentinel);
   }
 }
 AudioResourceWAV::~AudioResourceWAV()

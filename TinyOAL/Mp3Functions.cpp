@@ -36,7 +36,7 @@ Mp3Functions::Mp3Functions(const char* force)
 	if(!force)
     force=MP3_MODULE;
 
-  memset(this,0,sizeof(Mp3Functions));
+  bss::bssFill(*this, 0);
   _mpgDLL=LOADDYNLIB(force);
 
 	if(_mpgDLL)
@@ -65,7 +65,7 @@ Mp3Functions::Mp3Functions(const char* force)
       TINYOAL_LOG(1,"Failed to initialize mpg123");
       if(fn_mpgExit!=0) fn_mpgExit();
       FREEDYNLIB(_mpgDLL);
-      memset(this,0,sizeof(Mp3Functions));
+      bss::bssFill(*this, 0);
     }
   }
   else
