@@ -36,7 +36,7 @@ FlacFunctions::FlacFunctions(const char* force)
   if(!force)
     force=FLAC_MODULE;
 
-  memset(this,0,sizeof(FlacFunctions));
+  bss::bssFill(*this, 0);
   _flacDLL = LOADDYNLIB(force);
   
 	if(_flacDLL)

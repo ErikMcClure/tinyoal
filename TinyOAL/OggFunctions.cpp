@@ -39,7 +39,7 @@ OggFunctions::OggFunctions(const char* force)
 {
   if(!force)
     force=OGG_MODULE;
-  memset(this,0,sizeof(OggFunctions));
+  bss::bssFill(*this, 0);
   _oggDLL = LOADDYNLIB(force);
   if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE32);
   if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
@@ -79,7 +79,7 @@ ogg_int64_t OggFunctions::GetCommentSection(OggVorbis_File *vf)
   const size_t BUFSIZE=128;
   const size_t READSIZE=BUFSIZE-5;
   char buf[BUFSIZE];
-  memset(buf,0,BUFSIZE);
+  bss::bssFill(buf, 0);
   int numhits=0;
   char* pos;  
   ptrdiff_t index=0;
