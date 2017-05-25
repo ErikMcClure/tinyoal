@@ -28,14 +28,14 @@ using namespace bss;
 #include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss library just for its fast convert functions.
-extern size_t UTF8toUTF16(const char* input, ptrdiff_t srclen, wchar_t* output, size_t buflen)
+size_t UTF8toUTF16(const char* input, ptrdiff_t srclen, wchar_t* output, size_t buflen)
 {
-  return (size_t)MultiByteToWideChar(CP_UTF8, 0, input, srclen, output, !output?0:buflen);
+  return (size_t)MultiByteToWideChar(CP_UTF8, 0, input, (int)srclen, output, int(!output?0:buflen));
 }
 
-extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t buflen)
+size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t buflen)
 {
-  return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, srclen, output, !output?0:buflen, NULL, NULL);
+  return (size_t)WideCharToMultiByte(CP_UTF8, 0, input, (int)srclen, output, int(!output?0:buflen), NULL, NULL);
 }
 #else //POSIX
 
@@ -43,6 +43,7 @@ extern size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, 
 
 template<>
 TinyOAL* Singleton<TinyOAL>::_instance = 0;
+const bssVersionInfo TinyOAL::Version = { TINYOAL_VERSION_REVISION, TINYOAL_VERSION_MINOR, TINYOAL_VERSION_MAJOR };
 
 TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) :
   _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog)

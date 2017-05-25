@@ -27,8 +27,6 @@
 struct OPENALFNTABLE;
 
 namespace tinyoal {
-  static const VersionType TINYOAL_VERSION = { TINYOAL_VERSION_MAJOR,TINYOAL_VERSION_MINOR,TINYOAL_VERSION_REVISION };
-
   class OggFunctions;
   class Mp3Functions;
   class WaveFunctions;
@@ -76,6 +74,8 @@ namespace tinyoal {
     WaveFunctions* waveFuncs;
     FlacFunctions* flacFuncs;
     const unsigned char defNumBuf;
+
+    static const bssVersionInfo Version;
 
   protected:
     friend class Audio;
