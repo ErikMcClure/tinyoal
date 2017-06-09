@@ -12,13 +12,7 @@
 #include "bss-util/win32_includes.h"
 
 #define OGG_MODULE_ALT "vorbisfile.dll"
-#define OGG_MODULE32 "libvorbisfile.dll"
-
-#ifdef BSS_CPU_x86
-#define OGG_MODULE OGG_MODULE32
-#elif defined(BSS_CPU_x86_64)
-#define OGG_MODULE "libvorbisfile64.dll"
-#endif
+#define OGG_MODULE "libvorbisfile.dll"
 
 #define LOADDYNLIB(s) LoadLibraryA(s)
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
@@ -41,7 +35,6 @@ OggFunctions::OggFunctions(const char* force)
     force=OGG_MODULE;
   bss::bssFill(*this, 0);
   _oggDLL = LOADDYNLIB(force);
-  if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE32);
   if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
 
 	if (_oggDLL)

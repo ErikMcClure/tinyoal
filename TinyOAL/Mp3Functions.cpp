@@ -9,11 +9,7 @@
 #ifdef BSS_PLATFORM_WIN32
 #include "bss-util/win32_includes.h"
 
-#ifdef BSS_CPU_x86
 #define MP3_MODULE "libmpg123.dll"
-#elif defined(BSS_CPU_x86_64)
-#define MP3_MODULE "libmpg123_64.dll"
-#endif
 
 #define LOADDYNLIB(s) LoadLibraryA(s)
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
