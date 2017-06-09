@@ -9,11 +9,8 @@
 #ifdef BSS_PLATFORM_WIN32
 #include "bss-util/win32_includes.h"
 
-#ifdef BSS_CPU_x86
 #define FLAC_MODULE "libflac.dll"
-#elif defined(BSS_CPU_x86_64)
-#define FLAC_MODULE "libflac64.dll"
-#endif
+#define FLAC_MODULE_ALT "flac.dll"
 
 #define LOADDYNLIB(s) LoadLibraryA(s)
 #define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
@@ -38,6 +35,7 @@ FlacFunctions::FlacFunctions(const char* force)
 
   bss::bssFill(*this, 0);
   _flacDLL = LOADDYNLIB(force);
+  if(!_flacDLL) _flacDLL = LOADDYNLIB(FLAC_MODULE_ALT);
   
 	if(_flacDLL)
 	{
