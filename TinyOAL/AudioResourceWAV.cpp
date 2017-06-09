@@ -4,7 +4,7 @@
 
 #include "AudioResourceWAV.h"
 #include "tinyoal/TinyOAL.h"
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 
 using namespace tinyoal;
 bss::BlockAlloc<WAVEFILEINFO> AudioResourceWAV::_allocwav(3);

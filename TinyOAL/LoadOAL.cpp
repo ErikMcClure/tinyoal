@@ -22,7 +22,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 #include "tinyoal/TinyOAL.h"
 #include <ostream>
 

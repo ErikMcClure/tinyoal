@@ -212,6 +212,7 @@ xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Com
     <ClInclude Include="AudioResourceOGG.h" />
     <ClInclude Include="AudioResourceWAV.h" />
     <ClInclude Include="FlacFunctions.h" />
+    <ClInclude Include="loadoal.h" />
     <ClInclude Include="Mp3Functions.h" />
     <ClInclude Include="OggFunctions.h" />
     <ClInclude Include="WaveFunctions.h" />
