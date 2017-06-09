@@ -4,7 +4,7 @@
 
 #include "tinyoal/Audio.h"
 #include "tinyoal/AudioResource.h"
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 #include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;

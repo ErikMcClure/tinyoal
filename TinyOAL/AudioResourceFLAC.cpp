@@ -5,7 +5,7 @@
 #include "AudioResourceFLAC.h"
 #include "tinyoal/TinyOAL.h"
 #include "WaveFunctions.h"
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 
 using namespace tinyoal;
 

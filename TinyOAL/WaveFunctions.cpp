@@ -25,9 +25,9 @@
 #include "WaveFunctions.h"
 #include "bss-util/sseVec.h"
 #include <string.h> //STRNICMP
-#include "openAL/alext.h"
+#include "AL/alext.h"
 #include "tinyoal/TinyOAL.h"
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 
 using namespace tinyoal;
 using namespace bss;

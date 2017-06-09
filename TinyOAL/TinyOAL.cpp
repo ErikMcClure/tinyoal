@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "tinyoal/TinyOAL.h"
-#include "openAL/al.h"
-#include "openAL/alc.h"
-#include "openAL/alext.h"
-#include "openAL/loadoal.h"
+#include "AL/al.h"
+#include "AL/alc.h"
+#include "AL/alext.h"
+#include "loadoal.h"
 #include "AudioResourceWAV.h"
 #include "AudioResourceOGG.h"
 #include "AudioResourceMP3.h"

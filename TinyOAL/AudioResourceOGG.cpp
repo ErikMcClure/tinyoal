@@ -5,7 +5,7 @@
 #include "AudioResourceOGG.h"
 #include "tinyoal/TinyOAL.h"
 #include "WaveFunctions.h"
-#include "openAL/loadoal.h"
+#include "loadoal.h"
 
 using namespace tinyoal;
 bss::BlockAlloc<OggVorbis_FileEx> AudioResourceOGG::_allocogg(3);

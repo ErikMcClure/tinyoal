@@ -6,7 +6,7 @@
 #ifndef __OGG_FUNCTIONS_H__TOAL__
 #define __OGG_FUNCTIONS_H__TOAL__
 
-#include "openAL/vorbisfile.h"
+#include "vorbis/vorbisfile.h"
 
 namespace tinyoal {
   typedef int (*LPOVCLEAR)(OggVorbis_File *vf);

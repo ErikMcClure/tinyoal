@@ -8,7 +8,7 @@
 
 #include <stddef.h> // for ptrdiff_t
 typedef ptrdiff_t ssize_t;
-#include "mpg123/mpg123.h"
+#include "mpg123.h"
 
 namespace tinyoal {
   typedef int (*LPMPGINIT)(void);
