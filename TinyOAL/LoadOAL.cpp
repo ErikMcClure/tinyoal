@@ -46,7 +46,7 @@ void* g_hOpenALDLL = NULL;
 #include <dlfcn.h>
 #define DEFAULT_OAL_DLLPATH "libopenal.so.1"
 #define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
-#define GETDYNFUNC(p,s) dlsym(p,s)
+#define GETDYNFUNC(p,s) dlsym(p, MAKESTRING(s))
 #define FREEDYNLIB(p) dlclose(p)
 #endif
 #endif

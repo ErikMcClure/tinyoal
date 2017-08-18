@@ -191,7 +191,7 @@ std::pair<void*,unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int 
 	// Get some information about the file (Channels, Format, and Frequency)
   vorbis_info* psVorbisInfo = ogg->fn_ov_info(&r.ogg, -1);
   if(!psVorbisInfo) { ogg->fn_ov_clear(&r.ogg); return std::pair<void*,unsigned int>((void*)0,0);  }
-
+  
   uint64_t total = ogg->fn_ov_pcm_total(&r.ogg,-1); // Get total number of samples
 	long freq = psVorbisInfo->rate;
 	int channels = psVorbisInfo->channels;

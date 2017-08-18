@@ -199,7 +199,7 @@ size_t tinyoal::dat_read_func(void *ptr, size_t size, size_t nmemb, void *dataso
   return retval;
 }
 
-int tinyoal::dat_seek_func(void *datasource, long long int offset, int whence) //Who the hell names a parameter "whence"?!
+int tinyoal::dat_seek_func(void *datasource, int64_t offset, int whence) //Who the hell names a parameter "whence"?!
 {
   DatStream* data = (DatStream*)datasource;
   int64_t pos=0;
@@ -241,7 +241,7 @@ size_t tinyoal::file_read_func(void *ptr, size_t size, size_t nmemb, void *datas
 	return fread(ptr, size, nmemb, (FILE*)datasource);
 }
 
-int tinyoal::file_seek_func(void *datasource, long long int offset, int whence)
+int tinyoal::file_seek_func(void *datasource, int64_t offset, int whence)
 {
 	return fseek((FILE*)datasource, (long)offset, whence);
 }

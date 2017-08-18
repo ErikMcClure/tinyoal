@@ -124,11 +124,11 @@ namespace tinyoal {
 
   //8 functions - Four for parsing pure void*, and four for reading files
   extern size_t dat_read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
-  extern int dat_seek_func(void *datasource, long long int offset, int whence);
+  extern int dat_seek_func(void *datasource, int64_t offset, int whence);
   extern int dat_close_func(void *datasource);
   extern long dat_tell_func(void *datasource);
   extern size_t file_read_func(void *ptr, size_t size, size_t nmemb, void *datasource);
-  extern int file_seek_func(void *datasource, long long int offset, int whence);
+  extern int file_seek_func(void *datasource, int64_t offset, int whence);
   extern int file_close_func(void *datasource);
   extern long file_tell_func(void *datasource);
 }

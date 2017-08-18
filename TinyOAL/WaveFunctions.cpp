@@ -121,7 +121,7 @@ WaveFunctions::WAVERESULT WaveFunctions::Read(WAVEFILEINFO& wave, void *data, si
   }
 	return WR_OK;
 }
-WaveFunctions::WAVERESULT WaveFunctions::Seek(WAVEFILEINFO& wave, long long int offset)
+WaveFunctions::WAVERESULT WaveFunctions::Seek(WAVEFILEINFO& wave, int64_t offset)
 {
   if(!wave.source) return WR_INVALIDPARAM;
   wave.callbacks.seek_func(wave.source, wave.offset + offset, SEEK_SET);

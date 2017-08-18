@@ -8,7 +8,7 @@ INCLUDE_DIRS := include
 LIBRARY_DIRS := 
 LIBRARIES := rt
 
-CPPFLAGS += -fPIC -D TINYOAL_EXPORTS -Wall -Wno-attributes -Wno-unknown-pragmas -Wno-reorder -Wno-missing-braces -Wno-unused-function -std=gnu++0x
+CPPFLAGS += -fPIC -D TINYOAL_EXPORTS -Wall -Wno-attributes -Wno-unknown-pragmas -Wno-reorder -Wno-missing-braces -Wno-unused-function -std=c++17 
 LDFLAGS += -shared
 
 include base.mk
