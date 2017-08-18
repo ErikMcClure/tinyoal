@@ -36,7 +36,7 @@ typedef struct {
 namespace tinyoal {
   struct wav_callbacks {
     size_t (*read_func)  (void *ptr, size_t size, size_t nmemb, void *datasource);
-    int    (*seek_func)  (void *datasource, long long int offset, int whence);
+    int    (*seek_func)  (void *datasource, int64_t offset, int whence);
     int    (*close_func) (void *datasource);
     long   (*tell_func)  (void *datasource);
   };
@@ -64,7 +64,7 @@ namespace tinyoal {
     WaveFunctions();
 	  WAVERESULT Open(void* source, WAVEFILEINFO* wave, wav_callbacks& callbacks);
 	  WAVERESULT Read(WAVEFILEINFO& wave, void* data, size_t len, size_t* pBytesWritten);
-	  WAVERESULT Seek(WAVEFILEINFO& wave, long long int offset);
+	  WAVERESULT Seek(WAVEFILEINFO& wave, int64_t offset);
 	  uint64_t Tell(WAVEFILEINFO& wave);
 	  WAVERESULT Close(WAVEFILEINFO& wave);
     unsigned int GetALFormat(WAVEFILEINFO& wave); // cast this to ALenum
