@@ -346,6 +346,12 @@ xcopy "$(VcpkgRoot)debug\bin\OpenAL32.dll" "$(TargetDir)" /c /y /q /i
 xcopy "$(VcpkgRoot)debug\bin\vorbis*.dll" "$(TargetDir)" /c /y /q /i
 xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpplatest</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Release-Static|true'">
     <PostBuildEvent>
@@ -353,6 +359,12 @@ xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Com
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)lib" /c /y /q /i
 xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">stdcpplatest</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug|true'">
     <PostBuildEvent>
@@ -366,6 +378,12 @@ xcopy "$(VcpkgRoot)debug\bin\OpenAL32.dll" "$(TargetDir)" /c /y /q /i
 xcopy "$(VcpkgRoot)debug\bin\vorbis*.dll" "$(TargetDir)" /c /y /q /i
 xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpplatest</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug-Static|true'">
     <PostBuildEvent>
@@ -373,6 +391,12 @@ xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Com
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)debug\lib" /c /y /q /i
 xcopy "..\include\tinyoal\*.h" "$(VcpkgRoot)include\tinyoal" /c /y /q /i /s</Command>
     </PostBuildEvent>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">stdcpplatest</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\tinyoal\Audio.h" />
