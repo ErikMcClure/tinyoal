@@ -46,7 +46,8 @@ TinyOAL* Singleton<TinyOAL>::_instance = 0;
 const bssVersionInfo TinyOAL::Version = { 0, TINYOAL_VERSION_REVISION, TINYOAL_VERSION_MINOR, TINYOAL_VERSION_MAJOR };
 
 TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3) :
-  _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog)
+  _reslist(0), _activereslist(0), defNumBuf(defnumbuf), _bufalloc(defnumbuf*sizeof(ALuint),5), oalFuncs(0), _fnLog((!fnLog)?(&DefaultLog): fnLog),
+  _allocaudio(5), _codecs(AudioResource::TINYOAL_FILETYPE_CUSTOM - 1), _audiohash(4)
 {
   _construct("TinyOAL_log.txt",forceOAL,forceOGG,forceFLAC,forceMP3);
 }
@@ -251,10 +252,10 @@ void TinyOAL::_construct(const char* logfile, const char* forceOAL, const char* 
   if(flacFuncs->Failure()) { delete flacFuncs; flacFuncs=0; }
   if(mp3Funcs->Failure()) { delete mp3Funcs; mp3Funcs=0; }
 
-  AudioResource::RegisterCodec(AudioResource::TINYOAL_FILETYPE_WAV, AudioResourceWAV::Construct, AudioResourceWAV::ScanHeader, AudioResourceWAV::ToWave);
-  AudioResource::RegisterCodec(AudioResource::TINYOAL_FILETYPE_OGG, AudioResourceOGG::Construct, AudioResourceOGG::ScanHeader, AudioResourceOGG::ToWave);
-  AudioResource::RegisterCodec(AudioResource::TINYOAL_FILETYPE_MP3, AudioResourceMP3::Construct, AudioResourceMP3::ScanHeader, AudioResourceMP3::ToWave);
-  AudioResource::RegisterCodec(AudioResource::TINYOAL_FILETYPE_FLAC, AudioResourceFLAC::Construct, AudioResourceFLAC::ScanHeader, AudioResourceFLAC::ToWave);
+  RegisterCodec(AudioResource::TINYOAL_FILETYPE_WAV, AudioResourceWAV::Construct, AudioResourceWAV::ScanHeader, AudioResourceWAV::ToWave);
+  RegisterCodec(AudioResource::TINYOAL_FILETYPE_OGG, AudioResourceOGG::Construct, AudioResourceOGG::ScanHeader, AudioResourceOGG::ToWave);
+  RegisterCodec(AudioResource::TINYOAL_FILETYPE_MP3, AudioResourceMP3::Construct, AudioResourceMP3::ScanHeader, AudioResourceMP3::ToWave);
+  RegisterCodec(AudioResource::TINYOAL_FILETYPE_FLAC, AudioResourceFLAC::Construct, AudioResourceFLAC::ScanHeader, AudioResourceFLAC::ToWave);
 }
 unsigned int TinyOAL::GetFormat(unsigned short channels, unsigned short bits, bool rear)
 {
@@ -367,7 +368,32 @@ void TinyOAL::SetSettingsStream(const char* data)
   if(data) fwrite(data,1,strlen(data),f);
   fclose(f);
 }
-   
+
+void TinyOAL::RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave)
+{
+  Codec c = { construct, scanheader, towave };
+  _codecs.Insert(filetype, c);
+}
+
+TinyOAL::Codec* TinyOAL::GetCodec(unsigned char filetype)
+{
+  return _codecs.Get(filetype);
+}
+
+//This function does NOT check to see if fileheader is 8 characters long
+unsigned char TinyOAL::_getFiletype(const char* fileheader)
+{
+  auto iter = _codecs.begin();
+  while(iter.IsValid())
+  {
+    if(_codecs.GetValue(*iter)->scanheader(fileheader))
+      return _codecs.GetKey(*iter);
+    ++iter;
+  }
+
+  return AudioResource::TINYOAL_FILETYPE_UNKNOWN;
+}
+
 // I ultimately decided against putting this in the engine because it was easier to just write the config files and move them
 /*
 

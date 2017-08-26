@@ -62,29 +62,14 @@ namespace tinyoal {
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
     static AudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
 
-    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
-    typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
-    typedef std::pair<void*, unsigned int>(*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
-
-    struct Codec
-    {
-      CODEC_CONSTRUCT construct;
-      CODEC_SCANHEADER scanheader;
-      CODEC_TOWAVE towave;
-    };
-
-    static void RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave);
-    static Codec* GetCodec(unsigned char filetype);
-
   protected:
     friend class Audio;
     friend class TinyOAL;
 
-#ifdef BSS_COMPILER_MSC2010
-    AudioResource(const AudioResource& copy) : _filetype(TINYOAL_FILETYPE_UNKNOWN) { assert(false); }
-#else
-    AudioResource(const AudioResource& copy) = delete;
-#endif
+    AudioResource(const AudioResource&) = delete;
+    AudioResource(AudioResource&&) = delete;
+    AudioResource& operator=(const AudioResource&) = delete;
+    AudioResource& operator=(AudioResource&&) = delete;
     AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop);
     virtual ~AudioResource();
     void _destruct();
@@ -92,10 +77,6 @@ namespace tinyoal {
     static AudioResource* _fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static AudioResource* _create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
     static AudioResource* _force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop);
-    static unsigned char _getFiletype(const char* fileheader); // fileheader must be at least 4 characters long
-    static bss::Hash<const char*, AudioResource*, true> _audiohash;
-    static bss::BlockAlloc<Audio> _allocaudio;
-    static bss::Hash<unsigned char, Codec> _codecs;
 
     void* _data;
     size_t _datalength;
