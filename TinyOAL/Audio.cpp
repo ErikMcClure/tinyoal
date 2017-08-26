@@ -124,6 +124,19 @@ Audio::~Audio()
   }
 }
 
+Audio& Audio::operator=(const Audio& copy)
+{
+  this->~Audio();
+  new (this) Audio(copy);
+  return *this;
+}
+Audio& Audio::operator=(Audio&& mov)
+{
+  this->~Audio();
+  new (this) Audio(std::move(mov));
+  return *this;
+}
+
 bool Audio::Play()
 {
   if(!_stream) return false;
@@ -157,7 +170,7 @@ void Audio::Stop()
   _stop();
   if(_flags&TINYOAL_MANAGED) { // If we're managed and we stopped playing, destroy ourselves.
     this->~Audio();
-    if(_source) _source->_allocaudio.dealloc(this);
+    TinyOAL::Instance()->_allocaudio.dealloc(this);
   }
 }
 

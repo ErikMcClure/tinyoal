@@ -68,6 +68,20 @@ namespace tinyoal {
     static void SetSettings(const char* file);
     static void SetSettingsStream(const char* data);
 
+    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
+    typedef bool(*CODEC_SCANHEADER)(const char* fileheader);
+    typedef std::pair<void*, unsigned int>(*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+
+    struct Codec
+    {
+      CODEC_CONSTRUCT construct;
+      CODEC_SCANHEADER scanheader;
+      CODEC_TOWAVE towave;
+    };
+
+    void RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave);
+    Codec* GetCodec(unsigned char filetype);
+
     OPENALFNTABLE* oalFuncs;
     OggFunctions* oggFuncs;
     Mp3Functions* mp3Funcs;
@@ -81,11 +95,16 @@ namespace tinyoal {
     friend class Audio;
     friend class AudioResource;
 
+    TinyOAL(const TinyOAL&) = delete;
+    TinyOAL(TinyOAL&&) = delete;
+    TinyOAL& operator=(const TinyOAL&) = delete;
+    TinyOAL& operator=(TinyOAL&&) = delete;
     void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
     void _addAudio(Audio* ref, AudioResource* res);
     void _removeAudio(Audio* ref, AudioResource* res);
     char* _allocDecoder(unsigned int sz);
     void _deallocDecoder(char* p, unsigned int sz);
+    unsigned char _getFiletype(const char* fileheader); // fileheader must be at least 4 characters long
 
     static int DefaultLog(const char* FILE, unsigned int LINE, unsigned char level, const char* format, va_list args);
 
@@ -94,6 +113,9 @@ namespace tinyoal {
     AudioResource* _reslist;
     bss::BlockAllocVoid _bufalloc;
     bss::AVLTree<unsigned int, std::unique_ptr<bss::BlockAllocVoid>> _treealloc;
+    bss::Hash<const char*, AudioResource*, true> _audiohash;
+    bss::BlockAlloc<Audio> _allocaudio;
+    bss::Hash<unsigned char, Codec> _codecs;
   };
 
 }

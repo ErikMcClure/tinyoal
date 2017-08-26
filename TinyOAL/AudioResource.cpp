@@ -6,9 +6,6 @@
 #include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;
-bss::Hash<const char*, AudioResource*, true> AudioResource::_audiohash;
-bss::BlockAlloc<Audio> AudioResource::_allocaudio(5);
-bss::Hash<unsigned char, AudioResource::Codec> AudioResource::_codecs;
 
 AudioResource::AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop) : _data(data), _datalength(len),
   _flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0), _inactivelist(0), 
@@ -20,7 +17,7 @@ AudioResource::AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, u
 AudioResource::~AudioResource()
 {
   assert(!_activelist); // Activelist HAS to be null here, otherwise the program will explode eventually because we've already lost the virtual functions.
-  _audiohash.Remove(_hash);
+  TinyOAL::Instance()->_audiohash.Remove(_hash);
   if(_flags&TINYOAL_ISFILE)
     fclose((FILE*)_data);
   else if(_flags&TINYOAL_COPYINTOMEMORY && _data!=0)
@@ -45,7 +42,7 @@ Audio* AudioResource::Play(TINYOAL_FLAG flags)
 { 
   Audio* r = _activelistend;
   if(!_maxactive || _numactive<_maxactive) {
-    r = _allocaudio.alloc(1);
+    r = TinyOAL::Instance()->_allocaudio.alloc(1);
     flags|=TINYOAL_MANAGED;
   } else {
     flags=((flags&(~TINYOAL_MANAGED))|(r->GetFlags()&TINYOAL_MANAGED));
@@ -53,20 +50,6 @@ Audio* AudioResource::Play(TINYOAL_FLAG flags)
   }
   new(r) Audio(this,flags);
   return r;
-}
-
-//This function does NOT check to see if fileheader is 8 characters long
-unsigned char AudioResource::_getFiletype(const char* fileheader)
-{ 
-  auto iter = _codecs.begin();
-  while(iter.IsValid())
-  {
-    if(_codecs.GetValue(*iter)->scanheader(fileheader))
-      return _codecs.GetKey(*iter);
-    ++iter;
-  }
-
-	return TINYOAL_FILETYPE_UNKNOWN;
 }
 
 AudioResource* AudioResource::Create(const char* file, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop)
@@ -100,7 +83,7 @@ AudioResource* AudioResource::Create(const void* data, unsigned int datalength, 
   }
 
   if(!filetype)
-    filetype = _getFiletype((const char*)data);
+    filetype = TinyOAL::Instance()->_getFiletype((const char*)data);
   
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
     return _force(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
@@ -115,7 +98,7 @@ AudioResource* AudioResource::Create(const void* data, unsigned int datalength, 
 
 AudioResource* AudioResource::_force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
-  Codec* c = GetCodec(filetype);
+  TinyOAL::Codec* c = TinyOAL::Instance()->GetCodec(filetype);
   if(!c)
   {
     TINYOAL_LOG(2, "%p is using an unknown or unrecognized format, or may be corrupt.", data);
@@ -140,7 +123,7 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
     char fheader[8]={0};
     fread(fheader, 1, 8,file);
     fseek(file, -8, SEEK_CUR); // reset file pointer (do NOT use set here or we'll lose the relative positioning
-    filetype = _getFiletype(fheader);
+    filetype = TinyOAL::Instance()->_getFiletype(fheader);
   }
 
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
@@ -157,10 +140,10 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
 AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
   const char* hash=(flags&TINYOAL_COPYINTOMEMORY)?"":path;
-  AudioResource* r = _audiohash[hash];
+  AudioResource* r = TinyOAL::Instance()->_audiohash[hash];
   if(r!=0) { r->Grab(); return r; }
 
-  Codec* c = GetCodec(filetype);
+  TinyOAL::Codec* c = TinyOAL::Instance()->GetCodec(filetype);
   if(!c)
   {
     TINYOAL_LOG(2, "%p is using an unknown or unrecognized format, or may be corrupt.", data);
@@ -171,20 +154,9 @@ AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYO
   r = (AudioResource*)malloc(len);
   c->construct(r, data, datalength, flags, loop);
 
-  if(hash[0]) _audiohash.Insert((r->_hash=hash).c_str(), r);
+  if(hash[0]) TinyOAL::Instance()->_audiohash.Insert((r->_hash=hash).c_str(), r);
   r->Grab(); //gotta grab the thing
   return r;
-}
-
-void AudioResource::RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave)
-{
-  Codec c = { construct, scanheader, towave };
-  _codecs.Insert(filetype, c);
-}
-
-AudioResource::Codec* AudioResource::GetCodec(unsigned char filetype)
-{
-  return _codecs.Get(filetype);
 }
 
 

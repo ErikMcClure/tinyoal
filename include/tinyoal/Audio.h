@@ -24,7 +24,7 @@ namespace tinyoal {
 
   class AudioResource;
   
-  class TINYOAL_DLLEXPORT Audio : public bss::LLBase<Audio>
+  class TINYOAL_DLLEXPORT Audio final : public bss::LLBase<Audio>
   {
   public:
     // Constructors
@@ -70,6 +70,9 @@ namespace tinyoal {
 
     void* userdata;
     void (*ONDESTROY)(Audio* ref);
+
+    Audio& operator=(const Audio& mov);
+    Audio& operator=(Audio&& mov);
 
   protected:
     void _stop();
