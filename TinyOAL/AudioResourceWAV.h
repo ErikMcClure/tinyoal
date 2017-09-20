@@ -10,7 +10,7 @@
 #include "WaveFunctions.h"
 
 namespace tinyoal {
-	// This is a resource class for WAV files, and handles all the IO operations from the given buffer 
+  // This is a resource class for WAV files, and handles all the IO operations from the given buffer 
   class AudioResourceWAV : public AudioResource
   {
   public:

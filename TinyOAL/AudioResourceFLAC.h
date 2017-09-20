@@ -12,7 +12,7 @@
 namespace tinyoal {
   struct DatStreamEx;
 
-	// This is a resource class for OGG files, and handles all the IO operations from the given buffer 
+  // This is a resource class for OGG files, and handles all the IO operations from the given buffer 
   class AudioResourceFLAC : public AudioResource
   {
   public:
@@ -28,7 +28,7 @@ namespace tinyoal {
 
     static size_t Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
     static bool ScanHeader(const char* fileheader);
-    static std::pair<void*,unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+    static std::pair<void*, unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
   protected:
     static void _cberror(const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status, void *client_data);

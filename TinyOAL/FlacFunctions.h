@@ -10,51 +10,51 @@
 
 namespace tinyoal {
   typedef FLAC__StreamDecoder* (*LPFLACNEW)(void);
-  typedef void (*LPFLACDELETE)(FLAC__StreamDecoder*);
+  typedef void(*LPFLACDELETE)(FLAC__StreamDecoder*);
 
-  typedef FLAC__bool (*LPFLACSETOGGSERIAL)(FLAC__StreamDecoder*,long);
-  typedef FLAC__bool (*LPFLACSETMD5)(FLAC__StreamDecoder*,FLAC__bool);
-  typedef FLAC__bool (*LPFLACSETMETARESPOND)(FLAC__StreamDecoder*,FLAC__MetadataType);
-  typedef FLAC__bool (*LPFLACSETMETARESPONDAPP)(FLAC__StreamDecoder*,const FLAC__byte id[4]);
-  typedef FLAC__bool (*LPFLACSETMETARESPONDALL)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACSETMETAIGNORE)(FLAC__StreamDecoder*,FLAC__MetadataType);
-  typedef FLAC__bool (*LPFLACSETMETAIGNOREAPP)(FLAC__StreamDecoder*, const FLAC__byte id[4]);
-  typedef FLAC__bool (*LPFLACSETMETAIGNOREALL)(FLAC__StreamDecoder*);
-  
-  typedef FLAC__StreamDecoderState (*LPFLACGETSTATE)(const FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACSETOGGSERIAL)(FLAC__StreamDecoder*, long);
+  typedef FLAC__bool(*LPFLACSETMD5)(FLAC__StreamDecoder*, FLAC__bool);
+  typedef FLAC__bool(*LPFLACSETMETARESPOND)(FLAC__StreamDecoder*, FLAC__MetadataType);
+  typedef FLAC__bool(*LPFLACSETMETARESPONDAPP)(FLAC__StreamDecoder*, const FLAC__byte id[4]);
+  typedef FLAC__bool(*LPFLACSETMETARESPONDALL)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACSETMETAIGNORE)(FLAC__StreamDecoder*, FLAC__MetadataType);
+  typedef FLAC__bool(*LPFLACSETMETAIGNOREAPP)(FLAC__StreamDecoder*, const FLAC__byte id[4]);
+  typedef FLAC__bool(*LPFLACSETMETAIGNOREALL)(FLAC__StreamDecoder*);
+
+  typedef FLAC__StreamDecoderState(*LPFLACGETSTATE)(const FLAC__StreamDecoder*);
   typedef const char* (*LPFLACGETSTATESTRING)(const FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACGETMD5)(const FLAC__StreamDecoder*);
-  typedef FLAC__uint64 (*LPFLACGETTOTALSAMPLES)(const FLAC__StreamDecoder*);
-  typedef unsigned (*LPFLACGETCHANNELS)(const FLAC__StreamDecoder*);
-  typedef FLAC__ChannelAssignment (*LPFLACGETCHANNELASSIGN)(const FLAC__StreamDecoder*);
-  typedef unsigned (*LPFLACGETBITSPERSAMPLE)(const FLAC__StreamDecoder*);
-  typedef unsigned (*LPFLACGETSAMPLERATE)(const FLAC__StreamDecoder*);
-  typedef unsigned (*LPFLACGETBLOCKSIZE)(const FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACGETDECODEPOS)(const FLAC__StreamDecoder*, FLAC__uint64*);
+  typedef FLAC__bool(*LPFLACGETMD5)(const FLAC__StreamDecoder*);
+  typedef FLAC__uint64(*LPFLACGETTOTALSAMPLES)(const FLAC__StreamDecoder*);
+  typedef unsigned(*LPFLACGETCHANNELS)(const FLAC__StreamDecoder*);
+  typedef FLAC__ChannelAssignment(*LPFLACGETCHANNELASSIGN)(const FLAC__StreamDecoder*);
+  typedef unsigned(*LPFLACGETBITSPERSAMPLE)(const FLAC__StreamDecoder*);
+  typedef unsigned(*LPFLACGETSAMPLERATE)(const FLAC__StreamDecoder*);
+  typedef unsigned(*LPFLACGETBLOCKSIZE)(const FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACGETDECODEPOS)(const FLAC__StreamDecoder*, FLAC__uint64*);
 
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITSTREAM)(FLAC__StreamDecoder*,	FLAC__StreamDecoderReadCallback,FLAC__StreamDecoderSeekCallback,FLAC__StreamDecoderTellCallback,FLAC__StreamDecoderLengthCallback,FLAC__StreamDecoderEofCallback,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITOGGSTREAM)(FLAC__StreamDecoder*,FLAC__StreamDecoderReadCallback,FLAC__StreamDecoderSeekCallback,FLAC__StreamDecoderTellCallback,FLAC__StreamDecoderLengthCallback,FLAC__StreamDecoderEofCallback,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITFILE)(FLAC__StreamDecoder*,FILE*,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITOGGFILE)(FLAC__StreamDecoder*,FILE*,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITPATH)(FLAC__StreamDecoder*,const char*,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  typedef FLAC__StreamDecoderInitStatus (*LPFLACINITOGGPATH)(FLAC__StreamDecoder*,const char*,FLAC__StreamDecoderWriteCallback,FLAC__StreamDecoderMetadataCallback,FLAC__StreamDecoderErrorCallback,void*);
-  
-  typedef FLAC__bool (*LPFLACFINISH)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACFLUSH)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACRESET)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACPROCESSSINGLE)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACPROCESSMETA)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACPROCESSSTREAM)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACSKIP)(FLAC__StreamDecoder*);
-  typedef FLAC__bool (*LPFLACSEEK)(FLAC__StreamDecoder*, FLAC__uint64 sample);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITSTREAM)(FLAC__StreamDecoder*, FLAC__StreamDecoderReadCallback, FLAC__StreamDecoderSeekCallback, FLAC__StreamDecoderTellCallback, FLAC__StreamDecoderLengthCallback, FLAC__StreamDecoderEofCallback, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITOGGSTREAM)(FLAC__StreamDecoder*, FLAC__StreamDecoderReadCallback, FLAC__StreamDecoderSeekCallback, FLAC__StreamDecoderTellCallback, FLAC__StreamDecoderLengthCallback, FLAC__StreamDecoderEofCallback, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITFILE)(FLAC__StreamDecoder*, FILE*, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITOGGFILE)(FLAC__StreamDecoder*, FILE*, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITPATH)(FLAC__StreamDecoder*, const char*, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
+  typedef FLAC__StreamDecoderInitStatus(*LPFLACINITOGGPATH)(FLAC__StreamDecoder*, const char*, FLAC__StreamDecoderWriteCallback, FLAC__StreamDecoderMetadataCallback, FLAC__StreamDecoderErrorCallback, void*);
 
-	// This is a holder class for the FLAC DLL specific functions 
+  typedef FLAC__bool(*LPFLACFINISH)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACFLUSH)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACRESET)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACPROCESSSINGLE)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACPROCESSMETA)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACPROCESSSTREAM)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACSKIP)(FLAC__StreamDecoder*);
+  typedef FLAC__bool(*LPFLACSEEK)(FLAC__StreamDecoder*, FLAC__uint64 sample);
+
+  // This is a holder class for the FLAC DLL specific functions 
   class FlacFunctions
   {
   public:
     FlacFunctions(const char* force);
     ~FlacFunctions();
-    inline bool Failure() { return _flacDLL==0; }
+    inline bool Failure() { return _flacDLL == 0; }
 
     LPFLACNEW fn_flac_new;
     LPFLACDELETE fn_flac_delete;

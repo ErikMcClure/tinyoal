@@ -11,32 +11,32 @@ typedef ptrdiff_t ssize_t;
 #include "mpg123.h"
 
 namespace tinyoal {
-  typedef int (*LPMPGINIT)(void);
-  typedef void (*LPMPGEXIT)(void);
+  typedef int(*LPMPGINIT)(void);
+  typedef void(*LPMPGEXIT)(void);
   typedef mpg123_handle* (*LPMPGNEW)(const char*, int*);
-  typedef void (*LPMPGDELETE)(mpg123_handle*);
+  typedef void(*LPMPGDELETE)(mpg123_handle*);
   typedef const char* (*LPMPGSTRERROR)(mpg123_handle*);
-  typedef int (*LPMPGFORMATNONE)(mpg123_handle*);
-  typedef int (*LPMPGFORMAT)(mpg123_handle*, long, int, int);
-  typedef int (*LPMPGGETFORMAT)(mpg123_handle*, long*, int*, int*);
-  typedef int (*LPMPGOPENFD)(mpg123_handle*, int);
-  typedef int (*LPMPGOPENHANDLE)(mpg123_handle*, void*);
-  typedef int (*LPMPGCLOSE)(mpg123_handle*);
-  typedef int (*LPMPGREAD)(mpg123_handle*, unsigned char*, size_t, size_t*);
-  typedef off_t (*LPMPGTELL)(mpg123_handle*);
-  typedef off_t (*LPMPGSEEK)(mpg123_handle*, off_t, int);
-  typedef int (*LPMPGINFO)(mpg123_handle*, struct mpg123_frameinfo*);
-  typedef int (*LPMPGSCAN)(mpg123_handle*);
-  typedef off_t (*LPMPGLENGTH)(mpg123_handle*);
-  typedef int (*LPMPGID3)(mpg123_handle*, mpg123_id3v1 **, mpg123_id3v2 **);
-  typedef int (*LPMPGREPLACEREADER)(mpg123_handle*, ssize_t (*r_read) (void *, void *, size_t), off_t (*r_lseek)(void *, off_t, int), void (*cleanup)(void*));
+  typedef int(*LPMPGFORMATNONE)(mpg123_handle*);
+  typedef int(*LPMPGFORMAT)(mpg123_handle*, long, int, int);
+  typedef int(*LPMPGGETFORMAT)(mpg123_handle*, long*, int*, int*);
+  typedef int(*LPMPGOPENFD)(mpg123_handle*, int);
+  typedef int(*LPMPGOPENHANDLE)(mpg123_handle*, void*);
+  typedef int(*LPMPGCLOSE)(mpg123_handle*);
+  typedef int(*LPMPGREAD)(mpg123_handle*, unsigned char*, size_t, size_t*);
+  typedef off_t(*LPMPGTELL)(mpg123_handle*);
+  typedef off_t(*LPMPGSEEK)(mpg123_handle*, off_t, int);
+  typedef int(*LPMPGINFO)(mpg123_handle*, struct mpg123_frameinfo*);
+  typedef int(*LPMPGSCAN)(mpg123_handle*);
+  typedef off_t(*LPMPGLENGTH)(mpg123_handle*);
+  typedef int(*LPMPGID3)(mpg123_handle*, mpg123_id3v1 **, mpg123_id3v2 **);
+  typedef int(*LPMPGREPLACEREADER)(mpg123_handle*, ssize_t(*r_read) (void *, void *, size_t), off_t(*r_lseek)(void *, off_t, int), void(*cleanup)(void*));
 
-	class Mp3Functions
-	{
-	public:
-		Mp3Functions(const char* force);
+  class Mp3Functions
+  {
+  public:
+    Mp3Functions(const char* force);
     ~Mp3Functions();
-    inline bool Failure() { return _mpgDLL==0; }
+    inline bool Failure() { return _mpgDLL == 0; }
 
     LPMPGINIT fn_mpgInit;
     LPMPGEXIT fn_mpgExit;
@@ -58,9 +58,9 @@ namespace tinyoal {
     LPMPGID3 fn_mpgID3;
     LPMPGREPLACEREADER fn_mpgReplaceReader;
 
-	protected:
-		void* _mpgDLL;
-	};
+  protected:
+    void* _mpgDLL;
+  };
 }
 
 #endif

@@ -9,23 +9,23 @@
 #include "vorbis/vorbisfile.h"
 
 namespace tinyoal {
-  typedef int (*LPOVCLEAR)(OggVorbis_File *vf);
-  typedef long (*LPOVREAD)(OggVorbis_File *vf,char *buffer,int length,int bigendianp,int word,int sgned,int *bitstream);
-  typedef vorbis_info * (*LPOVINFO)(OggVorbis_File *vf,int link);
-  typedef int (*LPOVOPENCALLBACKS)(void *datasource, OggVorbis_File *vf,char *initial, long ibytes, ov_callbacks callbacks);
-  typedef int (*LPOVTIMESEEK)(OggVorbis_File *vf,double pos);
-  typedef int (*LPOVPCMSEEK)(OggVorbis_File *vf,ogg_int64_t pos);
-  typedef ogg_int64_t (*LPOVPCMTELL)(OggVorbis_File *vf);
-  typedef ogg_int64_t (*LPOVPCMTOTAL)(OggVorbis_File *vf,int i);
+  typedef int(*LPOVCLEAR)(OggVorbis_File *vf);
+  typedef long(*LPOVREAD)(OggVorbis_File *vf, char *buffer, int length, int bigendianp, int word, int sgned, int *bitstream);
+  typedef vorbis_info * (*LPOVINFO)(OggVorbis_File *vf, int link);
+  typedef int(*LPOVOPENCALLBACKS)(void *datasource, OggVorbis_File *vf, char *initial, long ibytes, ov_callbacks callbacks);
+  typedef int(*LPOVTIMESEEK)(OggVorbis_File *vf, double pos);
+  typedef int(*LPOVPCMSEEK)(OggVorbis_File *vf, ogg_int64_t pos);
+  typedef ogg_int64_t(*LPOVPCMTELL)(OggVorbis_File *vf);
+  typedef ogg_int64_t(*LPOVPCMTOTAL)(OggVorbis_File *vf, int i);
   //typedef vorbis_comment * (*LPOVCOMMENT)(OggVorbis_File *vf,int link);
 
-	// This is a holder class for the OGG DLL specific functions 
+  // This is a holder class for the OGG DLL specific functions 
   class OggFunctions
   {
   public:
     OggFunctions(const char* force);
     ~OggFunctions();
-    inline bool Failure() { return _oggDLL==0; }
+    inline bool Failure() { return _oggDLL == 0; }
 
     LPOVCLEAR			fn_ov_clear;
     LPOVREAD			fn_ov_read;
