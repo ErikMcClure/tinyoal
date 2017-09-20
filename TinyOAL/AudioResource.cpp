@@ -8,10 +8,10 @@
 using namespace tinyoal;
 
 AudioResource::AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop) : _data(data), _datalength(len),
-  _flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0), _inactivelist(0), 
-  _maxactive(0), _total(0), _filetype(TINYOAL_FILETYPE(filetype))
+_flags(flags), _loop(loop), _freq(0), _channels(0), _format(0), _bufsize(0), _activelist(0), _activelistend(0), _numactive(0), _inactivelist(0),
+_maxactive(0), _total(0), _filetype(TINYOAL_FILETYPE(filetype))
 {
-  bss::LLAdd<AudioResource>(this,TinyOAL::Instance()->_reslist);
+  bss::LLAdd<AudioResource>(this, TinyOAL::Instance()->_reslist);
 }
 
 AudioResource::~AudioResource()
@@ -20,9 +20,9 @@ AudioResource::~AudioResource()
   TinyOAL::Instance()->_audiohash.Remove(_hash);
   if(_flags&TINYOAL_ISFILE)
     fclose((FILE*)_data);
-  else if(_flags&TINYOAL_COPYINTOMEMORY && _data!=0)
+  else if(_flags&TINYOAL_COPYINTOMEMORY && _data != 0)
     free(_data);
-  bss::LLRemove<AudioResource>(this,TinyOAL::Instance()->_reslist);
+  bss::LLRemove<AudioResource>(this, TinyOAL::Instance()->_reslist);
 }
 
 void AudioResource::_destruct()
@@ -39,16 +39,19 @@ void AudioResource::_destruct()
 
 void AudioResource::DestroyThis() { delete this; }
 Audio* AudioResource::Play(TINYOAL_FLAG flags)
-{ 
+{
   Audio* r = _activelistend;
-  if(!_maxactive || _numactive<_maxactive) {
-    r = TinyOAL::Instance()->_allocaudio.alloc(1);
-    flags|=TINYOAL_MANAGED;
-  } else {
-    flags=((flags&(~TINYOAL_MANAGED))|(r->GetFlags()&TINYOAL_MANAGED));
+  if(!_maxactive || _numactive < _maxactive)
+  {
+    r = TinyOAL::Instance()->_allocaudio.Alloc();
+    flags |= TINYOAL_MANAGED;
+  }
+  else
+  {
+    flags = ((flags&(~TINYOAL_MANAGED)) | (r->GetFlags()&TINYOAL_MANAGED));
     r->~Audio();
   }
-  new(r) Audio(this,flags);
+  new(r) Audio(this, flags);
   return r;
 }
 
@@ -56,14 +59,14 @@ AudioResource* AudioResource::Create(const char* file, TINYOAL_FLAG flags, unsig
 {
   FILE* f;
 #ifdef BSS_PLATFORM_WIN32
-  _wfopen_s(&f, bss::StrW(file).c_str(),L"rb");
+  _wfopen_s(&f, bss::StrW(file).c_str(), L"rb");
 #else
-  FOPEN(f,file,"rb");
+  FOPEN(f, file, "rb");
 #endif
   if(!f) return 0;
-  fseek(f,0,SEEK_END);
-  long len=ftell(f);
-  fseek(f,0,SEEK_SET);
+  fseek(f, 0, SEEK_END);
+  long len = ftell(f);
+  fseek(f, 0, SEEK_SET);
   AudioResource* r = _fcreate(f, len, flags, filetype, file, loop);
   if(flags&TINYOAL_COPYINTOMEMORY) fclose(f);
   return r;
@@ -84,14 +87,15 @@ AudioResource* AudioResource::Create(const void* data, unsigned int datalength, 
 
   if(!filetype)
     filetype = TinyOAL::Instance()->_getFiletype((const char*)data);
-  
+
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
     return _force(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
   else if(flags&TINYOAL_COPYINTOMEMORY)
   {
     void* ndata = malloc(datalength);
-    memcpy(ndata,data,datalength);
-    data=ndata;
+    if(ndata)
+      memcpy(ndata, data, datalength);
+    data = ndata;
   } // We do a const cast here because data must be stored as void* in case it needs to be deleted. Otherwise, we don't touch it.
   return _create(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
 }
@@ -120,17 +124,19 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
 
   if(!filetype)
   {
-    char fheader[8]={0};
-    fread(fheader, 1, 8,file);
+    char fheader[8] = { 0 };
+    fread(fheader, 1, 8, file);
     fseek(file, -8, SEEK_CUR); // reset file pointer (do NOT use set here or we'll lose the relative positioning
     filetype = TinyOAL::Instance()->_getFiletype(fheader);
   }
 
   if((flags&TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
     return _force(file, datalength, flags | TINYOAL_ISFILE, filetype, path, loop);
-  else if(flags&TINYOAL_COPYINTOMEMORY) {
+  else if(flags&TINYOAL_COPYINTOMEMORY)
+  {
     void* data = malloc(datalength);
-    fread(data, 1, datalength, file);
+    if(data)
+      fread(data, 1, datalength, file);
     return _create(data, datalength, flags, filetype, path, loop);
   }
 
@@ -139,9 +145,13 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
 
 AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype, const char* path, uint64_t loop)
 {
-  const char* hash=(flags&TINYOAL_COPYINTOMEMORY)?"":path;
+  const char* hash = (flags&TINYOAL_COPYINTOMEMORY) ? "" : path;
   AudioResource* r = TinyOAL::Instance()->_audiohash[hash];
-  if(r!=0) { r->Grab(); return r; }
+  if(r != 0)
+  {
+    r->Grab();
+    return r;
+  }
 
   TinyOAL::Codec* c = TinyOAL::Instance()->GetCodec(filetype);
   if(!c)
@@ -154,7 +164,9 @@ AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYO
   r = (AudioResource*)malloc(len);
   c->construct(r, data, datalength, flags, loop);
 
-  if(hash[0]) TinyOAL::Instance()->_audiohash.Insert((r->_hash=hash).c_str(), r);
+  if(hash[0])
+    TinyOAL::Instance()->_audiohash.Insert((r->_hash = hash).c_str(), r);
+
   r->Grab(); //gotta grab the thing
   return r;
 }
@@ -164,8 +176,8 @@ AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYO
 size_t tinyoal::dat_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
   DatStream* data = (DatStream*)datasource;
-  size_t retval = (data->datalength-dat_tell_func(datasource))/size;
-  retval = nmemb>retval?retval:nmemb; //This ensures we never read past the end but still conform to size restrictions
+  size_t retval = (data->datalength - dat_tell_func(datasource)) / size;
+  retval = nmemb > retval ? retval : nmemb; //This ensures we never read past the end but still conform to size restrictions
   memcpy(ptr, data->streampos, retval*size);
   data->streampos += retval*size; //increment stream pointer
   return retval;
@@ -174,23 +186,23 @@ size_t tinyoal::dat_read_func(void *ptr, size_t size, size_t nmemb, void *dataso
 int tinyoal::dat_seek_func(void *datasource, int64_t offset, int whence) //Who the hell names a parameter "whence"?!
 {
   DatStream* data = (DatStream*)datasource;
-  int64_t pos=0;
+  int64_t pos = 0;
 
   switch(whence)
   {
   case SEEK_END:
-    if((pos = data->datalength+offset) < 0 || pos > data->datalength)
+    if((pos = data->datalength + offset) < 0 || pos > data->datalength)
       return -1;//fail
-    data->streampos = data->data+pos;
+    data->streampos = data->data + pos;
     return 0;
   case SEEK_SET:
     if(offset < 0 || (unsigned int)offset > data->datalength)
       return -1;
-    data->streampos = data->data+offset;
+    data->streampos = data->data + offset;
     return 0;
   default:
   case SEEK_CUR:
-    if((pos = dat_tell_func(datasource)+offset) < 0 || pos > data->datalength)
+    if((pos = dat_tell_func(datasource) + offset) < 0 || pos > data->datalength)
       return -1;
     data->streampos += offset;
     return 0;
@@ -205,17 +217,17 @@ int tinyoal::dat_close_func(void *datasource)
 long tinyoal::dat_tell_func(void *datasource)
 {
   DatStream* data = (DatStream*)datasource;
-  return data->streampos-data->data;
+  return data->streampos - data->data;
 }
 
 size_t tinyoal::file_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
-	return fread(ptr, size, nmemb, (FILE*)datasource);
+  return fread(ptr, size, nmemb, (FILE*)datasource);
 }
 
 int tinyoal::file_seek_func(void *datasource, int64_t offset, int whence)
 {
-	return fseek((FILE*)datasource, (long)offset, whence);
+  return fseek((FILE*)datasource, (long)offset, whence);
 }
 
 int tinyoal::file_close_func(void *datasource)
@@ -225,5 +237,5 @@ int tinyoal::file_close_func(void *datasource)
 
 long tinyoal::file_tell_func(void *datasource)
 {
-	return ftell((FILE*)datasource);
+  return ftell((FILE*)datasource);
 }

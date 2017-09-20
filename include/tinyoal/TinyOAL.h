@@ -33,23 +33,23 @@ namespace tinyoal {
   class FlacFunctions;
   struct ALSoftSettings;
 
-	// This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
+  // This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
   class TINYOAL_DLLEXPORT TinyOAL : public bss::Singleton<TinyOAL>
   {
     typedef int(*FNLOG)(const char*, unsigned int, unsigned char, const char*, va_list);
 
   public:
     // Constructors
-    TinyOAL(unsigned char defnumbuf=4, FNLOG fnLog = 0, const char* forceOAL=0, const char* forceOGG=0, const char* forceFLAC=0, const char* forceMP3=0);
+    TinyOAL(unsigned char defnumbuf = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0, const char* forceFLAC = 0, const char* forceMP3 = 0);
     ~TinyOAL();
-		// This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
+    // This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
     // to this update function can never exceed the length of a buffer, or the sound will cut out.
     unsigned int Update();
     // Creates an instance of a sound either from an existing resource or by creating a new resource
-    inline Audio* PlaySound(AudioResource* resource, TINYOAL_FLAG flags) { return !resource?0:resource->Play(flags|TINYOAL_ISPLAYING); }
-    inline Audio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file,flags),flags); }
-    inline Audio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(data,len,flags),flags); }
-    inline Audio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file,len,flags),flags); }
+    inline Audio* PlaySound(AudioResource* resource, TINYOAL_FLAG flags) { return !resource ? 0 : resource->Play(flags | TINYOAL_ISPLAYING); }
+    inline Audio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file, flags), flags); }
+    inline Audio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(data, len, flags), flags); }
+    inline Audio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file, len, flags), flags); }
     // Writes a line to the log using the logging function
     int Log(const char* file, unsigned int line, unsigned char level, const char* format, ...);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)

@@ -42,7 +42,7 @@ struct TESTDEF
 
 #define BEGINTEST TESTDEF::RETPAIR __testret(0,0)
 #define ENDTEST return __testret
-#define FAILEDTEST(t) STREAMLOG(_failedtests,"WARNING") << "Test #" << __testret.first << " Failed  < " << MAKESTRING(t) << " >" << std::endl
+#define FAILEDTEST(t) STREAMLOG(_failedtests,"WARNING") << "Test #" << __testret.first << " Failed  < " << TXT(t) << " >" << std::endl
 #define TEST(t) { ++__testret.first; try { if(t) ++__testret.second; else FAILEDTEST(t); } catch(...) { FAILEDTEST(t); } }
 #define TESTERROR(t, e) { ++__testret.first; try { (t); FAILEDTEST(t); } catch(e) { ++__testret.second; } }
 #define TESTERR(t) TESTERROR(t,...)

@@ -17,16 +17,16 @@ namespace tinyoal {
   class TINYOAL_DLLEXPORT AudioResource : public bss::RefCounter, public bss::LLBase<AudioResource>
   {
   public:
-    virtual void* OpenStream()=0; // This returns a pointer to the internal stream on success, or NULL on failure 
-    virtual void CloseStream(void* stream)=0; //This closes an AUDIOSTREAM pointer
-    virtual unsigned long Read(void* stream, char* buffer, unsigned int len, bool& eof)=0; // Reads next chunk of data - buffer must be at least bufsize long 
-    virtual bool Reset(void* stream)=0; // This resets a stream to the beginning 
-    virtual bool Skip(void* stream, uint64_t samples)=0; // Sets a stream to given sample 
-    virtual uint64_t Tell(void* stream)=0; // Gets what sample a stream is currently on
+    virtual void* OpenStream() = 0; // This returns a pointer to the internal stream on success, or NULL on failure 
+    virtual void CloseStream(void* stream) = 0; //This closes an AUDIOSTREAM pointer
+    virtual unsigned long Read(void* stream, char* buffer, unsigned int len, bool& eof) = 0; // Reads next chunk of data - buffer must be at least bufsize long 
+    virtual bool Reset(void* stream) = 0; // This resets a stream to the beginning 
+    virtual bool Skip(void* stream, uint64_t samples) = 0; // Sets a stream to given sample 
+    virtual uint64_t Tell(void* stream) = 0; // Gets what sample a stream is currently on
     inline uint64_t ToSamples(double seconds) const { return (uint64_t)(seconds*_freq); } // Converts given time to sample point 
-    inline double ToSeconds(uint64_t samples) const { return samples/(double)_freq; } // converts sample point to time
+    inline double ToSeconds(uint64_t samples) const { return samples / (double)_freq; } // converts sample point to time
     inline uint64_t GetLoopPoint() const { return _loop; }
-    inline void SetLoopPoint(uint64_t loop) { _loop=loop; }
+    inline void SetLoopPoint(uint64_t loop) { _loop = loop; }
 
     enum TINYOAL_FILETYPE : unsigned char
     {
@@ -39,7 +39,7 @@ namespace tinyoal {
     };
 
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
-    inline void SetFlags(TINYOAL_FLAG flags) { _flags=flags; }
+    inline void SetFlags(TINYOAL_FLAG flags) { _flags = flags; }
     inline TINYOAL_FILETYPE GetFileType() const { return _filetype; }
     inline unsigned int GetFreq() const { return _freq; }
     inline unsigned int GetChannels() const { return _channels; }
@@ -52,15 +52,15 @@ namespace tinyoal {
     inline Audio* GetInactiveInstances() const { return _inactivelist; }
     inline unsigned int GetNumActive() const { return _numactive; }
     inline unsigned int GetMaxActive() const { return _maxactive; }
-    inline void SetMaxActive(unsigned int max=0) { _maxactive=max; }
+    inline void SetMaxActive(unsigned int max = 0) { _maxactive = max; }
     virtual void DestroyThis(); // Make sure we get deleted in the right DLL
-    Audio* Play(TINYOAL_FLAG flags=TINYOAL_ISPLAYING);
+    Audio* Play(TINYOAL_FLAG flags = TINYOAL_ISPLAYING);
 
     // Creates a AudioResource based on whether or not its an OGG, wav, or mp3. You can override the filetype in the flags parameter
-    static AudioResource* Create(const char* file, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
-    static AudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    static AudioResource* Create(const char* file, TINYOAL_FLAG flags = 0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop = (uint64_t)-1);
+    static AudioResource* Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags = 0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop = (uint64_t)-1);
     // On Windows, file-locks are binary-exclusive, so if you don't explicitely set the sharing properly, this won't work.
-    static AudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags=0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop=(uint64_t)-1);
+    static AudioResource* Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags = 0, unsigned char filetype = TINYOAL_FILETYPE_UNKNOWN, uint64_t loop = (uint64_t)-1);
 
   protected:
     friend class Audio;
@@ -83,7 +83,7 @@ namespace tinyoal {
     bss::BitField<TINYOAL_FLAG> _flags;
     const TINYOAL_FILETYPE _filetype;
     unsigned int _freq;
-	  unsigned int _channels;
+    unsigned int _channels;
     unsigned int _format;
     unsigned int _bufsize;
     unsigned short _samplebits;

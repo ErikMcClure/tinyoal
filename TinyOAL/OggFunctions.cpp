@@ -13,18 +13,11 @@
 
 #define OGG_MODULE_ALT "vorbisfile.dll"
 #define OGG_MODULE "libvorbisfile.dll"
-
-#define LOADDYNLIB(s) LoadLibraryA(s)
-#define GETDYNFUNC(p,s) GetProcAddress((HMODULE)p, s)
-#define FREEDYNLIB(p) FreeLibrary((HMODULE)p)
 #else
 #include <dlfcn.h>
 #define OGG_MODULE_ALT "vorbisfile.so.3"
 #define OGG_MODULE32 "libvorbisfile.so.3"
 #define OGG_MODULE "libvorbisfile.so.3"
-#define LOADDYNLIB(s) dlopen(s, RTLD_LAZY)
-#define GETDYNFUNC(p,s) dlsym(p,s)
-#define FREEDYNLIB(p) dlclose(p)
 #endif
 
 using namespace tinyoal;
@@ -32,35 +25,36 @@ using namespace tinyoal;
 OggFunctions::OggFunctions(const char* force)
 {
   if(!force)
-    force=OGG_MODULE;
+    force = OGG_MODULE;
   bss::bssFill(*this, 0);
   _oggDLL = LOADDYNLIB(force);
-  if(!_oggDLL) _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
+  if(!_oggDLL)
+    _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
 
-	if (_oggDLL)
-	{
-		fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, "ov_clear");
-		fn_ov_read = (LPOVREAD)GETDYNFUNC(_oggDLL, "ov_read");
-		fn_ov_info = (LPOVINFO)GETDYNFUNC(_oggDLL, "ov_info");
-		fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(_oggDLL, "ov_open_callbacks");
-		fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(_oggDLL, "ov_time_seek");
-		fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(_oggDLL, "ov_pcm_seek");
-		fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(_oggDLL, "ov_pcm_tell");
-		fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, "ov_pcm_total");
-		//fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, "ov_comment");
+  if(_oggDLL)
+  {
+    fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, "ov_clear");
+    fn_ov_read = (LPOVREAD)GETDYNFUNC(_oggDLL, "ov_read");
+    fn_ov_info = (LPOVINFO)GETDYNFUNC(_oggDLL, "ov_info");
+    fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(_oggDLL, "ov_open_callbacks");
+    fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(_oggDLL, "ov_time_seek");
+    fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(_oggDLL, "ov_pcm_seek");
+    fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(_oggDLL, "ov_pcm_tell");
+    fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, "ov_pcm_total");
+    //fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, "ov_comment");
 
-		if(!fn_ov_clear) TINYOAL_LOG(1,"Could not load ov_clear");
-		if(!fn_ov_read) TINYOAL_LOG(1,"Could not load ov_read");
-		if(!fn_ov_info) TINYOAL_LOG(1,"Could not load ov_info");
-		if(!fn_ov_open_callbacks) TINYOAL_LOG(1,"Could not load ov_open_callbacks");
-		if(!fn_ov_time_seek) TINYOAL_LOG(1,"Could not load ov_time_seek");
-		if(!fn_ov_pcm_seek) TINYOAL_LOG(1,"Could not load ov_pcm_seek");
-		if(!fn_ov_pcm_tell) TINYOAL_LOG(1,"Could not load ov_pcm_tell");
-		if(!fn_ov_pcm_total) TINYOAL_LOG(1,"Could not load ov_pcm_total");
-		//if(!fn_ov_comment) TINYOAL_LOG(1,"Could not load ov_comment");
-	}
+    if(!fn_ov_clear) TINYOAL_LOG(1, "Could not load ov_clear");
+    if(!fn_ov_read) TINYOAL_LOG(1, "Could not load ov_read");
+    if(!fn_ov_info) TINYOAL_LOG(1, "Could not load ov_info");
+    if(!fn_ov_open_callbacks) TINYOAL_LOG(1, "Could not load ov_open_callbacks");
+    if(!fn_ov_time_seek) TINYOAL_LOG(1, "Could not load ov_time_seek");
+    if(!fn_ov_pcm_seek) TINYOAL_LOG(1, "Could not load ov_pcm_seek");
+    if(!fn_ov_pcm_tell) TINYOAL_LOG(1, "Could not load ov_pcm_tell");
+    if(!fn_ov_pcm_total) TINYOAL_LOG(1, "Could not load ov_pcm_total");
+    //if(!fn_ov_comment) TINYOAL_LOG(1,"Could not load ov_comment");
+  }
   else
-    TINYOAL_LOG(1,"Could not find the OGG Vorbis DLL (or it may be missing one of its dependencies)");
+    TINYOAL_LOG(1, "Could not find the OGG Vorbis DLL (or it may be missing one of its dependencies)");
 }
 
 OggFunctions::~OggFunctions()
@@ -69,72 +63,83 @@ OggFunctions::~OggFunctions()
 }
 ogg_int64_t OggFunctions::GetCommentSection(OggVorbis_File *vf)
 {
-  const size_t BUFSIZE=128;
-  const size_t READSIZE=BUFSIZE-5;
+  const size_t BUFSIZE = 128;
+  const size_t READSIZE = BUFSIZE - 5;
   char buf[BUFSIZE];
   bss::bssFill(buf, 0);
-  int numhits=0;
-  char* pos;  
-  ptrdiff_t index=0;
+  int numhits = 0;
+  char* pos;
+  ptrdiff_t index = 0;
   ptrdiff_t num;
-  while(numhits<2)
+
+  while(numhits < 2)
   {
-    if((num=vf->callbacks.read_func(buf+5,1,READSIZE,vf->datasource))!=READSIZE) return 0; //this means we hit the end of the file and it must not be valid
-    if((pos=(char*)bss::ByteSearch(buf,BUFSIZE,(void*)"vorbis",6))!=0) {
+    if((num = vf->callbacks.read_func(buf + 5, 1, READSIZE, vf->datasource)) != READSIZE)
+      return 0; //this means we hit the end of the file and it must not be valid
+
+    if((pos = (char*)bss::ByteSearch(buf, BUFSIZE, (void*)"vorbis", 6)) != 0)
+    {
       ++numhits;
-      num=pos-buf;
-      if(numhits<2 && num>6 && (pos=(char*)bss::ByteSearch(pos+=6,BUFSIZE,(void*)"vorbis",6))!=0) {
+      num = pos - buf;
+      if(numhits < 2 && num>6 && (pos = (char*)bss::ByteSearch(pos += 6, BUFSIZE, (void*)"vorbis", 6)) != 0)
+      {
         ++numhits;
       }
     }
-    index+=READSIZE;
-    memcpy(buf,buf+READSIZE,5); //We have to save the last 5 characters in case the buffer ends in "vorbi" or we'll miss it
+    index += READSIZE;
+    memcpy(buf, buf + READSIZE, 5); //We have to save the last 5 characters in case the buffer ends in "vorbi" or we'll miss it
   }
-  index-=READSIZE;
-  index+=(pos-buf) + 6 - 5; //+6 to skip past "vorbis", -5 to remove 5 lead bytes on buffer
+
+  index -= READSIZE;
+  index += (pos - buf) + 6 - 5; //+6 to skip past "vorbis", -5 to remove 5 lead bytes on buffer
   int32_t length;
-  vf->callbacks.seek_func(vf->datasource,index,SEEK_SET); //seek to the proper location
-  if(vf->callbacks.read_func(&length,4,1,vf->datasource)!=1) return 0;
-  return index+=length+4;
+  vf->callbacks.seek_func(vf->datasource, index, SEEK_SET); //seek to the proper location
+
+  if(vf->callbacks.read_func(&length, 4, 1, vf->datasource) != 1)
+    return 0;
+  return index += length + 4;
 }
 
 
 ogg_int64_t OggFunctions::GetLoopStart(OggVorbis_File *vf)
 {
-  if(vf->seekable==0) return -1; //if not seekable, fail
+  if(vf->seekable == 0)
+    return -1; //if not seekable, fail
   long orig = vf->callbacks.tell_func(vf->datasource);
-  vf->callbacks.seek_func(vf->datasource,0,SEEK_SET);
+  vf->callbacks.seek_func(vf->datasource, 0, SEEK_SET);
 
-  ogg_int64_t index=GetCommentSection(vf);
+  ogg_int64_t index = GetCommentSection(vf);
   int32_t length;
-  ogg_int64_t retval=-1;
+  ogg_int64_t retval = -1;
 
-  vf->callbacks.seek_func(vf->datasource,index,SEEK_SET); //seek to the end of the vendor info
+  vf->callbacks.seek_func(vf->datasource, index, SEEK_SET); //seek to the end of the vendor info
 
   int32_t numcomments;
-  if(vf->callbacks.read_func(&numcomments,4,1,vf->datasource)==1) //get number of comments
+  if(vf->callbacks.read_func(&numcomments, 4, 1, vf->datasource) == 1) //get number of comments
   {
     bss::Str comment;
-    for(int32_t i=0; i < numcomments; ++i)
+    for(int32_t i = 0; i < numcomments; ++i)
     {
-      if(vf->callbacks.read_func(&length,4,1,vf->datasource)!=1) break;
-      comment.resize(length+1);
-      if(vf->callbacks.read_func(comment.UnsafeString(),1,length,vf->datasource)!=length) break;
-      comment.UnsafeString()[length]='\0';
+      if(vf->callbacks.read_func(&length, 4, 1, vf->datasource) != 1)
+        break;
+      comment.resize(length + 1);
+      if(vf->callbacks.read_func(comment.UnsafeString(), 1, length, vf->datasource) != length)
+        break;
+      comment.UnsafeString()[length] = '\0';
       comment.RecalcSize();
-      const char* pos=(const char*)memchr(comment.c_str(),'=',length);
-      if(pos!=0)
+      const char* pos = (const char*)memchr(comment.c_str(), '=', length);
+      if(pos != 0)
       {
-        if(!STRNICMP(comment.c_str(),"LOOPSTART",9))
+        if(!STRNICMP(comment.c_str(), "LOOPSTART", 9))
         {
-          retval=atol(++pos);
+          retval = atol(++pos);
           break;
         }
       }
     }
   }
 
-  vf->callbacks.seek_func(vf->datasource,orig,SEEK_SET); //seek back to where we were
+  vf->callbacks.seek_func(vf->datasource, orig, SEEK_SET); //seek back to where we were
   return retval;
 }
 //

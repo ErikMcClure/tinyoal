@@ -15,7 +15,7 @@ namespace tinyoal {
     DatStream stream;
   };
 
-	// This is a resource class for OGG files, and handles all the IO operations from the given buffer 
+  // This is a resource class for OGG files, and handles all the IO operations from the given buffer 
   class AudioResourceOGG : public AudioResource
   {
   public:
@@ -30,7 +30,7 @@ namespace tinyoal {
 
     static size_t Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
     static bool ScanHeader(const char* fileheader);
-    static std::pair<void*,unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+    static std::pair<void*, unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
   protected:
     static unsigned long _read(void* stream, char* buffer, unsigned int len, bool& eof, char bytes, unsigned int channels); // Reads next chunk of data - buffer must be at least GetBufSize() long 

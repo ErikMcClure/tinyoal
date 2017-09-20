@@ -68,7 +68,7 @@ namespace tinyoal {
 	  uint64_t Tell(WAVEFILEINFO& wave);
 	  WAVERESULT Close(WAVEFILEINFO& wave);
     unsigned int GetALFormat(WAVEFILEINFO& wave); // cast this to ALenum
-    unsigned int WriteHeader(char* buffer,unsigned int length,unsigned short channels, unsigned short bits, uint32_t freq);
+    unsigned int WriteHeader(char* buffer, unsigned int length, unsigned short channels, unsigned short bits, uint32_t freq);
   };
 }
 
