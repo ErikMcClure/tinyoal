@@ -330,19 +330,19 @@ void TinyOAL::_removeAudio(Audio* ref, AudioResource* res)
 
 char* TinyOAL::_allocDecoder(unsigned int sz)
 {
-  auto p = _treealloc.GetRef(sz);
+  auto p = _treealloc[sz];
   if(!p)
   {
     TINYOAL_LOG(4, "Created allocation pool of size %u", sz);
-    _treealloc.Insert(sz, std::unique_ptr<bss::BlockAllocVoid>(new BlockAllocVoid(sz, 3)));
-    p = _treealloc.GetRef(sz);
+    _treealloc.Insert(sz, std::unique_ptr<bss::BlockAlloc>(new BlockAlloc(sz, 3)));
+    p = _treealloc[sz];
   }
-  return !p ? 0 : (char*)(*p)->Alloc();
+  return !p ? 0 : (char*)p->Alloc();
 }
 void TinyOAL::_deallocDecoder(char* s, unsigned int sz)
 {
-  auto p = _treealloc.GetRef(sz);
-  if(p) (*p)->Dealloc(s);
+  auto p = _treealloc[sz];
+  if(p) p->Dealloc(s);
   else TINYOAL_LOG(2, "decoder buffer deallocation failure.");
 }
 

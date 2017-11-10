@@ -43,7 +43,7 @@ Audio* AudioResource::Play(TINYOAL_FLAG flags)
   Audio* r = _activelistend;
   if(!_maxactive || _numactive < _maxactive)
   {
-    r = TinyOAL::Instance()->_allocaudio.Alloc();
+    r = TinyOAL::Instance()->_allocaudio.allocate(1);
     flags |= TINYOAL_MANAGED;
   }
   else

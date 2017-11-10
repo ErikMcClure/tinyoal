@@ -16,7 +16,7 @@
 #endif
 
 #define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_mpgDLL, n); \
-		if(!v) TINYOAL_LOG(1,"Could not load " n)
+		if(!v) TINYOAL_LOG(1,"Could not load " TXT(n))
 
 using namespace tinyoal;
 
@@ -30,25 +30,25 @@ Mp3Functions::Mp3Functions(const char* force)
 
   if(_mpgDLL)
   {
-    DYNFUNC(fn_mpgInit, LPMPGINIT, "mpg123_init");
-    DYNFUNC(fn_mpgExit, LPMPGEXIT, "mpg123_exit");
-    DYNFUNC(fn_mpgNew, LPMPGNEW, "mpg123_new");
-    DYNFUNC(fn_mpgDelete, LPMPGDELETE, "mpg123_delete");
-    DYNFUNC(fn_mpgStrError, LPMPGSTRERROR, "mpg123_strerror");
-    DYNFUNC(fn_mpgFormatNone, LPMPGFORMATNONE, "mpg123_format_none");
-    DYNFUNC(fn_mpgFormat, LPMPGFORMAT, "mpg123_format");
-    DYNFUNC(fn_mpgGetFormat, LPMPGGETFORMAT, "mpg123_getformat");
-    DYNFUNC(fn_mpgOpenFD, LPMPGOPENFD, "mpg123_open_fd");
-    DYNFUNC(fn_mpgOpenHandle, LPMPGOPENHANDLE, "mpg123_open_handle");
-    DYNFUNC(fn_mpgClose, LPMPGCLOSE, "mpg123_close");
-    DYNFUNC(fn_mpgRead, LPMPGREAD, "mpg123_read");
-    DYNFUNC(fn_mpgTell, LPMPGTELL, "mpg123_tell");
-    DYNFUNC(fn_mpgSeek, LPMPGSEEK, "mpg123_seek");
-    DYNFUNC(fn_mpgInfo, LPMPGINFO, "mpg123_info");
-    DYNFUNC(fn_mpgScan, LPMPGSCAN, "mpg123_scan");
-    DYNFUNC(fn_mpgLength, LPMPGLENGTH, "mpg123_length");
-    DYNFUNC(fn_mpgID3, LPMPGID3, "mpg123_id3");
-    DYNFUNC(fn_mpgReplaceReader, LPMPGREPLACEREADER, "mpg123_replace_reader_handle");
+    DYNFUNC(fn_mpgInit, LPMPGINIT, mpg123_init);
+    DYNFUNC(fn_mpgExit, LPMPGEXIT, mpg123_exit);
+    DYNFUNC(fn_mpgNew, LPMPGNEW, mpg123_new);
+    DYNFUNC(fn_mpgDelete, LPMPGDELETE, mpg123_delete);
+    DYNFUNC(fn_mpgStrError, LPMPGSTRERROR, mpg123_strerror);
+    DYNFUNC(fn_mpgFormatNone, LPMPGFORMATNONE, mpg123_format_none);
+    DYNFUNC(fn_mpgFormat, LPMPGFORMAT, mpg123_format);
+    DYNFUNC(fn_mpgGetFormat, LPMPGGETFORMAT, mpg123_getformat);
+    DYNFUNC(fn_mpgOpenFD, LPMPGOPENFD, mpg123_open_fd);
+    DYNFUNC(fn_mpgOpenHandle, LPMPGOPENHANDLE, mpg123_open_handle);
+    DYNFUNC(fn_mpgClose, LPMPGCLOSE, mpg123_close);
+    DYNFUNC(fn_mpgRead, LPMPGREAD, mpg123_read);
+    DYNFUNC(fn_mpgTell, LPMPGTELL, mpg123_tell);
+    DYNFUNC(fn_mpgSeek, LPMPGSEEK, mpg123_seek);
+    DYNFUNC(fn_mpgInfo, LPMPGINFO, mpg123_info);
+    DYNFUNC(fn_mpgScan, LPMPGSCAN, mpg123_scan);
+    DYNFUNC(fn_mpgLength, LPMPGLENGTH, mpg123_length);
+    DYNFUNC(fn_mpgID3, LPMPGID3, mpg123_id3);
+    DYNFUNC(fn_mpgReplaceReader, LPMPGREPLACEREADER, mpg123_replace_reader_handle);
 
     if(!fn_mpgInit || fn_mpgInit() != MPG123_OK)
     {

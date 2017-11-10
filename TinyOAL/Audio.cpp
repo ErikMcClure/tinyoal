@@ -190,7 +190,7 @@ void Audio::Stop()
   if(_flags&TINYOAL_MANAGED)
   { // If we're managed and we stopped playing, destroy ourselves.
     this->~Audio();
-    TinyOAL::Instance()->_allocaudio.Dealloc(this);
+    TinyOAL::Instance()->_allocaudio.deallocate(this, 1);
   }
 }
 

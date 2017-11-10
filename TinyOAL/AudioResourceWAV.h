@@ -29,7 +29,6 @@ namespace tinyoal {
 
   protected:
     WAVEFILEINFO _sentinel; // stored wave file information state at the beginning of the file
-    static bss::BlockAlloc<WAVEFILEINFO> _allocwav;
   };
 }
 

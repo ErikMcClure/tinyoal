@@ -33,15 +33,15 @@ OggFunctions::OggFunctions(const char* force)
 
   if(_oggDLL)
   {
-    fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, "ov_clear");
-    fn_ov_read = (LPOVREAD)GETDYNFUNC(_oggDLL, "ov_read");
-    fn_ov_info = (LPOVINFO)GETDYNFUNC(_oggDLL, "ov_info");
-    fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(_oggDLL, "ov_open_callbacks");
-    fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(_oggDLL, "ov_time_seek");
-    fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(_oggDLL, "ov_pcm_seek");
-    fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(_oggDLL, "ov_pcm_tell");
-    fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, "ov_pcm_total");
-    //fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, "ov_comment");
+    fn_ov_clear = (LPOVCLEAR)GETDYNFUNC(_oggDLL, ov_clear);
+    fn_ov_read = (LPOVREAD)GETDYNFUNC(_oggDLL, ov_read);
+    fn_ov_info = (LPOVINFO)GETDYNFUNC(_oggDLL, ov_info);
+    fn_ov_open_callbacks = (LPOVOPENCALLBACKS)GETDYNFUNC(_oggDLL, ov_open_callbacks);
+    fn_ov_time_seek = (LPOVTIMESEEK)GETDYNFUNC(_oggDLL, ov_time_seek);
+    fn_ov_pcm_seek = (LPOVPCMSEEK)GETDYNFUNC(_oggDLL, ov_pcm_seek);
+    fn_ov_pcm_tell = (LPOVPCMTELL)GETDYNFUNC(_oggDLL, ov_pcm_tell);
+    fn_ov_pcm_total = (LPOVPCMTOTAL)GETDYNFUNC(_oggDLL, ov_pcm_total);
+    //fn_ov_comment = (LPOVCOMMENT)GETDYNFUNC(_oggDLL, ov_comment);
 
     if(!fn_ov_clear) TINYOAL_LOG(1, "Could not load ov_clear");
     if(!fn_ov_read) TINYOAL_LOG(1, "Could not load ov_read");

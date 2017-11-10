@@ -37,7 +37,6 @@ namespace tinyoal {
     bool _openstream(OggVorbis_FileEx* target);
     static void _setcallbacks(ov_callbacks& callbacks, bool isfile);
 
-    static bss::BlockAlloc<OggVorbis_FileEx> _allocogg;
     ov_callbacks _callbacks;
   };
 }

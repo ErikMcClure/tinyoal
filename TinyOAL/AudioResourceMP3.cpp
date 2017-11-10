@@ -8,8 +8,6 @@
 
 using namespace tinyoal;
 
-bss::BlockAlloc<DatStream> AudioResourceMP3::_datalloc;
-
 AudioResourceMP3::AudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : AudioResource(data, datalength, flags, TINYOAL_FILETYPE_MP3, loop)
 {
   mpg123_handle* h = (mpg123_handle*)OpenStream();
@@ -61,7 +59,7 @@ void* AudioResourceMP3::OpenStream()
   }
   else
   {
-    DatStream* dat = _datalloc.Alloc();
+    DatStream* dat = TinyOAL::Instance()->AllocViaPool<DatStream>();
     dat->data = dat->streampos = (char*)_data;
     dat->datalength = _datalength;
     fn->fn_mpgReplaceReader(h, &cb_datread, &cb_datseek, &cb_cleanup);
@@ -224,7 +222,7 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
 
 void AudioResourceMP3::cb_cleanup(void* dat)
 {
-  _datalloc.Dealloc(static_cast<DatStream*>(dat));
+  TinyOAL::Instance()->DeallocViaPool<DatStream>(reinterpret_cast<DatStream*>(dat));
 }
 ssize_t AudioResourceMP3::cb_datread(void* stream, void* dst, size_t n)
 {
