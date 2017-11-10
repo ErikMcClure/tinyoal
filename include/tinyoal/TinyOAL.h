@@ -19,7 +19,6 @@
 
 #include "AudioResource.h"
 #include "bss-util/Singleton.h"
-#include "bss-util/AVLTree.h"
 #include <stdarg.h>
 
 #define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__,__LINE__, level, format, ##__VA_ARGS__)
@@ -91,6 +90,11 @@ namespace tinyoal {
 
     static const bssVersionInfo Version;
 
+    template<class T>
+    T* AllocViaPool() { return reinterpret_cast<T*>(_allocDecoder(sizeof(T))); }
+    template<class T>
+    void DeallocViaPool(T* p) { _deallocDecoder(reinterpret_cast<char*>(p), sizeof(T)); }
+
   protected:
     friend class Audio;
     friend class AudioResource;
@@ -111,10 +115,10 @@ namespace tinyoal {
     FNLOG _fnLog;
     AudioResource* _activereslist;
     AudioResource* _reslist;
-    bss::BlockAllocVoid _bufalloc;
-    bss::AVLTree<unsigned int, std::unique_ptr<bss::BlockAllocVoid>> _treealloc;
+    bss::BlockAlloc _bufalloc;
+    bss::Hash<unsigned int, std::unique_ptr<bss::BlockAlloc>, false, bss::ARRAY_MOVE> _treealloc;
     bss::Hash<const char*, AudioResource*, true> _audiohash;
-    bss::BlockAlloc<Audio> _allocaudio;
+    bss::BlockPolicy<Audio> _allocaudio;
     bss::Hash<unsigned char, Codec> _codecs;
   };
 

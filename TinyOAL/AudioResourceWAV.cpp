@@ -7,7 +7,6 @@
 #include "loadoal.h"
 
 using namespace tinyoal;
-bss::BlockAlloc<WAVEFILEINFO> AudioResourceWAV::_allocwav(3);
 
 AudioResourceWAV::AudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : AudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)
 {
@@ -70,7 +69,7 @@ void* AudioResourceWAV::OpenStream()
     return 0; // Indicates a failure on file load
   if(_flags&TINYOAL_ISFILE) 
     TinyOAL::Instance()->waveFuncs->Seek(_sentinel, 0);
-  WAVEFILEINFO* r = _allocwav.Alloc();
+  WAVEFILEINFO* r = TinyOAL::Instance()->AllocViaPool<WAVEFILEINFO>();
   memcpy(r, &_sentinel, sizeof(WAVEFILEINFO));
   r->source = (_flags&TINYOAL_ISFILE) ? _data : &r->stream;
   return r;
@@ -78,9 +77,9 @@ void* AudioResourceWAV::OpenStream()
 
 void AudioResourceWAV::CloseStream(void* stream)
 {
-  WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
+  WAVEFILEINFO* r = reinterpret_cast<WAVEFILEINFO*>(stream);
   TinyOAL::Instance()->waveFuncs->Close(*r);
-  _allocwav.Dealloc(r);
+  TinyOAL::Instance()->DeallocViaPool<WAVEFILEINFO>(r);
 }
 unsigned long AudioResourceWAV::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {

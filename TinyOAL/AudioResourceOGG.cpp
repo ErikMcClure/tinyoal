@@ -8,7 +8,6 @@
 #include "loadoal.h"
 
 using namespace tinyoal;
-bss::BlockAlloc<OggVorbis_FileEx> AudioResourceOGG::_allocogg(3);
 
 // Constructor that takes a data pointer, a length of data, and flags.
 AudioResourceOGG::AudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) : AudioResource(data, datalength, flags, TINYOAL_FILETYPE_OGG, loop)
@@ -49,10 +48,10 @@ AudioResourceOGG::~AudioResourceOGG()
 
 void* AudioResourceOGG::OpenStream()
 {
-  OggVorbis_FileEx* r = _allocogg.Alloc();
+  OggVorbis_FileEx* r = TinyOAL::Instance()->AllocViaPool<OggVorbis_FileEx>();
   if(_openstream(r)) 
     return r;
-  _allocogg.Dealloc(r);
+  TinyOAL::Instance()->DeallocViaPool<OggVorbis_FileEx>(r);
   return 0;
 }
 
@@ -78,9 +77,9 @@ bool AudioResourceOGG::_openstream(OggVorbis_FileEx* r)
 
 void AudioResourceOGG::CloseStream(void* stream)
 {
-  OggVorbis_FileEx* data = (OggVorbis_FileEx*)stream;
+  OggVorbis_FileEx* data = reinterpret_cast<OggVorbis_FileEx*>(stream);
   TinyOAL::Instance()->oggFuncs->fn_ov_clear(&data->ogg);
-  _allocogg.Dealloc(data);
+  TinyOAL::Instance()->DeallocViaPool<OggVorbis_FileEx>(data);
 }
 
 // This is the important function. Using the stream given to us, we know that it must be an OGG stream, and thus will
