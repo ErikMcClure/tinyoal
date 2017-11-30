@@ -116,8 +116,8 @@ namespace tinyoal {
     AudioResource* _activereslist;
     AudioResource* _reslist;
     bss::BlockAlloc _bufalloc;
-    bss::Hash<unsigned int, std::unique_ptr<bss::BlockAlloc>, false, bss::ARRAY_MOVE> _treealloc;
-    bss::Hash<const char*, AudioResource*, true> _audiohash;
+    bss::Hash<unsigned int, std::unique_ptr<bss::BlockAlloc>, bss::ARRAY_MOVE> _treealloc;
+    bss::HashIns<const char*, AudioResource*> _audiohash;
     bss::BlockPolicy<Audio> _allocaudio;
     bss::Hash<unsigned char, Codec> _codecs;
   };
