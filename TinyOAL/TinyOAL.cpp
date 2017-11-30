@@ -413,12 +413,10 @@ TinyOAL::Codec* TinyOAL::GetCodec(unsigned char filetype)
 //This function does NOT check to see if fileheader is 8 characters long
 unsigned char TinyOAL::_getFiletype(const char* fileheader)
 {
-  auto iter = _codecs.begin();
-  while(iter.IsValid())
+  for(auto[k,v] : _codecs)
   {
-    if(_codecs.GetValue(*iter)->scanheader(fileheader))
-      return _codecs.GetKey(*iter);
-    ++iter;
+    if(v.scanheader(fileheader))
+      return k;
   }
 
   return AudioResource::TINYOAL_FILETYPE_UNKNOWN;
