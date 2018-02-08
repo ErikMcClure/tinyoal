@@ -3,7 +3,7 @@
  * This example demonstrates how you can adjust the volume, panning and pitch of a sound. It then proceeds to horribly
  * abuse these parameters to play a song (you really shouldn't do this in a real program, ever).
  *
- * Copyright ©2017 Black Sphere Studios
+ * Copyright ©2018 Black Sphere Studios
  */
 
 #include "tinyoal/TinyOAL.h"

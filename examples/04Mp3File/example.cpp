@@ -3,7 +3,7 @@
  * This example demonstrates MP3 file support. MP3 is protected by a bunch of patent trolls, so 
  * only use this if you've paid the necessary license fees, or you're a non-profit.
  *
- * Copyright ©2017 Black Sphere Studios
+ * Copyright ©2018 Black Sphere Studios
  */
 
 #include "tinyoal/TinyOAL.h"
