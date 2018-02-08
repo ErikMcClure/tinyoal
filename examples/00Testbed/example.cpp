@@ -3,7 +3,7 @@
  * This enables the wave writer backend and runs a series of tests to ensure TinyOAL
  * is working as intended.
  *
- * Copyright ©2017 Black Sphere Studios
+ * Copyright ©2018 Black Sphere Studios
  */
 
 #include "tinyoal/TinyOAL.h"
