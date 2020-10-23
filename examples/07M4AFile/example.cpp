@@ -3,7 +3,7 @@
  * This example demonstrates a custom windows-specific
  * AAC decoder that is registered to read M4A files.
  *
- * Copyright ©2018 Black Sphere Studios
+ * Copyright (c)2020 Erik McClure
  */
 
 #include "tinyoal/TinyOAL.h"

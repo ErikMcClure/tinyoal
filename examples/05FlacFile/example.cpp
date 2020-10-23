@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates FLAC file support.
  *
- * Copyright ©2018 Black Sphere Studios
+ * Copyright (c)2020 Erik McClure
  */
 
 #include "tinyoal/TinyOAL.h"
