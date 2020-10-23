@@ -1,6 +1,15 @@
 TinyOAL is a minimalist audio engine using openAL-soft. However, you can also force it to use the normal openAL dll if you really want to.
 
-### Features
+## Building
+TinyOAL uses a submodule to include the bss-util include header files, so be sure to run `git submodule update --init` after cloning the repository. The OpenAL headers, mpg123 headers, libFLAC headers, and vorbis OGG headers must all be installed on your system before you attempt to build.
+
+### Windows
+On windows, use [vcpkg](https://github.com/microsoft/vcpkg) and install `openal-soft`, `mpg123`, `libflac` and `libogg` (you'll probably want the `:x64-windows` versions). Integrate vcpkg with Visual Studio with `vcpkg integrate install` if you haven't already, and the solution file should build.
+
+### Linux
+You must install openAL or openAL-soft in your package manager, along with `mpg123`, `libflac` and `libogg`. Then simply run `make` in the root project directory to build. It is your responsibility to make sure the compiler can find those include files - if they are in a non-standard directory you may have to modify the makefile so it can find them.
+
+## Features
 * volume, pitch, and panning
 * loop points
 * resource management
