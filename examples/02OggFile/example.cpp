@@ -2,7 +2,7 @@
  * -------------------------
  * This example demonstrates how to open up an OGG file, adjust its flags, and make it loop at a loop point.
  *
- * Copyright ©2018 Black Sphere Studios
+ * Copyright (c)2020 Erik McClure
  */
 
 #include "tinyoal/TinyOAL.h"

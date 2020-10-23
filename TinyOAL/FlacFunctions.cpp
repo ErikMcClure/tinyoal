@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2020 Erik McClure
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -7,17 +7,19 @@
 #include "tinyoal/TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss-util/win32_includes.h"
+  #include "bss-util/win32_includes.h"
 
-#define FLAC_MODULE "libflac.dll"
-#define FLAC_MODULE_ALT "flac.dll"
+  #define FLAC_MODULE     "libflac.dll"
+  #define FLAC_MODULE_ALT "flac.dll"
 #else
-#include <dlfcn.h>
-#define FLAC_MODULE "libFLAC.so.8"
+  #include <dlfcn.h>
+  #define FLAC_MODULE "libFLAC.so.8"
 #endif
 
-#define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_flacDLL, n); \
-		if(!v) TINYOAL_LOG(1,"Could not load " TXT(n))
+#define DYNFUNC(v, t, n)          \
+  v = (t)GETDYNFUNC(_flacDLL, n); \
+  if(!v)                          \
+  TINYOAL_LOG(1, "Could not load " TXT(n))
 
 using namespace tinyoal;
 
@@ -39,7 +41,8 @@ FlacFunctions::FlacFunctions(const char* force)
     DYNFUNC(fn_flac_set_ogg_serial, LPFLACSETOGGSERIAL, FLAC__stream_decoder_set_ogg_serial_number);
     DYNFUNC(fn_flac_set_md5_checking, LPFLACSETMD5, FLAC__stream_decoder_set_md5_checking);
     DYNFUNC(fn_flac_set_metadata_respond, LPFLACSETMETARESPOND, FLAC__stream_decoder_set_metadata_respond);
-    DYNFUNC(fn_flac_set_metadata_respond_app, LPFLACSETMETARESPONDAPP, FLAC__stream_decoder_set_metadata_respond_application);
+    DYNFUNC(fn_flac_set_metadata_respond_app, LPFLACSETMETARESPONDAPP,
+            FLAC__stream_decoder_set_metadata_respond_application);
     DYNFUNC(fn_flac_set_metadata_respond_all, LPFLACSETMETARESPONDALL, FLAC__stream_decoder_set_metadata_respond_all);
     DYNFUNC(fn_flac_set_metadata_ignore, LPFLACSETMETAIGNORE, FLAC__stream_decoder_set_metadata_ignore);
     DYNFUNC(fn_flac_set_metadata_ignore_app, LPFLACSETMETAIGNOREAPP, FLAC__stream_decoder_set_metadata_ignore_application);

@@ -1,5 +1,5 @@
 /* TinyOAL - An OpenAL-Soft Audio engine
-   Copyright ©2018 Black Sphere Studios
+   Copyright (c)2020 Erik McClure
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
    limitations under the License.
 */
 
-#ifndef __TINY_OAL_H__TOAL__
-#define __TINY_OAL_H__TOAL__
+#ifndef TOAL__TINY_OAL_H__
+#define TOAL__TINY_OAL_H__
 
 #include "AudioResource.h"
-#include "bss-util/Singleton.h"
 #include <stdarg.h>
 
-#define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__,__LINE__, level, format, ##__VA_ARGS__)
+#define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__, __LINE__, level, format, ##__VA_ARGS__)
 
 struct OPENALFNTABLE;
 
@@ -32,23 +31,37 @@ namespace tinyoal {
   class FlacFunctions;
   struct ALSoftSettings;
 
-  // This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all currently playing audio 
-  class TINYOAL_DLLEXPORT TinyOAL : public bss::Singleton<TinyOAL>
+  // This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all
+  // currently playing audio
+  class TINYOAL_DLLEXPORT TinyOAL
   {
-    typedef int(*FNLOG)(const char*, unsigned int, unsigned char, const char*, va_list);
+    typedef int (*FNLOG)(const char*, unsigned int, unsigned char, const char*, va_list);
 
   public:
     // Constructors
-    TinyOAL(unsigned char defnumbuf = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0, const char* forceFLAC = 0, const char* forceMP3 = 0);
+    TinyOAL(unsigned char defnumbuf = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0,
+            const char* forceFLAC = 0, const char* forceMP3 = 0);
     ~TinyOAL();
-    // This updates any currently playing samples and returns the number that are still playing after the update. The time between calls
-    // to this update function can never exceed the length of a buffer, or the sound will cut out.
+    // This updates any currently playing samples and returns the number that are still playing after the update. The time
+    // between calls to this update function can never exceed the length of a buffer, or the sound will cut out.
     unsigned int Update();
     // Creates an instance of a sound either from an existing resource or by creating a new resource
-    inline Audio* PlaySound(AudioResource* resource, TINYOAL_FLAG flags) { return !resource ? 0 : resource->Play(flags | TINYOAL_ISPLAYING); }
-    inline Audio* PlaySound(const char* file, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file, flags), flags); }
-    inline Audio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(data, len, flags), flags); }
-    inline Audio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags) { return PlaySound(AudioResource::Create(file, len, flags), flags); }
+    inline Audio* PlaySound(AudioResource* resource, TINYOAL_FLAG flags)
+    {
+      return !resource ? 0 : resource->Play(flags | TINYOAL_ISPLAYING);
+    }
+    inline Audio* PlaySound(const char* file, TINYOAL_FLAG flags)
+    {
+      return PlaySound(AudioResource::Create(file, flags), flags);
+    }
+    inline Audio* PlaySound(const void* data, unsigned int len, TINYOAL_FLAG flags)
+    {
+      return PlaySound(AudioResource::Create(data, len, flags), flags);
+    }
+    inline Audio* PlaySound(FILE* file, unsigned int len, TINYOAL_FLAG flags)
+    {
+      return PlaySound(AudioResource::Create(file, len, flags), flags);
+    }
     // Writes a line to the log using the logging function
     int Log(const char* file, unsigned int line, unsigned char level, const char* format, ...);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
@@ -63,13 +76,14 @@ namespace tinyoal {
     FNLOG SetLogging(FNLOG fnLog);
     // Handy function for figuring out formats
     static unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear);
-    // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on windows)
+    // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on
+    // windows)
     static void SetSettings(const char* file);
     static void SetSettingsStream(const char* data);
 
-    typedef size_t(*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
-    typedef bool(*CODEC_SCANHEADER)(const char* fileheader);
-    typedef std::pair<void*, unsigned int>(*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+    typedef size_t (*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
+    typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
+    typedef std::pair<void*, unsigned int> (*CODEC_TOWAVE)(void* data, unsigned int datalength, TINYOAL_FLAG flags);
 
     struct Codec
     {
@@ -90,20 +104,19 @@ namespace tinyoal {
 
     static const bssVersionInfo Version;
 
-    template<class T>
-    T* AllocViaPool() { return reinterpret_cast<T*>(_allocDecoder(sizeof(T))); }
-    template<class T>
-    void DeallocViaPool(T* p) { _deallocDecoder(reinterpret_cast<char*>(p), sizeof(T)); }
+    template<class T> T* AllocViaPool() { return reinterpret_cast<T*>(_allocDecoder(sizeof(T))); }
+    template<class T> void DeallocViaPool(T* p) { _deallocDecoder(reinterpret_cast<char*>(p), sizeof(T)); }
 
   protected:
     friend class Audio;
     friend class AudioResource;
 
     TinyOAL(const TinyOAL&) = delete;
-    TinyOAL(TinyOAL&&) = delete;
+    TinyOAL(TinyOAL&&)      = delete;
     TinyOAL& operator=(const TinyOAL&) = delete;
     TinyOAL& operator=(TinyOAL&&) = delete;
-    void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC, const char* forceMP3);
+    void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC,
+                    const char* forceMP3);
     void _addAudio(Audio* ref, AudioResource* res);
     void _removeAudio(Audio* ref, AudioResource* res);
     char* _allocDecoder(unsigned int sz);
@@ -111,6 +124,8 @@ namespace tinyoal {
     unsigned char _getFiletype(const char* fileheader); // fileheader must be at least 4 characters long
 
     static int DefaultLog(const char* FILE, unsigned int LINE, unsigned char level, const char* format, va_list args);
+
+    static TinyOAL* _instance;
 
     FNLOG _fnLog;
     AudioResource* _activereslist;

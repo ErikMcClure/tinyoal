@@ -29,21 +29,21 @@
 void* g_hOpenALDLL = NULL;
 
 #ifdef TINYOAL_STATICLIB
-#define DEFAULT_OAL_DLLPATH ""
-#define LOADDYNLIB(s) (void*)(~0)
-#define GETDYNFUNC(p,s) (&s)
-#define FREEDYNLIB(p) ((void)0)
+  #define DEFAULT_OAL_DLLPATH ""
+  #define LOADDYNLIB(s)       (void*)(~0)
+  #define GETDYNFUNC(p, s)    (&s)
+  #define FREEDYNLIB(p)       ((void)0)
 #else
-#ifdef BSS_PLATFORM_WIN32
-#include "bss-util/win32_includes.h"
-#define DEFAULT_OAL_DLLPATH "OpenAL32.dll"
-#else
-#include <dlfcn.h>
-#define DEFAULT_OAL_DLLPATH "libopenal.so.1"
-#endif
+  #ifdef BSS_PLATFORM_WIN32
+    #include "bss-util/win32_includes.h"
+    #define DEFAULT_OAL_DLLPATH "OpenAL32.dll"
+  #else
+    #include <dlfcn.h>
+    #define DEFAULT_OAL_DLLPATH "libopenal.so.1"
+  #endif
 #endif
 
-ALboolean LoadOAL10Library(const char *szOALFullPathName, OPENALFNTABLE* lpOALFnTable)
+ALboolean LoadOAL10Library(const char* szOALFullPathName, OPENALFNTABLE* lpOALFnTable)
 {
   if(!lpOALFnTable)
   {

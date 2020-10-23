@@ -1,5 +1,8 @@
 # TinyOAL Changelog
 
+## 1.1.1
+- Refactored build
+
 ## 1.1.0
 - Visual Studio 2017 update, no longer supports older VS versions due to use of modern C++
 - Changed logging behavior to use a replaceable function pointer

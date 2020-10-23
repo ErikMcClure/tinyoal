@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2020 Erik McClure
 // This file is part of TinyOAL - An OpenAL Audio engine
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
@@ -7,16 +7,18 @@
 #include "tinyoal/TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
-#include "bss-util/win32_includes.h"
+  #include "bss-util/win32_includes.h"
 
-#define MP3_MODULE "libmpg123.dll"
+  #define MP3_MODULE "libmpg123.dll"
 #else
-#include <dlfcn.h>
-#define MP3_MODULE "libmpg123.so.0"
+  #include <dlfcn.h>
+  #define MP3_MODULE "libmpg123.so.0"
 #endif
 
-#define DYNFUNC(v,t,n) v = (t)GETDYNFUNC(_mpgDLL, n); \
-		if(!v) TINYOAL_LOG(1,"Could not load " TXT(n))
+#define DYNFUNC(v, t, n)         \
+  v = (t)GETDYNFUNC(_mpgDLL, n); \
+  if(!v)                         \
+  TINYOAL_LOG(1, "Could not load " TXT(n))
 
 using namespace tinyoal;
 
