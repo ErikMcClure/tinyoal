@@ -95,11 +95,11 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
     TEST(cr.IsPlaying());
     TEST(cr.GetResource() == res);
     Audio mv(std::move(*r));
-    r->Stop();
     TEST(mv.IsPlaying());
     mv.Stop();
     if(!managed)
     {
+      r->Stop();
       TEST(!r->IsPlaying());
       TEST(!r->IsWhere());
       TEST(!mv.IsPlaying());
@@ -208,19 +208,19 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
 
 TESTDEF::RETPAIR test_AudioResourceWAV()
 {
-  return test_AudioResource("../../media/idea549.wav", "../../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
+  return test_AudioResource("../media/idea549.wav", "../media/shape.wav", "TinyOAL_WAV.txt", 25.072131519274375);
 }
 TESTDEF::RETPAIR test_AudioResourceOGG()
 {
-  return test_AudioResource("../../media/idea803.ogg", "../../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
+  return test_AudioResource("../media/idea803.ogg", "../media/shape.ogg", "TinyOAL_OGG.txt", 24.0);
 }
 TESTDEF::RETPAIR test_AudioResourceMP3()
 {
-  return test_AudioResource("../../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
+  return test_AudioResource("../media/idea813.mp3", 0, "TinyOAL_MP3.txt", 69.172244897959189);
 }
 TESTDEF::RETPAIR test_AudioResourceFLAC()
 {
-  return test_AudioResource("../../media/idea835.flac", "../../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
+  return test_AudioResource("../media/idea835.flac", "../media/shape.flac", "TinyOAL_FLAC.txt", 34.040476190476191);
 }
 int main()
 {

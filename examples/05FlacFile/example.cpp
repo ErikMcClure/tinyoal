@@ -22,7 +22,7 @@ int main()
   TinyOAL engine;
   // TinyOAL supports streaming FLAC directly from a file, but FLAC's codec is really bad. It will loop,
   // just not seamlessly. It's highly recommended you use TINYOAL_FORCETOWAVE unless the FLAC is huge.
-  Audio song(AudioResource::Create("../../media/idea835.flac",0),TINYOAL_ISPLAYING);
+  Audio song(AudioResource::Create("../media/idea835.flac",0),TINYOAL_ISPLAYING);
 
   while(engine.Update())
     SLEEP(1);

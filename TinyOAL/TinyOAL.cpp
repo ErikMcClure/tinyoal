@@ -23,6 +23,8 @@
 using namespace tinyoal;
 using namespace bss;
 
+#define LOG(level, format, ...) Log(__FILE__, __LINE__, level, format, ##__VA_ARGS__)
+
 #ifdef BSS_PLATFORM_WIN32
   #include "bss-util/win32_includes.h"
   #include <ShlObj.h>
@@ -57,8 +59,8 @@ TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, con
   _codecs(AudioResource::TINYOAL_FILETYPE_CUSTOM - 1),
   _audiohash(4)
 {
-  _construct("TinyOAL_log.txt", forceOAL, forceOGG, forceFLAC, forceMP3);
   _instance = this;
+  _construct("TinyOAL_log.txt", forceOAL, forceOGG, forceFLAC, forceMP3);
 }
 
 TinyOAL::~TinyOAL()
@@ -180,18 +182,18 @@ bool TinyOAL::SetDevice(const char* device)
   ALCdevice* pDevice = oalFuncs->alcOpenDevice(device);
   if(!pDevice)
   {
-    TINYOAL_LOG(1, "Failed to open device: %s", device);
+    LOG(1, "Failed to open device: %s", device);
     return false;
   }
   ALCcontext* pContext = oalFuncs->alcCreateContext(pDevice, NULL);
   if(pContext)
   {
-    TINYOAL_LOG(4, "Opened Device: %s", device);
+    LOG(4, "Opened Device: %s", device);
     oalFuncs->alcMakeContextCurrent(pContext);
     return true;
   }
   oalFuncs->alcCloseDevice(pDevice);
-  TINYOAL_LOG(1, "Failed to create context for %s", device);
+  LOG(1, "Failed to create context for %s", device);
   return false;
 }
 
@@ -214,7 +216,7 @@ void TinyOAL::_construct(const char* logfile, const char* forceOAL, const char* 
     {
       char* devices                 = (char*)ALFunction.alcGetString(NULL, ALC_DEVICE_SPECIFIER);
       const char* defaultDeviceName = (char*)ALFunction.alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-      TINYOAL_LOG(4, "Default device name is: %s", defaultDeviceName);
+      LOG(4, "Default device name is: %s", defaultDeviceName);
       size_t index = 0;
       // go through device list (each device terminated with a single NULL, list terminated with double NULL)
       while((*devices) != NULL)
@@ -282,7 +284,7 @@ void TinyOAL::_construct(const char* logfile, const char* forceOAL, const char* 
 
   oalFuncs = functmp;
   if(!vDeviceInfo.size())
-    TINYOAL_LOG(1, "No devices in device list!");
+    LOG(1, "No devices in device list!");
   else if(SetDevice(vDeviceInfo[defaultDeviceIndex].strDeviceName.c_str()))
     functmp = 0;
 
@@ -378,7 +380,7 @@ char* TinyOAL::_allocDecoder(unsigned int sz)
   auto p = _treealloc[sz];
   if(!p)
   {
-    TINYOAL_LOG(4, "Created allocation pool of size %u", sz);
+    LOG(4, "Created allocation pool of size %u", sz);
     _treealloc.Insert(sz, std::unique_ptr<bss::BlockAlloc>(new BlockAlloc(sz, 3)));
     p = _treealloc[sz];
   }
@@ -390,7 +392,7 @@ void TinyOAL::_deallocDecoder(char* s, unsigned int sz)
   if(p)
     p->Dealloc(s);
   else
-    TINYOAL_LOG(2, "decoder buffer deallocation failure.");
+    LOG(2, "decoder buffer deallocation failure.");
 }
 
 void TinyOAL::SetSettings(const char* file)
@@ -399,7 +401,8 @@ void TinyOAL::SetSettings(const char* file)
   FOPEN(f, file, "rb");
   if(!f)
   {
-    TINYOAL_LOG(2, "Failed to open source config file for reading.");
+    if(_instance)
+      TINYOAL_LOG(2, "Failed to open source config file for reading.");
     return;
   }
 
@@ -438,7 +441,8 @@ void TinyOAL::SetSettingsStream(const char* data)
   FOPEN(f, magic, "wb");
   if(!f)
   {
-    TINYOAL_LOG(2, "Failed to open destination config file for writing.");
+    if(_instance)
+      TINYOAL_LOG(2, "Failed to open destination config file for writing.");
     return;
   }
 

@@ -1,0 +1,18 @@
+{
+  "name": "tinyoal",
+  "version": "1.1",
+  "description": "TinyOAL Audio Engine",
+  "homepage": "https://github.com/erikmcclure/tinyoal",
+  "license": "Apache-2.0",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    "libflac",
+    "libvorbis",
+    "mpg123",
+    "openal-soft"
+  ],
+  "builtin-baseline": "bd0d552533451bb5da29a5fc6742c0a05ce8ecca"
+}

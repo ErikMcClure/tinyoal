@@ -31,7 +31,7 @@ int main()
   // start playing. We also specify TINYOAL_COPYINTOMEMORY when we load the OGG file, which causes the entire
   // OGG file to be copied into RAM and the file released. You can only have a single instance of a file-based
   // resource playing at any time, so if you need multiple instances, copy it into memory.
-  Audio music(AudioResource::Create("../../media/idea803.ogg",(TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY),TINYOAL_ISPLAYING);
+  Audio music(AudioResource::Create("../media/idea803.ogg",(TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY),TINYOAL_ISPLAYING);
 
   // Songs can have loop points in the middle of them. These can be set per-resource, per-instance, or
   // embedded in the OGG metadata. LoopUtility is a utility program included in this SDK to help you do that.

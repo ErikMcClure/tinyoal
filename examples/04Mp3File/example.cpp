@@ -27,7 +27,7 @@ int main()
   // loaded here has a corrupt first header, and won't be recognized by TinyOAL as an MP3 file. To get around this,
   // we pass in TINYOAL_FILETYPE_MP3 to force TinyOAL to attempt loading the file as an MP3. mpg123 can then skip the
   // initial corrupt header and play the rest of the MP3.
-  Audio song(AudioResource::Create("../../media/idea894.mp3", 0, AudioResource::TINYOAL_FILETYPE_MP3), TINYOAL_ISPLAYING);
+  Audio song(AudioResource::Create("../media/idea894.mp3", 0, AudioResource::TINYOAL_FILETYPE_MP3), TINYOAL_ISPLAYING);
 
   while(engine.Update())
     SLEEP(1);
@@ -40,7 +40,7 @@ int main()
   // instance derived from that source. However, if the file in question has embedded metadata that contains a loop
   // point, that value will override whatever you pass into the constructor here. If this is a problem, you can
   // always set the loop point in the audio resource itself, or set it on each individual instance.
-  Audio loop(AudioResource::Create("../../media/idea813.mp3",0,1524096),TINYOAL_ISPLAYING);
+  Audio loop(AudioResource::Create("../media/idea813.mp3",0,1524096),TINYOAL_ISPLAYING);
   
   while(engine.Update())
     SLEEP(1);
