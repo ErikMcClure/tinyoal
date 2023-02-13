@@ -9,7 +9,7 @@
 #ifdef BSS_PLATFORM_WIN32
   #include "bss-util/win32_includes.h"
 
-  #define MP3_MODULE "libmpg123.dll"
+  #define MP3_MODULE "mpg123.dll"
 #else
   #include <dlfcn.h>
   #define MP3_MODULE "libmpg123.so.0"
