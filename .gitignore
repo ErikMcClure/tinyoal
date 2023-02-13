@@ -37,7 +37,6 @@
 /examples/LoopUtility/x64/
 /examples/LoopUtility/Win32/
 /examples/bin/
-/media/
-/!media/license.txt
 /examples/loopexample.zip
 /.vs/
+/build/
