@@ -5,6 +5,7 @@
 #include "AudioResourceMP3.h"
 #include "WaveFunctions.h"
 #include "tinyoal/TinyOAL.h"
+#include "Engine.h"
 
 using namespace tinyoal;
 
@@ -16,22 +17,22 @@ AudioResourceMP3::AudioResourceMP3(void* data, unsigned int datalength, TINYOAL_
     return;
   int enc   = 0;
   long freq = _freq;
-  int err   = TinyOAL::Instance()->mp3Funcs->fn_mpgGetFormat(h, &freq, (int*)&_channels, &enc);
+  int err   = TinyOAL::Instance()->GetMp3()->fn_mpgGetFormat(h, &freq, (int*)&_channels, &enc);
   if(!err)
-    err = TinyOAL::Instance()->mp3Funcs->fn_mpgFormatNone(h); // Lock format so it doesn't change
+    err = TinyOAL::Instance()->GetMp3()->fn_mpgFormatNone(h); // Lock format so it doesn't change
   if(!err)
-    err = TinyOAL::Instance()->mp3Funcs->fn_mpgFormat(h, freq, (int)_channels, enc);
+    err = TinyOAL::Instance()->GetMp3()->fn_mpgFormat(h, freq, (int)_channels, enc);
   _freq = freq;
   if(err != MPG123_OK)
     TINYOAL_LOG(1, "Failed to get format information from MP3");
   else
   {
     _samplebits = (enc == MPG123_ENC_SIGNED_16) ? 16 : 32;
-    _format     = TinyOAL::GetFormat(_channels, _samplebits, false);
+    _format     = TinyOAL::Instance()->GetEngine()->GetFormat(_channels, _samplebits, false);
     _bufsize    = (_freq * _channels * (_samplebits >> 3)) >>
                2; // Sets buffer size to 250 ms, which is freq * bytes per sample / 4 (quarter of a second)
     _bufsize -= (_bufsize % (_channels * (_samplebits >> 3)));
-    _total = TinyOAL::Instance()->mp3Funcs->fn_mpgLength(
+    _total = TinyOAL::Instance()->GetMp3()->fn_mpgLength(
       h); // OpenStream already called mpgScan so this value will be as accurate as we can get.
   }
   CloseStream(h);
@@ -41,7 +42,7 @@ AudioResourceMP3::~AudioResourceMP3() { _destruct(); }
 
 void* AudioResourceMP3::OpenStream()
 {
-  auto fn = TinyOAL::Instance()->mp3Funcs;
+  auto fn = TinyOAL::Instance()->GetMp3();
   if(!fn)
     return 0;
   int err;
@@ -81,7 +82,7 @@ void* AudioResourceMP3::OpenStream()
 
 void AudioResourceMP3::CloseStream(void* stream)
 {
-  auto fn          = TinyOAL::Instance()->mp3Funcs;
+  auto fn          = TinyOAL::Instance()->GetMp3();
   mpg123_handle* h = (mpg123_handle*)stream;
   fn->fn_mpgClose(h);
   fn->fn_mpgDelete(h);
@@ -94,14 +95,14 @@ unsigned long AudioResourceMP3::_read(void* stream, char* buffer, unsigned int l
   int err            = 0;
   while(total < len && !err)
   {
-    err = TinyOAL::Instance()->mp3Funcs->fn_mpgRead((mpg123_handle*)stream, (unsigned char*)buffer + total,
+    err = TinyOAL::Instance()->GetMp3()->fn_mpgRead((mpg123_handle*)stream, (unsigned char*)buffer + total,
                                                     (size_t)len - total, &done);
     total += done;
     if(err == MPG123_NEW_FORMAT)
     {
       long a;
       int b, c;
-      TinyOAL::Instance()->mp3Funcs->fn_mpgGetFormat((mpg123_handle*)stream, &a, &b,
+      TinyOAL::Instance()->GetMp3()->fn_mpgGetFormat((mpg123_handle*)stream, &a, &b,
                                                      &c); // older versions insist we call this, so we do, just in case.
       err = 0;
     }
@@ -121,14 +122,14 @@ bool AudioResourceMP3::Reset(void* stream) { return Skip(stream, 0); }
 
 bool AudioResourceMP3::Skip(void* stream, uint64_t samples)
 {
-  off_t err = TinyOAL::Instance()->mp3Funcs->fn_mpgSeek((mpg123_handle*)stream, samples, SEEK_SET);
+  off_t err = TinyOAL::Instance()->GetMp3()->fn_mpgSeek((mpg123_handle*)stream, samples, SEEK_SET);
   if(err >= 0)
     return true;
   TINYOAL_LOG(2, "fn_mpgSeek failed with error code %i", (int)err);
   return false;
 }
 
-uint64_t AudioResourceMP3::Tell(void* stream) { return TinyOAL::Instance()->mp3Funcs->fn_mpgTell((mpg123_handle*)stream); }
+uint64_t AudioResourceMP3::Tell(void* stream) { return TinyOAL::Instance()->GetMp3()->fn_mpgTell((mpg123_handle*)stream); }
 
 off_t __mp3_foffset;
 off_t __mp3_flength;
@@ -159,7 +160,7 @@ bool AudioResourceMP3::ScanHeader(const char* fileheader)
 
 std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
-  auto fn = TinyOAL::Instance()->mp3Funcs;
+  auto fn = TinyOAL::Instance()->GetMp3();
   int err;
   mpg123_handle* h;
 
@@ -188,8 +189,8 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
 
   auto fnabort = [](mpg123_handle* h, const char* error) -> std::pair<void*, unsigned int> {
     TINYOAL_LOG(1, error);
-    TinyOAL::Instance()->mp3Funcs->fn_mpgClose(h);
-    TinyOAL::Instance()->mp3Funcs->fn_mpgDelete(h);
+    TinyOAL::Instance()->GetMp3()->fn_mpgClose(h);
+    TinyOAL::Instance()->GetMp3()->fn_mpgDelete(h);
     return std::pair<void*, unsigned int>((void*)0, 0);
   };
 
@@ -213,12 +214,12 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
 
   unsigned char bits  = (enc == MPG123_ENC_SIGNED_16) ? 16 : 32;
   unsigned int total  = len * (bits >> 3) * channels;
-  unsigned int header = TinyOAL::Instance()->waveFuncs->WriteHeader(0, 0, 0, 0, 0);
+  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(total + header);
   assert(buffer != 0);
   bool eof;
   total = _read(h, buffer + header, total, eof);
-  TinyOAL::Instance()->waveFuncs->WriteHeader(buffer, total + header, channels, bits, freq);
+  TinyOAL::Instance()->GetWave()->WriteHeader(buffer, total + header, channels, bits, freq);
 
   fn->fn_mpgClose(h);
   fn->fn_mpgDelete(h);

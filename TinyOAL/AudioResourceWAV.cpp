@@ -4,7 +4,7 @@
 
 #include "AudioResourceWAV.h"
 #include "tinyoal/TinyOAL.h"
-#include "loadoal.h"
+#include "Engine.h"
 
 using namespace tinyoal;
 
@@ -29,19 +29,18 @@ AudioResourceWAV::AudioResourceWAV(void* data, unsigned int datalength, TINYOAL_
     _sentinel.stream.datalength                        = _datalength;
   }
 
-  if(TinyOAL::Instance()->waveFuncs->Open((_flags & TINYOAL_ISFILE) ? _data : &_sentinel.stream, &_sentinel, callbacks) !=
+  if(TinyOAL::Instance()->GetWave()->Open((_flags & TINYOAL_ISFILE) ? _data : &_sentinel.stream, &_sentinel, callbacks) !=
      0)
     TINYOAL_LOG(1, "Could not find file");
 
-  TinyOAL::Instance()->waveFuncs->Seek(_sentinel, 0);
+  TinyOAL::Instance()->GetWave()->Seek(_sentinel, 0);
 
   _channels   = _sentinel.wfEXT.Format.nChannels;
   _freq       = _sentinel.wfEXT.Format.nSamplesPerSec;
   _samplebits = _sentinel.wfEXT.Format.wBitsPerSample;
   _total      = 0;
 
-  if(TinyOAL::Instance()->oalFuncs != 0)
-    _format = TinyOAL::Instance()->waveFuncs->GetALFormat(_sentinel);
+  _format = TinyOAL::Instance()->GetEngine()->GetWaveFormat(_sentinel);
 
   // Queue 250ms of audio data
   _bufsize = (_samplebits == 24) ? (_sentinel.wfEXT.Format.nAvgBytesPerSec / 3) :
@@ -72,7 +71,7 @@ void* AudioResourceWAV::OpenStream()
   if(!_sentinel.source)
     return 0; // Indicates a failure on file load
   if(_flags & TINYOAL_ISFILE)
-    TinyOAL::Instance()->waveFuncs->Seek(_sentinel, 0);
+    TinyOAL::Instance()->GetWave()->Seek(_sentinel, 0);
   WAVEFILEINFO* r = TinyOAL::Instance()->AllocViaPool<WAVEFILEINFO>();
   memcpy(r, &_sentinel, sizeof(WAVEFILEINFO));
   r->source = (_flags & TINYOAL_ISFILE) ? _data : &r->stream;
@@ -82,35 +81,35 @@ void* AudioResourceWAV::OpenStream()
 void AudioResourceWAV::CloseStream(void* stream)
 {
   WAVEFILEINFO* r = reinterpret_cast<WAVEFILEINFO*>(stream);
-  TinyOAL::Instance()->waveFuncs->Close(*r);
+  TinyOAL::Instance()->GetWave()->Close(*r);
   TinyOAL::Instance()->DeallocViaPool<WAVEFILEINFO>(r);
 }
 unsigned long AudioResourceWAV::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {
   size_t retval;
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
-  TinyOAL::Instance()->waveFuncs->Read(*r, buffer, len, &retval);
+  TinyOAL::Instance()->GetWave()->Read(*r, buffer, len, &retval);
   eof = (retval != len); // If we didn't read len bytes we must have hit the end of the file
   return retval;
 }
 bool AudioResourceWAV::Reset(void* stream)
 {
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
-  return !TinyOAL::Instance()->waveFuncs->Seek(*r, 0);
+  return !TinyOAL::Instance()->GetWave()->Seek(*r, 0);
 }
 
 bool AudioResourceWAV::Skip(void* stream, uint64_t samples)
 {
   WAVEFILEINFO* r     = (WAVEFILEINFO*)stream;
   unsigned short bits = r->wfEXT.Format.wBitsPerSample;
-  return !TinyOAL::Instance()->waveFuncs->Seek(*r, samples * (bits >> 3) * _channels);
+  return !TinyOAL::Instance()->GetWave()->Seek(*r, samples * (bits >> 3) * _channels);
 }
 uint64_t AudioResourceWAV::Tell(void* stream)
 {
   WAVEFILEINFO* r     = (WAVEFILEINFO*)stream;
   unsigned short bits = r->wfEXT.Format.wBitsPerSample;
   uint64_t pos        = (bits >> 3) * _channels;
-  return !pos ? 0 : TinyOAL::Instance()->waveFuncs->Tell(*r) / pos;
+  return !pos ? 0 : TinyOAL::Instance()->GetWave()->Tell(*r) / pos;
 }
 
 size_t AudioResourceWAV::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)

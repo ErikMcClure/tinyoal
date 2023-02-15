@@ -7,15 +7,9 @@
  */
 
 #include "tinyoal/TinyOAL.h"
+#include <chrono>
 
 using namespace tinyoal;
-
-#ifdef BSS_PLATFORM_WIN32
-#define SLEEP(n) _sleep(n)
-#else
-#include <unistd.h>
-#define SLEEP(n) usleep(n*1000) //translate milliseconds to microseconds
-#endif
 
 int main()
 {
@@ -61,15 +55,23 @@ int main()
     double s = (i/12)+1;
     return f*s*0.5;
   };
+
+  auto prev = std::chrono::system_clock::now();
+  
   while(engine.Update())
-  { // The values used here are 60/160 BPM = 0.375 seconds = 375 ms. 375 ms is 188 ms, so we're working on the half-beats.
-    tone.SetVolume(1 - (pos%188)/187.0); // This creates a falloff in volume we use to make a "pluck" sound.
-    tone.SetPitch(fn(song[pos/188])); // This sets the pitch for the current "note" we are on.
-    echo.SetVolume(0.5 - ((pos+94)%188)/375.0); // Note that 1.0 is full volume, and 0.0 is silent.
-    echo.SetPitch(fn(song[bss::bssMod(pos-94-188,songsz*188)/188]));
-    echo2.SetVolume(0.25 - (pos%188)/751.0);
-    echo2.SetPitch(fn(song[bss::bssMod(pos-(188*3),songsz*188)/188]));
-    pos=(pos+1)%(songsz*188);
-    SLEEP(1); // This is hilariously inaccurate timing. You'll notice if you do anything else while it's playing.
+  {
+    std::chrono::duration<double> diff = std::chrono::system_clock::now() - prev;
+    if(diff.count() > (0.375 / 375))
+    {
+      prev = std::chrono::system_clock::now();
+      // The values used here are 60/160 BPM = 0.375 seconds = 375 ms. 375 ms is 188 ms, so we're working on the half-beats.
+      tone.SetVolume(1 - (pos % 188) / 187.0);          // This creates a falloff in volume we use to make a "pluck" sound.
+      tone.SetPitch(fn(song[pos / 188]));               // This sets the pitch for the current "note" we are on.
+      echo.SetVolume(0.5 - ((pos + 94) % 188) / 375.0); // Note that 1.0 is full volume, and 0.0 is silent.
+      echo.SetPitch(fn(song[bss::bssMod(pos - 94 - 188, songsz * 188) / 188]));
+      echo2.SetVolume(0.25 - (pos % 188) / 751.0);
+      echo2.SetPitch(fn(song[bss::bssMod(pos - (188 * 3), songsz * 188) / 188]));
+      pos = (pos + 1) % (songsz * 188);
+    }
   }
 }

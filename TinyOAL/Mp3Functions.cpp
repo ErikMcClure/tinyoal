@@ -55,7 +55,7 @@ Mp3Functions::Mp3Functions(const char* force)
     if(!fn_mpgInit || fn_mpgInit() != MPG123_OK)
     {
       TINYOAL_LOG(1, "Failed to initialize mpg123");
-      if(fn_mpgExit != 0)
+      if(fn_mpgExit != nullptr)
         fn_mpgExit();
       FREEDYNLIB(_mpgDLL);
       bss::bssFill(*this, 0);
@@ -67,7 +67,7 @@ Mp3Functions::Mp3Functions(const char* force)
 
 Mp3Functions::~Mp3Functions()
 {
-  if(fn_mpgExit != 0)
+  if(fn_mpgExit != nullptr)
     fn_mpgExit();
   if(_mpgDLL)
     FREEDYNLIB(_mpgDLL);

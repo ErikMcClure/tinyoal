@@ -5,7 +5,7 @@
 #include "AudioResourceFLAC.h"
 #include "tinyoal/TinyOAL.h"
 #include "WaveFunctions.h"
-#include "loadoal.h"
+#include "Engine.h"
 
 using namespace tinyoal;
 
@@ -14,7 +14,7 @@ DatStreamEx* AudioResourceFLAC::_freelist = 0;
 AudioResourceFLAC::AudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) :
   AudioResource(data, datalength, flags, TINYOAL_FILETYPE_FLAC, loop)
 {
-  auto fn         = TinyOAL::Instance()->flacFuncs;
+  auto fn         = TinyOAL::Instance()->GetFlac();
   DatStreamEx* ex = (DatStreamEx*)_openstream(true);
   if(!ex)
     return;
@@ -26,7 +26,7 @@ AudioResourceFLAC::AudioResourceFLAC(void* data, unsigned int datalength, TINYOA
   if(_samplebits == 24)
     _samplebits = 32;
   _bufsize = fn->fn_flac_get_block_size(ex->d) * (_samplebits >> 3) * _channels * 2; // Allocate enough space for 2 blocks
-  _format  = TinyOAL::GetFormat(_channels, _samplebits, false);
+  _format  = TinyOAL::Instance()->GetEngine()->GetFormat(_channels, _samplebits, false);
   _total   = fn->fn_flac_get_total_samples(ex->d);
   CloseStream(ex);
 }
@@ -34,10 +34,10 @@ AudioResourceFLAC::~AudioResourceFLAC() { _destruct(); }
 void* AudioResourceFLAC::OpenStream() { return _openstream(false); }
 void* AudioResourceFLAC::_openstream(bool empty)
 {
-  auto fn = TinyOAL::Instance()->flacFuncs;
+  auto fn = TinyOAL::Instance()->GetFlac();
   if(!fn)
   {
-    TINYOAL_LOG(1, "flacFuncs is NULL, cannot open stream");
+    TINYOAL_LOG(1, "GetFlac() is NULL, cannot open stream");
     return 0;
   }
 
@@ -79,7 +79,7 @@ DatStreamEx* AudioResourceFLAC::_getstream()
   if(!_freelist)
   {
     r    = new DatStreamEx();
-    r->d = TinyOAL::Instance()->flacFuncs->fn_flac_new();
+    r->d = TinyOAL::Instance()->GetFlac()->fn_flac_new();
   }
   else
   {
@@ -93,14 +93,14 @@ void AudioResourceFLAC::CloseStream(void* stream) { _closestream(stream); }
 void AudioResourceFLAC::_closestream(void* stream)
 {
   DatStreamEx* ex = (DatStreamEx*)stream;
-  TinyOAL::Instance()->flacFuncs->fn_flac_finish(ex->d);
+  TinyOAL::Instance()->GetFlac()->fn_flac_finish(ex->d);
   ex->next  = _freelist;
   _freelist = ex;
 }
 unsigned long AudioResourceFLAC::Read(void* stream, char* buffer, unsigned int len, bool& eof)
 {
   DatStreamEx* ex = (DatStreamEx*)stream;
-  auto fn         = TinyOAL::Instance()->flacFuncs;
+  auto fn         = TinyOAL::Instance()->GetFlac();
 
   _internal._len       = len;
   _internal._buffer    = buffer;
@@ -118,7 +118,7 @@ unsigned long AudioResourceFLAC::Read(void* stream, char* buffer, unsigned int l
 bool AudioResourceFLAC::Reset(void* stream)
 {
   ((DatStreamEx*)stream)->cursample = 0;
-  if(TinyOAL::Instance()->flacFuncs->fn_flac_reset(((DatStreamEx*)stream)->d) != 0)
+  if(TinyOAL::Instance()->GetFlac()->fn_flac_reset(((DatStreamEx*)stream)->d) != 0)
     return true;
   TINYOAL_LOG(2, "fn_flac_reset failed");
   return false;
@@ -129,10 +129,10 @@ bool AudioResourceFLAC::Skip(void* stream, uint64_t samples)
   if(!samples)
     return Reset(stream);
   ((DatStreamEx*)stream)->cursample = samples;
-  if(TinyOAL::Instance()->flacFuncs->fn_flac_seek(((DatStreamEx*)stream)->d, samples) != 0)
+  if(TinyOAL::Instance()->GetFlac()->fn_flac_seek(((DatStreamEx*)stream)->d, samples) != 0)
     return true;
   TINYOAL_LOG(2, "fn_flac_seek failed to seek to %llu", samples);
-  if(TinyOAL::Instance()->flacFuncs->fn_flac_get_state(((DatStreamEx*)stream)->d) == FLAC__STREAM_DECODER_SEEK_ERROR)
+  if(TinyOAL::Instance()->GetFlac()->fn_flac_get_state(((DatStreamEx*)stream)->d) == FLAC__STREAM_DECODER_SEEK_ERROR)
     Reset(stream); // FLAC requires us to reset or flush the stream if seeking fails with FLAC__STREAM_DECODER_SEEK_ERROR
   return false;
 }
@@ -243,11 +243,11 @@ bool AudioResourceFLAC::ScanHeader(const char* fileheader) { return !strncmp(fil
 
 std::pair<void*, unsigned int> AudioResourceFLAC::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
 {
-  static const std::pair<void*, unsigned int> NULLRET((void*)0, 0);
-  auto fn = TinyOAL::Instance()->flacFuncs;
+  static const std::pair<void*, unsigned int> NULLRET(nullptr, 0);
+  auto fn = TinyOAL::Instance()->GetFlac();
   if(!fn)
   {
-    TINYOAL_LOG(1, "flacFuncs is NULL, cannot open stream");
+    TINYOAL_LOG(1, "GetFlac() is NULL, cannot open stream");
     return NULLRET;
   }
 
@@ -297,15 +297,15 @@ std::pair<void*, unsigned int> AudioResourceFLAC::ToWave(void* data, unsigned in
   unsigned int freq   = fn->fn_flac_get_sample_rate(stream->d);
   uint64_t total      = fn->fn_flac_get_total_samples(stream->d);
   uint64_t totalbytes = total * channels * (samplebits >> 3);
-  unsigned int header = TinyOAL::Instance()->waveFuncs->WriteHeader(0, 0, 0, 0, 0);
+  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(totalbytes + header);
   assert(buffer != 0);
-  TinyOAL::Instance()->flacFuncs->fn_flac_reset(stream->d);
+  TinyOAL::Instance()->GetFlac()->fn_flac_reset(stream->d);
   internal._len       = totalbytes;
   internal._buffer    = buffer + header;
   internal._bytesread = 0;
   fn->fn_flac_process_until_stream_end(stream->d);
-  TinyOAL::Instance()->waveFuncs->WriteHeader(buffer, internal._bytesread + header, channels, samplebits, freq);
+  TinyOAL::Instance()->GetWave()->WriteHeader(buffer, internal._bytesread + header, channels, samplebits, freq);
 
   _closestream(stream);
   return std::pair<void*, unsigned int>(buffer, internal._bytesread + header);

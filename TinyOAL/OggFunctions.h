@@ -27,7 +27,7 @@ namespace tinyoal {
   public:
     OggFunctions(const char* force);
     ~OggFunctions();
-    inline bool Failure() { return _oggDLL == 0; }
+    inline bool Failure() { return _oggDLL == nullptr; }
 
     LPOVCLEAR fn_ov_clear;
     LPOVREAD fn_ov_read;

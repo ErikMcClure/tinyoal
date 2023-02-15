@@ -25,13 +25,13 @@ namespace tinyoal {
   };
 
   class AudioResource;
+  class Source;
 
   class TINYOAL_DLLEXPORT Audio final : public bss::LLBase<Audio>
   {
   public:
     // Constructors
     Audio(const Audio& copy);
-    Audio(Audio&& mov);
     explicit Audio(AudioResource* ref, TINYOAL_FLAG addflags = 0, void* userdata = 0);
     // Destructor
     ~Audio();
@@ -71,8 +71,8 @@ namespace tinyoal {
     // Get Flags
     inline TINYOAL_FLAG GetFlags() const { return _flags; }
     // Grab reference to audio resource used by this Audio instance
-    inline AudioResource* GetResource() const { return _source; }
-    // Invalidates this instance by setting _stream and _source to NULL
+    inline AudioResource* GetResource() const { return _resource; }
+    // Invalidates this instance by setting _resource and _source to NULL
     void Invalidate();
 
     void* userdata;
@@ -81,28 +81,22 @@ namespace tinyoal {
     Audio& operator=(const Audio& mov);
     Audio& operator=(Audio&& mov);
 
+    static char* ReadBuffer(unsigned long& written, void* context);
+
   protected:
-    void _stop();
-    void _processBuffers();
-    bool _streaming() const;
     void _applyAll(); // In case we have to reset our openAL source, this reapplies all volume/pitch/location modifications
-    void _fillBuffers();
-    void _getSource();
-    void _queueBuffers();
+    void _stop();
     unsigned long _readBuffer();
 
-    AudioResource* _source;
+    AudioResource* _resource;
+    Source* _source;
     void* _stream;
     float _pos[3];
     float _vol;
     float _pitch;
     bss::BitField<TINYOAL_FLAG> _flags;
     uint64_t _looptime;
-    unsigned int uiSource;
-    unsigned int* uiBuffers;
     unsigned int _bufsize;
-    char _bufstart;
-    char _queuebuflen;
     char* pDecodeBuffer;
   };
 }

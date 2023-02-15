@@ -5,7 +5,7 @@
 #include "AudioResourceOGG.h"
 #include "tinyoal/TinyOAL.h"
 #include "WaveFunctions.h"
-#include "loadoal.h"
+#include "Engine.h"
 
 using namespace tinyoal;
 
@@ -20,7 +20,7 @@ AudioResourceOGG::AudioResourceOGG(void* data, unsigned int datalength, TINYOAL_
     return;
 
   // Get some information about the file (Channels, Format, and Frequency)
-  OggFunctions* ogg         = TinyOAL::Instance()->oggFuncs;
+  OggFunctions* ogg         = TinyOAL::Instance()->GetOgg();
   vorbis_info* psVorbisInfo = ogg->fn_ov_info(&f->ogg, -1);
   if(psVorbisInfo)
   {
@@ -30,7 +30,7 @@ AudioResourceOGG::AudioResourceOGG(void* data, unsigned int datalength, TINYOAL_
     _bufsize    = (_freq * _channels * 2) >>
                2; // Sets buffer size to 250 ms, which is freq * 2 (bytes per sample) / 4 (quarter of a second)
     _bufsize -= (_bufsize % (_channels * 2));
-    _format = TinyOAL::GetFormat(_channels, _samplebits, false);
+    _format = TinyOAL::Instance()->GetEngine()->GetFormat(_channels, _samplebits, false);
     _total  = ogg->fn_ov_pcm_total(&f->ogg, -1);
   }
 
@@ -65,7 +65,7 @@ bool AudioResourceOGG::_openstream(OggVorbis_FileEx* r)
     r->stream.datalength                 = _datalength;
   }
 
-  OggFunctions* ogg = TinyOAL::Instance()->oggFuncs;
+  OggFunctions* ogg = TinyOAL::Instance()->GetOgg();
 
   if(!ogg || !ogg->fn_ov_open_callbacks ||
      ogg->fn_ov_open_callbacks((_flags & TINYOAL_ISFILE) ? _data : &r->stream, &r->ogg, 0, 0, _callbacks) != 0)
@@ -79,7 +79,7 @@ bool AudioResourceOGG::_openstream(OggVorbis_FileEx* r)
 void AudioResourceOGG::CloseStream(void* stream)
 {
   OggVorbis_FileEx* data = reinterpret_cast<OggVorbis_FileEx*>(stream);
-  TinyOAL::Instance()->oggFuncs->fn_ov_clear(&data->ogg);
+  TinyOAL::Instance()->GetOgg()->fn_ov_clear(&data->ogg);
   TinyOAL::Instance()->DeallocViaPool<OggVorbis_FileEx>(data);
 }
 
@@ -101,7 +101,7 @@ unsigned long AudioResourceOGG::_read(void* stream, char* buffer, unsigned int l
   unsigned long ulBytesDone = 0;
   while(lDecodeSize > 0)
   {
-    lDecodeSize = TinyOAL::Instance()->oggFuncs->fn_ov_read((OggVorbis_File*)stream, buffer + ulBytesDone,
+    lDecodeSize = TinyOAL::Instance()->GetOgg()->fn_ov_read((OggVorbis_File*)stream, buffer + ulBytesDone,
                                                             len - ulBytesDone, 0, bytes, 1, &current_section);
     if(lDecodeSize > 0)
     {
@@ -138,9 +138,9 @@ bool AudioResourceOGG::Reset(void* stream)
 {
   if(!stream)
     return false;
-  if(TinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream, 0) != 0)
+  if(TinyOAL::Instance()->GetOgg()->fn_ov_pcm_seek((OggVorbis_File*)stream, 0) != 0)
   {
-    TinyOAL::Instance()->oggFuncs->fn_ov_clear((OggVorbis_File*)stream); // Close the stream, but don't delete it
+    TinyOAL::Instance()->GetOgg()->fn_ov_clear((OggVorbis_File*)stream); // Close the stream, but don't delete it
     return _openstream((OggVorbis_FileEx*)stream);                       // Attempt to reopen it.
   }
   return true;
@@ -150,7 +150,7 @@ bool AudioResourceOGG::Skip(void* stream, uint64_t samples)
   if(!stream)
     return false;
 
-  if(!TinyOAL::Instance()->oggFuncs->fn_ov_pcm_seek((OggVorbis_File*)stream, (ogg_int64_t)samples))
+  if(!TinyOAL::Instance()->GetOgg()->fn_ov_pcm_seek((OggVorbis_File*)stream, (ogg_int64_t)samples))
     return true;
   else
     TINYOAL_LOG(2, "Seek failed to skip to %llu", samples);
@@ -164,7 +164,7 @@ uint64_t AudioResourceOGG::Tell(void* stream) // Gets what sample a stream is cu
 {
   if(!stream)
     return 0;
-  return TinyOAL::Instance()->oggFuncs->fn_ov_pcm_tell((OggVorbis_File*)stream);
+  return TinyOAL::Instance()->GetOgg()->fn_ov_pcm_tell((OggVorbis_File*)stream);
 }
 void AudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
 {
@@ -203,7 +203,7 @@ std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int
     r.stream.data = r.stream.streampos = (const char*)data;
     r.stream.datalength                = datalength;
   }
-  OggFunctions* ogg = TinyOAL::Instance()->oggFuncs;
+  OggFunctions* ogg = TinyOAL::Instance()->GetOgg();
 
   if(!ogg || !ogg->fn_ov_open_callbacks ||
      ogg->fn_ov_open_callbacks((flags & TINYOAL_ISFILE) ? data : &r.stream, &r.ogg, 0, 0, callbacks) != 0)
@@ -225,12 +225,12 @@ std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int
   int channels        = psVorbisInfo->channels;
   short samplebits    = 16;
   uint64_t totalbytes = total * channels * (samplebits >> 3);
-  unsigned int header = TinyOAL::Instance()->waveFuncs->WriteHeader(0, 0, 0, 0, 0);
+  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(totalbytes + header);
   assert(buffer != 0);
   bool eof;
   totalbytes = _read(&r, buffer + header, totalbytes, eof, samplebits >> 3, channels);
-  TinyOAL::Instance()->waveFuncs->WriteHeader(buffer, totalbytes + header, channels, samplebits, freq);
+  TinyOAL::Instance()->GetWave()->WriteHeader(buffer, totalbytes + header, channels, samplebits, freq);
   ogg->fn_ov_clear(&r.ogg);
   return std::pair<void*, unsigned int>(buffer, totalbytes + header);
 }

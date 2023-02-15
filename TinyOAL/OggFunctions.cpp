@@ -86,11 +86,11 @@ ogg_int64_t OggFunctions::GetCommentSection(OggVorbis_File* vf)
     if((num = vf->callbacks.read_func(buf + 5, 1, READSIZE, vf->datasource)) != READSIZE)
       return 0; // this means we hit the end of the file and it must not be valid
 
-    if((pos = (char*)bss::ByteSearch(buf, BUFSIZE, (void*)"vorbis", 6)) != 0)
+    if((pos = (char*)bss::ByteSearch(buf, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
     {
       ++numhits;
       num = pos - buf;
-      if(numhits < 2 && num > 6 && (pos = (char*)bss::ByteSearch(pos += 6, BUFSIZE, (void*)"vorbis", 6)) != 0)
+      if(numhits < 2 && num > 6 && (pos = (char*)bss::ByteSearch(pos += 6, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
       {
         ++numhits;
       }
@@ -137,7 +137,7 @@ ogg_int64_t OggFunctions::GetLoopStart(OggVorbis_File* vf)
       comment.UnsafeString()[length] = '\0';
       comment.RecalcSize();
       const char* pos = (const char*)memchr(comment.c_str(), '=', length);
-      if(pos != 0)
+      if(pos != nullptr)
       {
         if(!STRNICMP(comment.c_str(), "LOOPSTART", 9))
         {
