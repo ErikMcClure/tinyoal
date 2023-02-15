@@ -61,12 +61,12 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
   AudioResource* resnorm = AudioResource::Create(RES, 0);
   AudioResource* rescopy = AudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY);
   AudioResource* reswave = AudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE);
-  TEST(resnorm != 0);
-  TEST(rescopy != 0);
-  TEST(reswave != 0);
+  TEST(resnorm != nullptr);
+  TEST(rescopy != nullptr);
+  TEST(reswave != nullptr);
 
   auto fn = [&](Audio* r, AudioResource* res, TINYOAL_FLAG managed) {
-    TEST(r != 0);
+    TEST(r != nullptr);
     TEST(r->IsPlaying());
     r->Pause();
     TEST(r->SkipSeconds(1.0));
@@ -94,20 +94,6 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
     //TEST(cr.IsWhere()==r->IsWhere()); // This is too time-dependent
     TEST(cr.IsPlaying());
     TEST(cr.GetResource() == res);
-    Audio mv(std::move(*r));
-    TEST(mv.IsPlaying());
-    mv.Stop();
-    if(!managed)
-    {
-      r->Stop();
-      TEST(!r->IsPlaying());
-      TEST(!r->IsWhere());
-      TEST(!mv.IsPlaying());
-      TEST(!mv.IsWhere());
-      mv.Stop();
-      TEST(mv.Play());
-      mv.Stop();
-    }
     TEST(res->GetLoopPoint() == -1LL);
     res->SetLoopPoint(9);
     TEST(res->GetLoopPoint() == 9);
@@ -119,8 +105,6 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
     TEST(res->GetFormat() > 0);
     TEST(res->GetBitsPerSample() == (res->GetFileType() == AudioResource::TINYOAL_FILETYPE_WAV) ? 8 : 16);
     TEST(res->GetActiveInstances() == &cr);
-    TEST(res->GetInactiveInstances() == &mv);
-    mv.Play();
     TEST(res->GetNumActive() == 2);
     TEST(res->GetMaxActive() == 0);
     res->SetMaxActive(2);
@@ -228,7 +212,7 @@ int main()
   TinyOAL::SetSettingsStream("drivers = wave\nsources=16\n\n[wave]\nfile=out.wav");
   //ForceWin64Crash();
   //SetWorkDirToCur();
-  srand(time(NULL));
+  srand(time(nullptr));
 
   TESTDEF tests[] = {
     { "AudioResourceWAV.h", &test_AudioResourceWAV },

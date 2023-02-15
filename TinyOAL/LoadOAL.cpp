@@ -26,7 +26,7 @@
 #include "tinyoal/TinyOAL.h"
 #include <ostream>
 
-void* g_hOpenALDLL = NULL;
+void* g_hOpenALDLL = nullptr;
 
 #ifdef TINYOAL_STATICLIB
   #define DEFAULT_OAL_DLLPATH ""
@@ -65,391 +65,391 @@ ALboolean LoadOAL10Library(const char* szOALFullPathName, OPENALFNTABLE* lpOALFn
 
   // Get function pointers
   lpOALFnTable->alEnable = (LPALENABLE)GETDYNFUNC(g_hOpenALDLL, alEnable);
-  if(lpOALFnTable->alEnable == NULL)
+  if(lpOALFnTable->alEnable == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alEnable' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDisable = (LPALDISABLE)GETDYNFUNC(g_hOpenALDLL, alDisable);
-  if(lpOALFnTable->alDisable == NULL)
+  if(lpOALFnTable->alDisable == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDisable' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alIsEnabled = (LPALISENABLED)GETDYNFUNC(g_hOpenALDLL, alIsEnabled);
-  if(lpOALFnTable->alIsEnabled == NULL)
+  if(lpOALFnTable->alIsEnabled == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alIsEnabled' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetBoolean = (LPALGETBOOLEAN)GETDYNFUNC(g_hOpenALDLL, alGetBoolean);
-  if(lpOALFnTable->alGetBoolean == NULL)
+  if(lpOALFnTable->alGetBoolean == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetBoolean' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetInteger = (LPALGETINTEGER)GETDYNFUNC(g_hOpenALDLL, alGetInteger);
-  if(lpOALFnTable->alGetInteger == NULL)
+  if(lpOALFnTable->alGetInteger == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetInteger' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetFloat = (LPALGETFLOAT)GETDYNFUNC(g_hOpenALDLL, alGetFloat);
-  if(lpOALFnTable->alGetFloat == NULL)
+  if(lpOALFnTable->alGetFloat == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetFloat' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetDouble = (LPALGETDOUBLE)GETDYNFUNC(g_hOpenALDLL, alGetDouble);
-  if(lpOALFnTable->alGetDouble == NULL)
+  if(lpOALFnTable->alGetDouble == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetDouble' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetBooleanv = (LPALGETBOOLEANV)GETDYNFUNC(g_hOpenALDLL, alGetBooleanv);
-  if(lpOALFnTable->alGetBooleanv == NULL)
+  if(lpOALFnTable->alGetBooleanv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetBooleanv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetIntegerv = (LPALGETINTEGERV)GETDYNFUNC(g_hOpenALDLL, alGetIntegerv);
-  if(lpOALFnTable->alGetIntegerv == NULL)
+  if(lpOALFnTable->alGetIntegerv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetIntegerv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetFloatv = (LPALGETFLOATV)GETDYNFUNC(g_hOpenALDLL, alGetFloatv);
-  if(lpOALFnTable->alGetFloatv == NULL)
+  if(lpOALFnTable->alGetFloatv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetFloatv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetDoublev = (LPALGETDOUBLEV)GETDYNFUNC(g_hOpenALDLL, alGetDoublev);
-  if(lpOALFnTable->alGetDoublev == NULL)
+  if(lpOALFnTable->alGetDoublev == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetDoublev' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetString = (LPALGETSTRING)GETDYNFUNC(g_hOpenALDLL, alGetString);
-  if(lpOALFnTable->alGetString == NULL)
+  if(lpOALFnTable->alGetString == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetString' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetError = (LPALGETERROR)GETDYNFUNC(g_hOpenALDLL, alGetError);
-  if(lpOALFnTable->alGetError == NULL)
+  if(lpOALFnTable->alGetError == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetError' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alIsExtensionPresent = (LPALISEXTENSIONPRESENT)GETDYNFUNC(g_hOpenALDLL, alIsExtensionPresent);
-  if(lpOALFnTable->alIsExtensionPresent == NULL)
+  if(lpOALFnTable->alIsExtensionPresent == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alIsExtensionPresent' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetProcAddress = (LPALGETPROCADDRESS)GETDYNFUNC(g_hOpenALDLL, alGetProcAddress);
-  if(lpOALFnTable->alGetProcAddress == NULL)
+  if(lpOALFnTable->alGetProcAddress == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetProcAddress' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetEnumValue = (LPALGETENUMVALUE)GETDYNFUNC(g_hOpenALDLL, alGetEnumValue);
-  if(lpOALFnTable->alGetEnumValue == NULL)
+  if(lpOALFnTable->alGetEnumValue == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetEnumValue' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alListeneri = (LPALLISTENERI)GETDYNFUNC(g_hOpenALDLL, alListeneri);
-  if(lpOALFnTable->alListeneri == NULL)
+  if(lpOALFnTable->alListeneri == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alListeneri' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alListenerf = (LPALLISTENERF)GETDYNFUNC(g_hOpenALDLL, alListenerf);
-  if(lpOALFnTable->alListenerf == NULL)
+  if(lpOALFnTable->alListenerf == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alListenerf' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alListener3f = (LPALLISTENER3F)GETDYNFUNC(g_hOpenALDLL, alListener3f);
-  if(lpOALFnTable->alListener3f == NULL)
+  if(lpOALFnTable->alListener3f == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alListener3f' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alListenerfv = (LPALLISTENERFV)GETDYNFUNC(g_hOpenALDLL, alListenerfv);
-  if(lpOALFnTable->alListenerfv == NULL)
+  if(lpOALFnTable->alListenerfv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alListenerfv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetListeneri = (LPALGETLISTENERI)GETDYNFUNC(g_hOpenALDLL, alGetListeneri);
-  if(lpOALFnTable->alGetListeneri == NULL)
+  if(lpOALFnTable->alGetListeneri == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetListeneri' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetListenerf = (LPALGETLISTENERF)GETDYNFUNC(g_hOpenALDLL, alGetListenerf);
-  if(lpOALFnTable->alGetListenerf == NULL)
+  if(lpOALFnTable->alGetListenerf == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetListenerf' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetListener3f = (LPALGETLISTENER3F)GETDYNFUNC(g_hOpenALDLL, alGetListener3f);
-  if(lpOALFnTable->alGetListener3f == NULL)
+  if(lpOALFnTable->alGetListener3f == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetListener3f' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetListenerfv = (LPALGETLISTENERFV)GETDYNFUNC(g_hOpenALDLL, alGetListenerfv);
-  if(lpOALFnTable->alGetListenerfv == NULL)
+  if(lpOALFnTable->alGetListenerfv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetListenerfv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGenSources = (LPALGENSOURCES)GETDYNFUNC(g_hOpenALDLL, alGenSources);
-  if(lpOALFnTable->alGenSources == NULL)
+  if(lpOALFnTable->alGenSources == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGenSources' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDeleteSources = (LPALDELETESOURCES)GETDYNFUNC(g_hOpenALDLL, alDeleteSources);
-  if(lpOALFnTable->alDeleteSources == NULL)
+  if(lpOALFnTable->alDeleteSources == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDeleteSources' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alIsSource = (LPALISSOURCE)GETDYNFUNC(g_hOpenALDLL, alIsSource);
-  if(lpOALFnTable->alIsSource == NULL)
+  if(lpOALFnTable->alIsSource == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alIsSource' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcei = (LPALSOURCEI)GETDYNFUNC(g_hOpenALDLL, alSourcei);
-  if(lpOALFnTable->alSourcei == NULL)
+  if(lpOALFnTable->alSourcei == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcei' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcef = (LPALSOURCEF)GETDYNFUNC(g_hOpenALDLL, alSourcef);
-  if(lpOALFnTable->alSourcef == NULL)
+  if(lpOALFnTable->alSourcef == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcef' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSource3f = (LPALSOURCE3F)GETDYNFUNC(g_hOpenALDLL, alSource3f);
-  if(lpOALFnTable->alSource3f == NULL)
+  if(lpOALFnTable->alSource3f == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSource3f' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcefv = (LPALSOURCEFV)GETDYNFUNC(g_hOpenALDLL, alSourcefv);
-  if(lpOALFnTable->alSourcefv == NULL)
+  if(lpOALFnTable->alSourcefv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcefv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetSourcei = (LPALGETSOURCEI)GETDYNFUNC(g_hOpenALDLL, alGetSourcei);
-  if(lpOALFnTable->alGetSourcei == NULL)
+  if(lpOALFnTable->alGetSourcei == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetSourcei' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetSourcef = (LPALGETSOURCEF)GETDYNFUNC(g_hOpenALDLL, alGetSourcef);
-  if(lpOALFnTable->alGetSourcef == NULL)
+  if(lpOALFnTable->alGetSourcef == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetSourcef' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetSourcefv = (LPALGETSOURCEFV)GETDYNFUNC(g_hOpenALDLL, alGetSourcefv);
-  if(lpOALFnTable->alGetSourcefv == NULL)
+  if(lpOALFnTable->alGetSourcefv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetSourcefv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcePlayv = (LPALSOURCEPLAYV)GETDYNFUNC(g_hOpenALDLL, alSourcePlayv);
-  if(lpOALFnTable->alSourcePlayv == NULL)
+  if(lpOALFnTable->alSourcePlayv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcePlayv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourceStopv = (LPALSOURCESTOPV)GETDYNFUNC(g_hOpenALDLL, alSourceStopv);
-  if(lpOALFnTable->alSourceStopv == NULL)
+  if(lpOALFnTable->alSourceStopv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourceStopv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcePlay = (LPALSOURCEPLAY)GETDYNFUNC(g_hOpenALDLL, alSourcePlay);
-  if(lpOALFnTable->alSourcePlay == NULL)
+  if(lpOALFnTable->alSourcePlay == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcePlay' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourcePause = (LPALSOURCEPAUSE)GETDYNFUNC(g_hOpenALDLL, alSourcePause);
-  if(lpOALFnTable->alSourcePause == NULL)
+  if(lpOALFnTable->alSourcePause == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourcePause' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourceStop = (LPALSOURCESTOP)GETDYNFUNC(g_hOpenALDLL, alSourceStop);
-  if(lpOALFnTable->alSourceStop == NULL)
+  if(lpOALFnTable->alSourceStop == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourceStop' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGenBuffers = (LPALGENBUFFERS)GETDYNFUNC(g_hOpenALDLL, alGenBuffers);
-  if(lpOALFnTable->alGenBuffers == NULL)
+  if(lpOALFnTable->alGenBuffers == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGenBuffers' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDeleteBuffers = (LPALDELETEBUFFERS)GETDYNFUNC(g_hOpenALDLL, alDeleteBuffers);
-  if(lpOALFnTable->alDeleteBuffers == NULL)
+  if(lpOALFnTable->alDeleteBuffers == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDeleteBuffers' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alIsBuffer = (LPALISBUFFER)GETDYNFUNC(g_hOpenALDLL, alIsBuffer);
-  if(lpOALFnTable->alIsBuffer == NULL)
+  if(lpOALFnTable->alIsBuffer == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alIsBuffer' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alBufferData = (LPALBUFFERDATA)GETDYNFUNC(g_hOpenALDLL, alBufferData);
-  if(lpOALFnTable->alBufferData == NULL)
+  if(lpOALFnTable->alBufferData == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alBufferData' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetBufferi = (LPALGETBUFFERI)GETDYNFUNC(g_hOpenALDLL, alGetBufferi);
-  if(lpOALFnTable->alGetBufferi == NULL)
+  if(lpOALFnTable->alGetBufferi == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetBufferi' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alGetBufferf = (LPALGETBUFFERF)GETDYNFUNC(g_hOpenALDLL, alGetBufferf);
-  if(lpOALFnTable->alGetBufferf == NULL)
+  if(lpOALFnTable->alGetBufferf == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alGetBufferf' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourceQueueBuffers = (LPALSOURCEQUEUEBUFFERS)GETDYNFUNC(g_hOpenALDLL, alSourceQueueBuffers);
-  if(lpOALFnTable->alSourceQueueBuffers == NULL)
+  if(lpOALFnTable->alSourceQueueBuffers == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourceQueueBuffers' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alSourceUnqueueBuffers = (LPALSOURCEUNQUEUEBUFFERS)GETDYNFUNC(g_hOpenALDLL, alSourceUnqueueBuffers);
-  if(lpOALFnTable->alSourceUnqueueBuffers == NULL)
+  if(lpOALFnTable->alSourceUnqueueBuffers == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alSourceUnqueueBuffers' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDistanceModel = (LPALDISTANCEMODEL)GETDYNFUNC(g_hOpenALDLL, alDistanceModel);
-  if(lpOALFnTable->alDistanceModel == NULL)
+  if(lpOALFnTable->alDistanceModel == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDistanceModel' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDopplerFactor = (LPALDOPPLERFACTOR)GETDYNFUNC(g_hOpenALDLL, alDopplerFactor);
-  if(lpOALFnTable->alDopplerFactor == NULL)
+  if(lpOALFnTable->alDopplerFactor == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDopplerFactor' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alDopplerVelocity = (LPALDOPPLERVELOCITY)GETDYNFUNC(g_hOpenALDLL, alDopplerVelocity);
-  if(lpOALFnTable->alDopplerVelocity == NULL)
+  if(lpOALFnTable->alDopplerVelocity == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alDopplerVelocity' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetString = (LPALCGETSTRING)GETDYNFUNC(g_hOpenALDLL, alcGetString);
-  if(lpOALFnTable->alcGetString == NULL)
+  if(lpOALFnTable->alcGetString == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetString' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetIntegerv = (LPALCGETINTEGERV)GETDYNFUNC(g_hOpenALDLL, alcGetIntegerv);
-  if(lpOALFnTable->alcGetIntegerv == NULL)
+  if(lpOALFnTable->alcGetIntegerv == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetIntegerv' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcOpenDevice = (LPALCOPENDEVICE)GETDYNFUNC(g_hOpenALDLL, alcOpenDevice);
-  if(lpOALFnTable->alcOpenDevice == NULL)
+  if(lpOALFnTable->alcOpenDevice == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcOpenDevice' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcCloseDevice = (LPALCCLOSEDEVICE)GETDYNFUNC(g_hOpenALDLL, alcCloseDevice);
-  if(lpOALFnTable->alcCloseDevice == NULL)
+  if(lpOALFnTable->alcCloseDevice == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcCloseDevice' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcCreateContext = (LPALCCREATECONTEXT)GETDYNFUNC(g_hOpenALDLL, alcCreateContext);
-  if(lpOALFnTable->alcCreateContext == NULL)
+  if(lpOALFnTable->alcCreateContext == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcCreateContext' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcMakeContextCurrent = (LPALCMAKECONTEXTCURRENT)GETDYNFUNC(g_hOpenALDLL, alcMakeContextCurrent);
-  if(lpOALFnTable->alcMakeContextCurrent == NULL)
+  if(lpOALFnTable->alcMakeContextCurrent == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcMakeContextCurrent' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcProcessContext = (LPALCPROCESSCONTEXT)GETDYNFUNC(g_hOpenALDLL, alcProcessContext);
-  if(lpOALFnTable->alcProcessContext == NULL)
+  if(lpOALFnTable->alcProcessContext == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcProcessContext' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetCurrentContext = (LPALCGETCURRENTCONTEXT)GETDYNFUNC(g_hOpenALDLL, alcGetCurrentContext);
-  if(lpOALFnTable->alcGetCurrentContext == NULL)
+  if(lpOALFnTable->alcGetCurrentContext == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetCurrentContext' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetContextsDevice = (LPALCGETCONTEXTSDEVICE)GETDYNFUNC(g_hOpenALDLL, alcGetContextsDevice);
-  if(lpOALFnTable->alcGetContextsDevice == NULL)
+  if(lpOALFnTable->alcGetContextsDevice == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetContextsDevice' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcSuspendContext = (LPALCSUSPENDCONTEXT)GETDYNFUNC(g_hOpenALDLL, alcSuspendContext);
-  if(lpOALFnTable->alcSuspendContext == NULL)
+  if(lpOALFnTable->alcSuspendContext == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcSuspendContext' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcDestroyContext = (LPALCDESTROYCONTEXT)GETDYNFUNC(g_hOpenALDLL, alcDestroyContext);
-  if(lpOALFnTable->alcDestroyContext == NULL)
+  if(lpOALFnTable->alcDestroyContext == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcDestroyContext' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetError = (LPALCGETERROR)GETDYNFUNC(g_hOpenALDLL, alcGetError);
-  if(lpOALFnTable->alcGetError == NULL)
+  if(lpOALFnTable->alcGetError == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetError' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcIsExtensionPresent = (LPALCISEXTENSIONPRESENT)GETDYNFUNC(g_hOpenALDLL, alcIsExtensionPresent);
-  if(lpOALFnTable->alcIsExtensionPresent == NULL)
+  if(lpOALFnTable->alcIsExtensionPresent == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcIsExtensionPresent' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetProcAddress = (LPALCGETPROCADDRESS)GETDYNFUNC(g_hOpenALDLL, alcGetProcAddress);
-  if(lpOALFnTable->alcGetProcAddress == NULL)
+  if(lpOALFnTable->alcGetProcAddress == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetProcAddress' function address");
     return AL_FALSE;
   }
   lpOALFnTable->alcGetEnumValue = (LPALCGETENUMVALUE)GETDYNFUNC(g_hOpenALDLL, alcGetEnumValue);
-  if(lpOALFnTable->alcGetEnumValue == NULL)
+  if(lpOALFnTable->alcGetEnumValue == nullptr)
   {
     TINYOAL_LOG(2, "Failed to retrieve 'alcGetEnumValue' function address");
     return AL_FALSE;
@@ -464,6 +464,6 @@ ALvoid UnloadOAL10Library()
   if(g_hOpenALDLL)
   {
     FREEDYNLIB(g_hOpenALDLL);
-    g_hOpenALDLL = NULL;
+    g_hOpenALDLL = nullptr;
   }
 }
