@@ -25,9 +25,7 @@
 #include "WaveFunctions.h"
 #include "bss-util/sseVec.h"
 #include <string.h> //STRNICMP
-#include "AL/alext.h"
 #include "tinyoal/TinyOAL.h"
-#include "loadoal.h"
 
 using namespace tinyoal;
 using namespace bss;
@@ -151,80 +149,6 @@ WaveFunctions::WAVERESULT WaveFunctions::Close(WAVEFILEINFO& wave)
   return WR_OK;
 }
 uint64_t WaveFunctions::Tell(WAVEFILEINFO& wave) { return wave.callbacks.tell_func(wave.source) - wave.offset; }
-
-// WAVE file speaker masks (taken from the ksmedia.h windows file)
-#define SPEAKER_FRONT_LEFT            0x1
-#define SPEAKER_FRONT_RIGHT           0x2
-#define SPEAKER_FRONT_CENTER          0x4
-#define SPEAKER_LOW_FREQUENCY         0x8
-#define SPEAKER_BACK_LEFT             0x10
-#define SPEAKER_BACK_RIGHT            0x20
-#define SPEAKER_FRONT_LEFT_OF_CENTER  0x40
-#define SPEAKER_FRONT_RIGHT_OF_CENTER 0x80
-#define SPEAKER_BACK_CENTER           0x100
-#define SPEAKER_SIDE_LEFT             0x200
-#define SPEAKER_SIDE_RIGHT            0x400
-#define SPEAKER_TOP_CENTER            0x800
-#define SPEAKER_TOP_FRONT_LEFT        0x1000
-#define SPEAKER_TOP_FRONT_CENTER      0x2000
-#define SPEAKER_TOP_FRONT_RIGHT       0x4000
-#define SPEAKER_TOP_BACK_LEFT         0x8000
-#define SPEAKER_TOP_BACK_CENTER       0x10000
-#define SPEAKER_TOP_BACK_RIGHT        0x20000
-
-#define WAVE_FORMAT_PCM        1
-#define WAVE_FORMAT_EXTENSIBLE 0xFFFE
-#define WAVE_FORMAT_IEEE_FLOAT 0x0003 /* IEEE Float */
-#define WAVE_FORMAT_ALAW       0x0006 /* ALAW */
-#define WAVE_FORMAT_MULAW      0x0007 /* MULAW */
-#define WAVE_FORMAT_IMA_ADPCM  0x0011 /* IMA ADPCM */
-
-unsigned int WaveFunctions::GetALFormat(WAVEFILEINFO& wave)
-{
-  unsigned short bits = wave.wfEXT.Format.wBitsPerSample;
-  switch(wave.wfEXT.Format.wFormatTag)
-  {
-  case WAVE_FORMAT_PCM:
-  case WAVE_FORMAT_IEEE_FLOAT:
-    return TinyOAL::GetFormat(wave.wfEXT.Format.nChannels, (bits == 24) ? 32 : bits,
-                              false); // 24-bit gets converted to 32 bit
-  case WAVE_FORMAT_IMA_ADPCM:
-    if(!TinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_LOKI_IMA_ADPCM_format"))
-      break;
-    switch(wave.wfEXT.Format.nChannels)
-    {
-    case 1: return AL_FORMAT_IMA_ADPCM_MONO16_EXT;
-    case 2: return AL_FORMAT_IMA_ADPCM_STEREO16_EXT;
-    }
-    break;
-  case WAVE_FORMAT_ALAW:
-    if(!TinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_EXT_ALAW"))
-      break;
-    switch(wave.wfEXT.Format.nChannels)
-    {
-    case 1: return AL_FORMAT_MONO_ALAW_EXT;
-    case 2: return AL_FORMAT_STEREO_ALAW_EXT;
-    }
-    break;
-  case WAVE_FORMAT_MULAW:
-    if(!TinyOAL::Instance()->oalFuncs->alIsExtensionPresent("AL_EXT_MULAW"))
-      break;
-    switch(wave.wfEXT.Format.nChannels)
-    {
-    case 1: return AL_FORMAT_MONO_MULAW;
-    case 2: return AL_FORMAT_STEREO_MULAW;
-    case 4: return AL_FORMAT_QUAD_MULAW;
-    case 6: return AL_FORMAT_51CHN_MULAW;
-    case 7: return AL_FORMAT_61CHN_MULAW;
-    case 8: return AL_FORMAT_71CHN_MULAW;
-    }
-    break;
-  case WAVE_FORMAT_EXTENSIBLE:
-    return TinyOAL::GetFormat(wave.wfEXT.Format.nChannels, (bits == 24) ? 32 : bits,
-                              wave.wfEXT.dwChannelMask == (SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT));
-  }
-  return 0;
-}
 
 unsigned int WaveFunctions::WriteHeader(char* buffer, unsigned int length, unsigned short channels, unsigned short bits,
                                         uint32_t freq)

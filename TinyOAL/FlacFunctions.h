@@ -70,7 +70,7 @@ namespace tinyoal {
   public:
     FlacFunctions(const char* force);
     ~FlacFunctions();
-    inline bool Failure() { return _flacDLL == 0; }
+    inline bool Failure() { return _flacDLL == nullptr; }
 
     LPFLACNEW fn_flac_new;
     LPFLACDELETE fn_flac_delete;

@@ -37,7 +37,7 @@ namespace tinyoal {
   public:
     Mp3Functions(const char* force);
     ~Mp3Functions();
-    inline bool Failure() { return _mpgDLL == 0; }
+    inline bool Failure() { return _mpgDLL == nullptr; }
 
     LPMPGINIT fn_mpgInit;
     LPMPGEXIT fn_mpgExit;

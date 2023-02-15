@@ -19,17 +19,16 @@
 
 #include "AudioResource.h"
 #include <stdarg.h>
+#include <memory>
 
 #define TINYOAL_LOG(level, format, ...) tinyoal::TinyOAL::Instance()->Log(__FILE__, __LINE__, level, format, ##__VA_ARGS__)
-
-struct OPENALFNTABLE;
 
 namespace tinyoal {
   class OggFunctions;
   class Mp3Functions;
   class WaveFunctions;
   class FlacFunctions;
-  struct ALSoftSettings;
+  class Engine;
 
   // This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all
   // currently playing audio
@@ -39,7 +38,7 @@ namespace tinyoal {
 
   public:
     // Constructors
-    TinyOAL(unsigned char defnumbuf = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0,
+    TinyOAL(unsigned char bufferCount = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0,
             const char* forceFLAC = 0, const char* forceMP3 = 0);
     ~TinyOAL();
     // This updates any currently playing samples and returns the number that are still playing after the update. The time
@@ -66,6 +65,8 @@ namespace tinyoal {
     int Log(const char* file, unsigned int line, unsigned char level, const char* format, ...);
     // Gets the instance (overriden so we can ensure it comes from the right DLL)
     static TinyOAL* Instance();
+    // Gets the underlying engine
+    Engine* GetEngine();
     // Gets the name of the default device
     const char* GetDefaultDevice();
     // Sets current device to the given device
@@ -74,12 +75,15 @@ namespace tinyoal {
     const char* GetDevices();
     // Sets the logging function, returns the previous one.
     FNLOG SetLogging(FNLOG fnLog);
-    // Handy function for figuring out formats
-    static unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear);
     // Given a file or stream, creates or overwrites the openal config file in the proper magical location (%APPDATA% on
     // windows)
     static void SetSettings(const char* file);
     static void SetSettingsStream(const char* data);
+    // Gets functions for a particular codec
+    inline OggFunctions* GetOgg() const { return _oggFuncs.get(); }
+    inline Mp3Functions* GetMp3() const { return _mp3Funcs.get(); }
+    inline FlacFunctions* GetFlac() const { return _flacFuncs.get(); }
+    inline WaveFunctions* GetWave() const { return _waveFuncs.get(); }
 
     typedef size_t (*CODEC_CONSTRUCT)(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
     typedef bool (*CODEC_SCANHEADER)(const char* fileheader);
@@ -95,13 +99,6 @@ namespace tinyoal {
     void RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave);
     Codec* GetCodec(unsigned char filetype);
 
-    OPENALFNTABLE* oalFuncs;
-    OggFunctions* oggFuncs;
-    Mp3Functions* mp3Funcs;
-    WaveFunctions* waveFuncs;
-    FlacFunctions* flacFuncs;
-    const unsigned char defNumBuf;
-
     static const bssVersionInfo Version;
 
     template<class T> T* AllocViaPool() { return reinterpret_cast<T*>(_allocDecoder(sizeof(T))); }
@@ -111,12 +108,11 @@ namespace tinyoal {
     friend class Audio;
     friend class AudioResource;
 
-    TinyOAL(const TinyOAL&) = delete;
-    TinyOAL(TinyOAL&&)      = delete;
+    TinyOAL(const TinyOAL&)            = delete;
+    TinyOAL(TinyOAL&&)                 = delete;
     TinyOAL& operator=(const TinyOAL&) = delete;
-    TinyOAL& operator=(TinyOAL&&) = delete;
-    void _construct(const char* logfile, const char* forceOAL, const char* forceOGG, const char* forceFLAC,
-                    const char* forceMP3);
+    TinyOAL& operator=(TinyOAL&&)      = delete;
+    void _construct(const char* forceOGG, const char* forceFLAC, const char* forceMP3);
     void _addAudio(Audio* ref, AudioResource* res);
     void _removeAudio(Audio* ref, AudioResource* res);
     char* _allocDecoder(unsigned int sz);
@@ -128,13 +124,17 @@ namespace tinyoal {
     static TinyOAL* _instance;
 
     FNLOG _fnLog;
+    std::unique_ptr<Engine> _engine;
     AudioResource* _activereslist;
     AudioResource* _reslist;
-    bss::BlockAlloc _bufalloc;
     bss::Hash<unsigned int, std::unique_ptr<bss::BlockAlloc>, bss::ARRAY_MOVE> _treealloc;
     bss::HashIns<const char*, AudioResource*> _audiohash;
     bss::BlockPolicy<Audio> _allocaudio;
     bss::Hash<unsigned char, Codec> _codecs;
+    std::unique_ptr<OggFunctions> _oggFuncs;
+    std::unique_ptr<Mp3Functions> _mp3Funcs;
+    std::unique_ptr<WaveFunctions> _waveFuncs;
+    std::unique_ptr<FlacFunctions> _flacFuncs;
   };
 
 }
