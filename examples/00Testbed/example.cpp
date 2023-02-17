@@ -11,7 +11,7 @@
 #include <fstream>
 #include <time.h>
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)
 #else
 #include <unistd.h>
@@ -19,13 +19,13 @@
 #endif
 
 using namespace tinyoal;
-using namespace bss;
+using namespace bun;
   
 const char* trimpath(const char* path)
 {
 	const char* r=strrchr(path,'/');
 	const char* r2=strrchr(path,'\\');
-  r=bssmax(r,r2);
+  r=std::max(r,r2);
   return (!r)?path:(r+1);
 }
 
@@ -235,7 +235,7 @@ int main()
     numpassed=tests[i].FUNC(); //First is total, second is succeeded
     if(numpassed.first!=numpassed.second) failures.push_back(i);
 
-    printf("%-*s %*s %-*s\n",COLUMNS[0],tests[i].NAME, COLUMNS[1], bss::StrF("%u/%u",numpassed.second,numpassed.first).c_str(), COLUMNS[2],(numpassed.first==numpassed.second)?"PASS":"FAIL");
+    printf("%-*s %*s %-*s\n",COLUMNS[0],tests[i].NAME, COLUMNS[1], bun::StrF("%u/%u",numpassed.second,numpassed.first).c_str(), COLUMNS[2],(numpassed.first==numpassed.second)?"PASS":"FAIL");
   }
 
   if(failures.empty())

@@ -5,7 +5,7 @@
 #include "WASEngine.h"
 #include "WaveFunctions.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 
 using namespace tinyoal;
 
@@ -41,7 +41,7 @@ bool WASEngine::SetDevice(const char* device)
   }
   else
   {
-    if(FAILED(_enumerator->GetDevice(bss::StrW(device).c_str(), &newDevice)))
+    if(FAILED(_enumerator->GetDevice(bun::StrW(device).c_str(), &newDevice)))
       return false;
   }
 
@@ -58,7 +58,7 @@ size_t WASEngine::GetDefaultDevice(char* out, size_t len)
   size_t sz = 0;
   if(SUCCEEDED(defaultDevice->GetId(&id)))
   {
-    bss::Str convert(id);
+    bun::Str convert(id);
 
     sz = convert.size() + 1;
     if(sz > len)

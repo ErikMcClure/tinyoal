@@ -107,7 +107,7 @@ namespace tinyoal {
     void RegisterCodec(unsigned char filetype, CODEC_CONSTRUCT construct, CODEC_SCANHEADER scanheader, CODEC_TOWAVE towave);
     Codec* GetCodec(unsigned char filetype);
 
-    static const bssVersionInfo Version;
+    static const bun_VersionInfo Version;
 
     inline char* AllocBytes(size_t sz) { return _allocDecoder(sz); }
     inline void DeallocBytes(char* p, size_t sz) { _deallocDecoder(p, sz); }
@@ -137,10 +137,10 @@ namespace tinyoal {
     std::unique_ptr<Engine> _engine;
     AudioResource* _activereslist;
     AudioResource* _reslist;
-    bss::Hash<unsigned int, std::unique_ptr<bss::BlockAlloc>, bss::ARRAY_MOVE> _treealloc;
-    bss::HashIns<const char*, AudioResource*> _audiohash;
-    bss::BlockPolicy<Audio> _allocaudio;
-    bss::Hash<unsigned char, Codec> _codecs;
+    bun::Hash<unsigned int, std::unique_ptr<bun::BlockAlloc>, bun::ARRAY_MOVE> _treealloc;
+    bun::HashIns<const char*, AudioResource*> _audiohash;
+    bun::BlockPolicy<Audio> _allocaudio;
+    bun::Hash<unsigned char, Codec> _codecs;
     std::unique_ptr<OggFunctions> _oggFuncs;
     std::unique_ptr<Mp3Functions> _mp3Funcs;
     std::unique_ptr<WaveFunctions> _waveFuncs;

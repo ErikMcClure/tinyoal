@@ -62,7 +62,7 @@ AudioResourceWAV::AudioResourceWAV(void* data, uint32_t datalength, TINYOAL_FLAG
   if(!_format)
   {
     TINYOAL_LOG(1, "Failed to find format information, or unsupported format");
-    bss::bssFill(_sentinel);
+    bun::bun_Fill(_sentinel);
   }
 }
 AudioResourceWAV::~AudioResourceWAV() { _destruct(); }

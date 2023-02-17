@@ -6,10 +6,10 @@
 #ifndef TOAL__WASENGINE_H
 #define TOAL__WASENGINE_H
 
-#include "bss-util/compiler.h"
+#include "buntils/compiler.h"
 #include "Engine.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 #include "win32_includes.h"
   #include <audioclient.h>
   #include <mmdeviceapi.h>
