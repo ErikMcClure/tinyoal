@@ -18,23 +18,23 @@ namespace tinyoal {
     class OALSource : public Source
     {
     public:
-      OALSource(OALEngine* engine, ReadBuffer readBuffer);
+      OALSource(OALEngine* engine, LoadBuffer loadBuffer, int format, uint32_t freq, size_t bufsize);
       ~OALSource();
-      virtual bool Update(int format, uint32_t freq, void* context, bool isPlaying) override;
+      virtual bool Update(void* context, bool isPlaying) override;
       virtual bool Play(float volume, float pitch, float (&pos)[3]) override;
       virtual void Stop() override;
       virtual void Pause() override;
       virtual bool IsStreaming() const override;
-      virtual bool Skip(uint64_t sample, int format, uint32_t freq, void* context, bool isPlaying) override;
-      virtual void FillBuffers(int format, uint32_t freq, void* context) override;
+      virtual bool Skip(void* context) override;
+      virtual void FillBuffers(void* context) override;
       virtual uint64_t GetOffset() const override;
       virtual void SetVolume(float range) override;
       virtual void SetPitch(float range) override;
       virtual void SetPosition(float (&pos)[3]) override;
 
     private:
-      void _processBuffers(ALenum format, ALsizei freq, void* context);
-      void _fillBuffers(ALenum format, ALsizei freq, void* context);
+      void _processBuffers(void* context);
+      void _fillBuffers(void* context);
       void _queueBuffers();
 
       ALuint _source;
@@ -42,7 +42,11 @@ namespace tinyoal {
       char _bufstart;
       char _queuebuflen;
       OALEngine* _engine;
-      ReadBuffer _readBuffer;
+      LoadBuffer _loadBuffer;
+      const size_t _bufsize;
+      const int _format; 
+      const uint32_t _freq;
+      char* _buffer;
     };
 
   public:
@@ -50,13 +54,14 @@ namespace tinyoal {
     ~OALEngine();
     virtual bool Init(const char* device = nullptr);
     virtual bool SetDevice(const char* device);
-    virtual ENGINE_TYPE GetType() override { return ENGINE_TINYOAL; }
-    virtual const char* GetDefaultDevice() override;
-    virtual uint32_t GetNumBuffers() override { return defNumBuf; }
-    virtual unsigned int GetFormat(unsigned short channels, unsigned short bits, bool rear) override;
-    virtual unsigned int GetWaveFormat(WaveFileInfo& wave) override;
-    virtual Source* GenSource(Source::ReadBuffer readBuffer) override;
+    virtual ENGINE_TYPE GetType() override { return ENGINE_OPENAL; }
+    virtual size_t GetDefaultDevice(char* out, size_t len) override;
+    virtual uint32_t GetFormat(uint16_t channels, uint16_t bits, bool rear) override;
+    virtual uint32_t GetWaveFormat(WaveFileInfo& wave) override;
+    virtual Source* GenSource(Source::LoadBuffer loadBuffer, size_t bufsize, int format, uint32_t freq) override;
     virtual void DestroySource(Source* source) override;
+
+    static std::pair<uint16_t, uint16_t> ExtractFormat(uint32_t format);
 
   private:
     ALuint* _alloc();

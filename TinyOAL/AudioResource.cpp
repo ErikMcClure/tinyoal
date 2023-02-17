@@ -7,7 +7,7 @@
 
 using namespace tinyoal;
 
-AudioResource::AudioResource(void* data, unsigned int len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop) :
+AudioResource::AudioResource(void* data, uint32_t len, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop) :
   _data(data),
   _datalength(len),
   _flags(flags),
@@ -90,13 +90,13 @@ AudioResource* AudioResource::Create(const char* file, TINYOAL_FLAG flags, unsig
     fclose(f);
   return r;
 }
-AudioResource* AudioResource::Create(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype,
+AudioResource* AudioResource::Create(FILE* file, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                      uint64_t loop)
 {
   return AudioResource::_fcreate(file, datalength, flags | TINYOAL_COPYINTOMEMORY, filetype, bss::StrF("%p", file), loop);
 }
 
-AudioResource* AudioResource::Create(const void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype,
+AudioResource* AudioResource::Create(const void* data, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                      uint64_t loop)
 {
   if(!data || datalength < 8) // bad file pointer
@@ -124,7 +124,7 @@ AudioResource* AudioResource::Create(const void* data, unsigned int datalength, 
   return _create(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
 }
 
-AudioResource* AudioResource::_force(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype,
+AudioResource* AudioResource::_force(void* data, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                      const char* path, uint64_t loop)
 {
   TinyOAL::Codec* c = TinyOAL::Instance()->GetCodec(filetype);
@@ -133,13 +133,13 @@ AudioResource* AudioResource::_force(void* data, unsigned int datalength, TINYOA
     TINYOAL_LOG(2, "%p is using an unknown or unrecognized format, or may be corrupt.", data);
     return 0;
   }
-  std::pair<void*, unsigned int> d = c->towave(data, datalength, flags);
+  std::pair<void*, uint32_t> d = c->towave(data, datalength, flags);
 
   if(!d.first)
     return 0;
   return _create(d.first, d.second, flags & (~TINYOAL_ISFILE), TINYOAL_FILETYPE_WAV, path, loop);
 }
-AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype,
+AudioResource* AudioResource::_fcreate(FILE* file, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                        const char* path, uint64_t loop)
 {
   if(!file || datalength < 8) // bad file pointer
@@ -172,7 +172,7 @@ AudioResource* AudioResource::_fcreate(FILE* file, unsigned int datalength, TINY
   return _create(file, datalength, flags | TINYOAL_ISFILE, filetype, path, loop);
 }
 
-AudioResource* AudioResource::_create(void* data, unsigned int datalength, TINYOAL_FLAG flags, unsigned char filetype,
+AudioResource* AudioResource::_create(void* data, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                       const char* path, uint64_t loop)
 {
   const char* hash = (flags & TINYOAL_COPYINTOMEMORY) ? "" : path;
@@ -225,7 +225,7 @@ int tinyoal::dat_seek_func(void* datasource, int64_t offset, int whence) // Who 
     data->streampos = data->data + pos;
     return 0;
   case SEEK_SET:
-    if(offset < 0 || (unsigned int)offset > data->datalength)
+    if(offset < 0 || (uint32_t)offset > data->datalength)
       return -1;
     data->streampos = data->data + offset;
     return 0;

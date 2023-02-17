@@ -9,7 +9,7 @@
 #include <ostream>
 
 #ifdef BSS_PLATFORM_WIN32
-  #include "bss-util/win32_includes.h"
+  #include "win32_includes.h"
 
   #define OGG_MODULE_ALT "vorbisfile.dll"
   #define OGG_MODULE     "libvorbisfile.dll"

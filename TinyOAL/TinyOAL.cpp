@@ -24,7 +24,7 @@ using namespace bss;
 #define LOG(level, format, ...) Log(__FILE__, __LINE__, level, format, ##__VA_ARGS__)
 
 #ifdef BSS_PLATFORM_WIN32
-  #include "bss-util/win32_includes.h"
+  #include "win32_includes.h"
   #include <ShlObj.h>
 
 // We manually define these to use windows functions because we don't want to import the whole bss library just for its fast
@@ -45,7 +45,8 @@ size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t 
 TinyOAL* TinyOAL::_instance           = nullptr;
 const bssVersionInfo TinyOAL::Version = { 0, TINYOAL_VERSION_REVISION, TINYOAL_VERSION_MINOR, TINYOAL_VERSION_MAJOR };
 
-TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, const char* forceOGG, const char* forceFLAC,
+TinyOAL::TinyOAL(enum ENGINE_TYPE type, FNLOG fnLog, unsigned char defnumbuf, const char* forceOAL, const char* forceOGG,
+                 const char* forceFLAC,
                  const char* forceMP3) :
   _reslist(nullptr),
   _activereslist(nullptr),
@@ -55,7 +56,12 @@ TinyOAL::TinyOAL(unsigned char defnumbuf, FNLOG fnLog, const char* forceOAL, con
   _audiohash(4)
 {
   _instance = this;
-  _engine.reset(new OALEngine(defnumbuf, forceOAL));
+  switch(type)
+  {
+  case ENGINE_OPENAL: _engine.reset(new OALEngine(defnumbuf, forceOAL)); break;
+  case ENGINE_WASAPI_SHARED: _engine.reset(new WASEngine(false)); break;
+  case ENGINE_WASAPI_EXCLUSIVE: _engine.reset(new WASEngine(true)); break;
+  }
   _engine->Init();
   _construct(forceOGG, forceFLAC, forceMP3);
 }
@@ -78,9 +84,9 @@ TinyOAL::~TinyOAL()
   if(_instance == this)
     _instance = nullptr;
 }
-unsigned int TinyOAL::Update()
+uint32_t TinyOAL::Update()
 {
-  unsigned int a = 0;
+  uint32_t a = 0;
   AudioResource* cur;
   AudioResource* hold = _activereslist; // Theoretically an audioresource CAN get destroyed by an update() indirectly.
   Audio* x;
@@ -98,7 +104,7 @@ unsigned int TinyOAL::Update()
   return a;
 }
 
-int TinyOAL::Log(const char* file, unsigned int line, unsigned char level, const char* format, ...)
+int TinyOAL::Log(const char* file, uint32_t line, unsigned char level, const char* format, ...)
 {
   va_list vl;
   va_start(vl, format);
@@ -106,7 +112,7 @@ int TinyOAL::Log(const char* file, unsigned int line, unsigned char level, const
   va_end(vl);
   return r;
 }
-int TinyOAL::DefaultLog(const char* file, unsigned int line, unsigned char level, const char* format, va_list args)
+int TinyOAL::DefaultLog(const char* file, uint32_t line, unsigned char level, const char* format, va_list args)
 {
   static std::unique_ptr<std::FILE, decltype(&std::fclose)> f(std::fopen("tinyoal.log", "wb"), &std::fclose);
   const char* r  = strrchr(file, '/');
@@ -139,7 +145,7 @@ int TinyOAL::DefaultLog(const char* file, unsigned int line, unsigned char level
 TinyOAL* TinyOAL::Instance() { return _instance; }
 Engine* TinyOAL::GetEngine() { return _engine.get(); }
 const char* TinyOAL::GetDevices() { return 0; }
-const char* TinyOAL::GetDefaultDevice() { return _engine->GetDefaultDevice(); }
+size_t TinyOAL::GetDefaultDevice(char* out, size_t len) { return _engine->GetDefaultDevice(out, len); }
 bool TinyOAL::SetDevice(const char* device) { return _engine->SetDevice(device) == 0; }
 
 void TinyOAL::_construct(const char* forceOGG, const char* forceFLAC, const char* forceMP3)
@@ -189,7 +195,7 @@ void TinyOAL::_removeAudio(Audio* ref, AudioResource* res)
   }
 }
 
-char* TinyOAL::_allocDecoder(unsigned int sz)
+char* TinyOAL::_allocDecoder(uint32_t sz)
 {
   auto p = _treealloc[sz];
   if(!p)
@@ -200,7 +206,7 @@ char* TinyOAL::_allocDecoder(unsigned int sz)
   }
   return !p ? 0 : (char*)p->Alloc();
 }
-void TinyOAL::_deallocDecoder(char* s, unsigned int sz)
+void TinyOAL::_deallocDecoder(char* s, uint32_t sz)
 {
   auto p = _treealloc[sz];
   if(p)
@@ -295,12 +301,12 @@ unsigned char TinyOAL::_getFiletype(const char* fileheader)
   CHANNELS_SURROUND71 } channels; enum : unsigned char {
   SAMPLETYPE_INT8,SAMPLETYPE_UINT8,SAMPLETYPE_INT16,SAMPLETYPE_UINT16,SAMPLETYPE_INT32,SAMPLETYPE_UINT32,SAMPLETYPE_FLOAT32
   } sample_type; //sample-type bool hrtf; Str hrtf_tables; unsigned char cf_level; //0-6 bool wide_stereo; //wide-stereo
-    unsigned int frequency;
+    uint32_t frequency;
     enum : unsigned char { RESAMPLER_POINT,RESAMPLER_LINEAR,RESAMPLER_CUBIC } resampler;
     bool rt_prio; //rt-prio
-    unsigned short period_size;
+    uint16_t period_size;
     unsigned char periods;
-    unsigned short sources;
+    uint16_t sources;
     Str drivers; //full list: pulse,alsa,core,oss,solaris,sndio,mmdevapi,dsound,winmm,port,opensl,null,wave
     enum : unsigned char { EXCLUDE_EAXREVERB=1,EXCLUDE_REVERB=2,EXCLUDE_ECHO=4,EXCLUDE_MODULATOR=8,EXCLUDE_DEDICATED=16 }
   excludefx; unsigned char slots; unsigned char sends; float layout[8]; //back-left(0), side-left(1), front-left(2),

@@ -22,7 +22,7 @@ using namespace bss;
 int main()
 {
   TinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
-  TinyOAL engine(4); // Initialize the engine with default number of buffers
+  TinyOAL engine(ENGINE_WASAPI_SHARED, nullptr, 4); // Initialize the engine with default number of buffers
 
   // Here we load a resource, and then immediately load it into an audio instance. Because this audio instance 
   // isn't managed, it won't be destroyed until we destroy it (in this case, when it goes out of scope). This

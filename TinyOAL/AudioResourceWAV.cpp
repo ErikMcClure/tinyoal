@@ -8,7 +8,7 @@
 
 using namespace tinyoal;
 
-AudioResourceWAV::AudioResourceWAV(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) :
+AudioResourceWAV::AudioResourceWAV(void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop) :
   AudioResource(data, datalength, flags, TINYOAL_FILETYPE_WAV, loop)
 {
   wav_callbacks callbacks;
@@ -45,7 +45,7 @@ AudioResourceWAV::AudioResourceWAV(void* data, unsigned int datalength, TINYOAL_
   // Queue 250ms of audio data
   _bufsize = (_samplebits == 24) ? (_sentinel.wfEXT.Format.nAvgBytesPerSec / 3) :
                                    (_sentinel.wfEXT.Format.nAvgBytesPerSec >> 2);
-  unsigned short align = _sentinel.wfEXT.Format.nBlockAlign;
+  uint16_t align = _sentinel.wfEXT.Format.nBlockAlign;
   if(_samplebits == 24)
     align = ((align / 3) << 2);
   if(_sentinel.wfEXT.Format.nBlockAlign != 0) // Prevent a divide by zero
@@ -84,7 +84,7 @@ void AudioResourceWAV::CloseStream(void* stream)
   TinyOAL::Instance()->GetWave()->Close(*r);
   TinyOAL::Instance()->DeallocViaPool<WAVEFILEINFO>(r);
 }
-unsigned long AudioResourceWAV::Read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceWAV::Read(void* stream, char* buffer, uint32_t len, bool& eof)
 {
   size_t retval;
   WAVEFILEINFO* r = (WAVEFILEINFO*)stream;
@@ -101,18 +101,18 @@ bool AudioResourceWAV::Reset(void* stream)
 bool AudioResourceWAV::Skip(void* stream, uint64_t samples)
 {
   WAVEFILEINFO* r     = (WAVEFILEINFO*)stream;
-  unsigned short bits = r->wfEXT.Format.wBitsPerSample;
+  uint16_t bits = r->wfEXT.Format.wBitsPerSample;
   return !TinyOAL::Instance()->GetWave()->Seek(*r, samples * (bits >> 3) * _channels);
 }
 uint64_t AudioResourceWAV::Tell(void* stream)
 {
   WAVEFILEINFO* r     = (WAVEFILEINFO*)stream;
-  unsigned short bits = r->wfEXT.Format.wBitsPerSample;
+  uint16_t bits = r->wfEXT.Format.wBitsPerSample;
   uint64_t pos        = (bits >> 3) * _channels;
   return !pos ? 0 : TinyOAL::Instance()->GetWave()->Tell(*r) / pos;
 }
 
-size_t AudioResourceWAV::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
+size_t AudioResourceWAV::Construct(void* p, void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p)
     new(p) AudioResourceWAV(data, datalength, flags, loop);
@@ -122,9 +122,9 @@ bool AudioResourceWAV::ScanHeader(const char* fileheader)
 {
   return !strncmp(fileheader, "RIFF", 4) || !strncmp(fileheader, "RIFX", 4);
 }
-std::pair<void*, unsigned int> AudioResourceWAV::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+std::pair<void*, uint32_t> AudioResourceWAV::ToWave(void* data, uint32_t datalength, TINYOAL_FLAG flags)
 {
-  std::pair<void*, unsigned int> d = { malloc(datalength), datalength };
+  std::pair<void*, uint32_t> d = { malloc(datalength), datalength };
   if(flags & TINYOAL_ISFILE)
     fread(d.first, 1, datalength, (FILE*)data);
   else

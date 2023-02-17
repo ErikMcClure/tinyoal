@@ -20,24 +20,24 @@ namespace tinyoal {
   class AudioResourceOGG : public AudioResource
   {
   public:
-    AudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
+    AudioResourceOGG(void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop);
     ~AudioResourceOGG();
     virtual void* OpenStream();             // This returns a pointer to the internal stream on success, or NULL on failure
     virtual void CloseStream(void* stream); // This closes an AUDIOSTREAM pointer
-    virtual unsigned long Read(void* stream, char* buffer, unsigned int len,
+    virtual unsigned long Read(void* stream, char* buffer, uint32_t len,
                                bool& eof); // Reads next chunk of data - buffer must be at least GetBufSize() long
     virtual bool Reset(void* stream);      // This resets a stream to the beginning
     virtual bool Skip(void* stream, uint64_t samples); // Sets a stream to given sample
     virtual uint64_t Tell(void* stream);               // Gets what sample a stream is currently on
 
-    static size_t Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop);
+    static size_t Construct(void* p, void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop);
     static bool ScanHeader(const char* fileheader);
-    static std::pair<void*, unsigned int> ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags);
+    static std::pair<void*, uint32_t> ToWave(void* data, uint32_t datalength, TINYOAL_FLAG flags);
 
   protected:
     static unsigned long _read(
-      void* stream, char* buffer, unsigned int len, bool& eof, char bytes,
-      unsigned int channels); // Reads next chunk of data - buffer must be at least GetBufSize() long
+      void* stream, char* buffer, uint32_t len, bool& eof, char bytes,
+      uint32_t channels); // Reads next chunk of data - buffer must be at least GetBufSize() long
     bool _openstream(OggVorbis_FileEx* target);
     static void _setcallbacks(ov_callbacks& callbacks, bool isfile);
 

@@ -10,23 +10,7 @@
 #include "tinyoal/AudioResource.h"
 
 #ifdef BSS_PLATFORM_WIN32
-  #pragma pack(push)
-  #pragma pack(8)
-  #define WINVER        0x0601 //_WIN32_WINNT_WIN7
-  #define _WIN32_WINNT  0x0601
-  #define NTDDI_VERSION 0x06010000 // NTDDI_WIN7
-  #define WIN32_LEAN_AND_MEAN
-  #ifndef NOMINMAX // Some compilers enable this by default
-    #define NOMINMAX
-  #endif
-  #define NODRAWTEXT
-  #define NOBITMAP
-  #define NOMCX
-  #define NOSERVICE
-  #define NOHELP
-  #include <windows.h>
-  #pragma pack(pop)
-
+#include "win32_includes.h"
   #include <mmreg.h>
 #else
   // WAVE file speaker masks (taken from the ksmedia.h windows file)
@@ -58,13 +42,13 @@
 
 typedef struct
 {
-  unsigned short wFormatTag;
-  unsigned short nChannels;
+  uint16_t wFormatTag;
+  uint16_t nChannels;
   uint32_t nSamplesPerSec;
   uint32_t nAvgBytesPerSec;
-  unsigned short nBlockAlign;
-  unsigned short wBitsPerSample;
-  unsigned short cbSize;
+  uint16_t nBlockAlign;
+  uint16_t wBitsPerSample;
+  uint16_t cbSize;
 } WAVEFORMATEX;
 
 typedef struct
@@ -72,14 +56,14 @@ typedef struct
   WAVEFORMATEX Format;
   union
   {
-    unsigned short wValidBitsPerSample;
-    unsigned short wSamplesPerBlock;
-    unsigned short wReserved;
+    uint16_t wValidBitsPerSample;
+    uint16_t wSamplesPerBlock;
+    uint16_t wReserved;
   } Samples;
   uint32_t dwChannelMask;
   uint32_t Data1; // This is an expanded GUID
-  unsigned short Data2;
-  unsigned short Data3;
+  uint16_t Data2;
+  uint16_t Data3;
   unsigned char Data4[8];
 } WAVEFORMATEXTENSIBLE, *PWAVEFORMATEXTENSIBLE;
 
@@ -120,8 +104,8 @@ namespace tinyoal {
     WAVERESULT Seek(WAVEFILEINFO& wave, int64_t offset);
     uint64_t Tell(WAVEFILEINFO& wave);
     WAVERESULT Close(WAVEFILEINFO& wave);
-    unsigned int GetALFormat(WAVEFILEINFO& wave); // cast this to ALenum
-    unsigned int WriteHeader(char* buffer, unsigned int length, unsigned short channels, unsigned short bits,
+    uint32_t GetALFormat(WAVEFILEINFO& wave); // cast this to ALenum
+    uint32_t WriteHeader(char* buffer, uint32_t length, uint16_t channels, uint16_t bits,
                              uint32_t freq);
   };
 }

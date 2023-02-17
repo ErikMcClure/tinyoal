@@ -16,7 +16,7 @@ typedef struct
   std::string strDeviceName;
   int iMajorVersion;
   int iMinorVersion;
-  unsigned int _sourceCount;
+  uint32_t _sourceCount;
   std::vector<std::string> pvstrExtensions;
   bool bSelected;
 } ALDEVICEINFO, *LPALDEVICEINFO;
@@ -161,9 +161,9 @@ bool OALEngine::SetDevice(const char* device)
   return false;
 }
 
-unsigned int OALEngine::GetWaveFormat(WaveFileInfo& wave)
+uint32_t OALEngine::GetWaveFormat(WaveFileInfo& wave)
 {
-  unsigned short bits = wave.wfEXT.Format.wBitsPerSample;
+  uint16_t bits = wave.wfEXT.Format.wBitsPerSample;
   switch(wave.wfEXT.Format.wFormatTag)
   {
   case WAVE_FORMAT_PCM:
@@ -208,11 +208,20 @@ unsigned int OALEngine::GetWaveFormat(WaveFileInfo& wave)
   return 0;
 }
 
-const char* OALEngine::GetDefaultDevice() { return oalFuncs->alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER); }
-
-unsigned int OALEngine::GetFormat(unsigned short channels, unsigned short bits, bool rear)
+size_t OALEngine::GetDefaultDevice(char* out, size_t len)
 {
-  unsigned short hash = (channels << 8) | bits;
+  auto p    = oalFuncs->alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+  size_t sz = strlen(p) + 1;
+  if(sz > len)
+    sz = len;
+  if(out)
+    MEMCPY(out, len, p, sz);
+  return sz;
+}
+
+uint32_t OALEngine::GetFormat(uint16_t channels, uint16_t bits, bool rear)
+{
+  uint16_t hash = (channels << 8) | bits;
   switch(hash)
   {
   case((1 << 8) | 8): return AL_FORMAT_MONO8;
@@ -239,30 +248,69 @@ unsigned int OALEngine::GetFormat(unsigned short channels, unsigned short bits, 
   return 0;
 }
 
-ALuint* OALEngine::_alloc()
+std::pair<uint16_t, uint16_t> OALEngine::ExtractFormat(uint32_t format)
 {
-  return (ALuint*)_bufalloc.Alloc();
+  switch(format)
+  {
+  case AL_FORMAT_MONO8: return { 1, 8 };
+  case AL_FORMAT_MONO16: return { 1, 16 };
+  case AL_FORMAT_MONO_FLOAT32: return { 1, 32 };
+  case AL_FORMAT_MONO_DOUBLE_EXT: return { 1, 64 };
+  case AL_FORMAT_REAR8:
+  case AL_FORMAT_STEREO8: return { 2, 8 };
+  case AL_FORMAT_REAR16:
+  case AL_FORMAT_STEREO16: return { 2, 16 };
+  case AL_FORMAT_REAR32:
+  case AL_FORMAT_STEREO_FLOAT32: return { 2, 32 };
+  case AL_FORMAT_STEREO_DOUBLE_EXT: return { 2, 64 };
+  case AL_FORMAT_QUAD8: return { 4, 8 };
+  case AL_FORMAT_QUAD16: return { 4, 16 };
+  case AL_FORMAT_QUAD32: return { 4, 32 };
+  case AL_FORMAT_51CHN8: return { 6, 8 };
+  case AL_FORMAT_51CHN16: return { 6, 16 };
+  case AL_FORMAT_51CHN32: return { 6, 32 };
+  case AL_FORMAT_61CHN8: return { 7, 8 };
+  case AL_FORMAT_61CHN16: return { 7, 16 };
+  case AL_FORMAT_61CHN32: return { 7, 32 };
+  case AL_FORMAT_71CHN8: return { 8, 8 };
+  case AL_FORMAT_71CHN16: return { 8, 16 };
+  case AL_FORMAT_71CHN32: return { 8, 32 };
+  }
+  return { 0, 0 };
 }
-void OALEngine::_dealloc(ALuint* buf)
-{
-  _bufalloc.Dealloc(buf);
-}
-OALEngine::OALSource::OALSource(OALEngine* engine, ReadBuffer readbuffer) :
-  _source((unsigned int)-1),
+
+ALuint* OALEngine::_alloc() { return (ALuint*)_bufalloc.Alloc(); }
+void OALEngine::_dealloc(ALuint* buf) { _bufalloc.Dealloc(buf); }
+OALEngine::OALSource::OALSource(OALEngine* engine, OALEngine::OALSource::LoadBuffer loadBuffer, int format, uint32_t freq,
+                                size_t bufsize) :
+  _source((uint32_t)-1),
   _engine(engine),
   uiBuffers(nullptr),
   _bufstart(0),
   _queuebuflen(0),
-  _readBuffer(readbuffer)
+  _loadBuffer(loadBuffer),
+  _bufsize(bufsize),
+  _freq(freq),
+  _format(format)
 {
-  uiBuffers = _engine->_alloc();
-  memset(uiBuffers, 0, sizeof(ALuint) * _engine->defNumBuf);
-  _engine->oalFuncs->alGenBuffers(_engine->defNumBuf, uiBuffers);
+  _buffer = TinyOAL::Instance()->AllocBytes(_bufsize);
+  if(_buffer)
+  {
+    uiBuffers = _engine->_alloc();
+    memset(uiBuffers, 0, sizeof(ALuint) * _engine->defNumBuf);
+    _engine->oalFuncs->alGenBuffers(_engine->defNumBuf, uiBuffers);
+  }
+  else
+    TINYOAL_LOG(1, "Failed to allocate memory for decoded audio data");
 }
+
 OALEngine::OALSource::~OALSource()
 {
-  if(_source != (unsigned int)-1)
+  if(_source != (uint32_t)-1)
     _engine->oalFuncs->alDeleteSources(1, &_source);
+
+  if(_buffer)
+    TinyOAL::Instance()->DeallocBytes(_buffer, _bufsize);
 
   if(uiBuffers)
   {
@@ -270,9 +318,10 @@ OALEngine::OALSource::~OALSource()
     _engine->_dealloc(uiBuffers);
   }
 }
-bool OALEngine::OALSource::Update(int format, uint32_t freq, void* context, bool isPlaying)
+
+bool OALEngine::OALSource::Update(void* context, bool isPlaying)
 {
-  _processBuffers((ALenum)format, (ALsizei)freq, context); // this must be first
+  _processBuffers(context); // this must be first
 
   if(!IsStreaming() && isPlaying) // If we aren't playing but should be _source *must* be valid because Play() was called.
   {
@@ -288,7 +337,7 @@ bool OALEngine::OALSource::Update(int format, uint32_t freq, void* context, bool
 }
 bool OALEngine::OALSource::Play(float volume, float pitch, float (&pos)[3])
 {
-  if(_source == (unsigned int)-1) // if _source is invalid we need to grab a new one.
+  if(_source == (uint32_t)-1) // if _source is invalid we need to grab a new one.
   {
     _engine->oalFuncs->alGetError(); // Clear last error
     _engine->oalFuncs->alGenSources(1, &_source);
@@ -314,49 +363,48 @@ void OALEngine::OALSource::Stop()
 {
   if(IsStreaming())
     _engine->oalFuncs->alSourceStop(_source);
-  if(_source != (unsigned int)-1)
+  if(_source != (uint32_t)-1)
   {
     _engine->oalFuncs->alSourcei(_source, AL_BUFFER, 0); // Detach buffer
     _engine->oalFuncs->alDeleteSources(1, &_source);
-    _source = (unsigned int)-1;
+    _source = (uint32_t)-1;
   }
 }
 void OALEngine::OALSource::Pause() { _engine->oalFuncs->alSourcePause(_source); }
 bool OALEngine::OALSource::IsStreaming() const
 {
-  if(!_engine->oalFuncs || _source == (unsigned int)-1)
+  if(!_engine->oalFuncs || _source == (uint32_t)-1)
     return false;
   int iState = 0;
   // if _source is invalid or this fails for any reason, iState will remain at 0
   _engine->oalFuncs->alGetSourcei(_source, AL_SOURCE_STATE, &iState);
   return iState == AL_PLAYING;
 }
-bool OALEngine::OALSource::Skip(uint64_t sample, int format, uint32_t freq, void* context, bool isPlaying)
+bool OALEngine::OALSource::Skip(void* context)
 {
-  if(_source != (unsigned int)-1) // We have to check this instead of whether or not it's playing because it could be paused
+  if(_source != (uint32_t)-1) // We have to check this instead of whether or not it's playing because it could be paused
   {
     _engine->oalFuncs->alSourceStop(_source); // Stop no matter what in case it's paused, because we have to reset it.
     _engine->oalFuncs->alSourcei(_source, AL_BUFFER, 0); // Detach buffer
-    _fillBuffers(format, freq, context);                 // Refill all buffers
+    _fillBuffers(context);                               // Refill all buffers
     _queueBuffers();                                     // requeue everything, which forces the audio to immediately skip.
-    if(isPlaying)
-      _engine->oalFuncs->alSourcePlay(_source);
   }
   else
-    _fillBuffers(format, freq, context); // If we don't have a source, just refill the buffers and don't do anything else
+    _fillBuffers(context); // If we don't have a source, just refill the buffers and don't do anything else
 
   return true;
 }
-void OALEngine::OALSource::FillBuffers(int format, uint32_t freq, void* context) { _fillBuffers(format, freq, context); }
+void OALEngine::OALSource::FillBuffers(void* context) { _fillBuffers(context); }
 uint64_t OALEngine::OALSource::GetOffset() const
 {
   ALint offset;
   _engine->oalFuncs->alGetSourcei(_source, AL_SAMPLE_OFFSET, &offset);
-  return offset;
+  auto [channels, bits] = ExtractFormat(_format);
+  return offset - (_engine->defNumBuf * (_bufsize / (channels * (bits >> 3))));
 }
 void OALEngine::OALSource::SetVolume(float range)
 {
-  if(_source != (unsigned int)-1)
+  if(_source != (uint32_t)-1)
     _engine->oalFuncs->alSourcef(_source, AL_GAIN, range);
 }
 void OALEngine::OALSource::SetPitch(float range)
@@ -366,11 +414,11 @@ void OALEngine::OALSource::SetPitch(float range)
 }
 void OALEngine::OALSource::SetPosition(float (&pos)[3])
 {
-  if(_source != (unsigned int)-1)
+  if(_source != (uint32_t)-1)
     _engine->oalFuncs->alSourcefv(_source, AL_POSITION, pos);
 }
 
-void OALEngine::OALSource::_processBuffers(ALenum format, ALsizei freq, void* context)
+void OALEngine::OALSource::_processBuffers(void* context)
 {
   // Request the number of OpenAL Buffers have been processed (played) on the Source
   ALint iBuffersProcessed = 0;
@@ -384,28 +432,27 @@ void OALEngine::OALSource::_processBuffers(ALenum format, ALsizei freq, void* co
     ALuint uiBuffer = 0;
     _engine->oalFuncs->alSourceUnqueueBuffers(_source, 1, &uiBuffer);
 
-    unsigned long ulBytesWritten;
-    auto buffer = (*_readBuffer)(ulBytesWritten, context); // Read more audio data (if there is any)
+    // Read more audio data (if there is any)
+    unsigned long ulBytesWritten = (*_loadBuffer)(_bufsize, _buffer, context);
 
     if(ulBytesWritten)
     {
-      _engine->oalFuncs->alBufferData(uiBuffer, format, buffer, ulBytesWritten, freq);
+      _engine->oalFuncs->alBufferData(uiBuffer, (ALenum)_format, _buffer, ulBytesWritten, (ALsizei)_freq);
       _engine->oalFuncs->alSourceQueueBuffers(_source, 1, &uiBuffer);
     }
 
     iBuffersProcessed--;
   }
 }
-void OALEngine::OALSource::_fillBuffers(ALenum format, ALsizei freq, void* context)
+void OALEngine::OALSource::_fillBuffers(void* context)
 {
   _bufstart    = 0;
   _queuebuflen = 0;
   for(ALint i = 0; i < _engine->defNumBuf; i++)
   {
-    unsigned long ulBytesWritten;
-    auto buffer = (*_readBuffer)(ulBytesWritten, context);
+    unsigned long ulBytesWritten = (*_loadBuffer)(_bufsize, _buffer, context);
     if(ulBytesWritten)
-      _engine->oalFuncs->alBufferData(uiBuffers[_queuebuflen++], format, buffer, ulBytesWritten, freq);
+      _engine->oalFuncs->alBufferData(uiBuffers[_queuebuflen++], (ALenum)_format, _buffer, ulBytesWritten, (ALsizei)_freq);
   }
 }
 void OALEngine::OALSource::_queueBuffers()
@@ -416,10 +463,10 @@ void OALEngine::OALSource::_queueBuffers()
     _engine->oalFuncs->alSourceQueueBuffers(_source, 1, &uiBuffers[i % nbuffers]);
   _queuebuflen = 0;
 }
-Source* OALEngine::GenSource(Source::ReadBuffer readBuffer)
+Source* OALEngine::GenSource(Source::LoadBuffer loadBuffer, size_t bufsize, int format, uint32_t freq)
 {
   if(!oalFuncs)
     return nullptr;
-  return new OALSource(this, readBuffer);
+  return new OALSource(this, loadBuffer, format, freq, bufsize);
 }
 void OALEngine::DestroySource(Source* source) { delete source; }

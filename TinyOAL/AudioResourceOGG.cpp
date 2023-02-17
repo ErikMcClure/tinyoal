@@ -10,7 +10,7 @@
 using namespace tinyoal;
 
 // Constructor that takes a data pointer, a length of data, and flags.
-AudioResourceOGG::AudioResourceOGG(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) :
+AudioResourceOGG::AudioResourceOGG(void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop) :
   AudioResource(data, datalength, flags, TINYOAL_FILETYPE_OGG, loop)
 {
   _setcallbacks(_callbacks, (_flags & TINYOAL_ISFILE) != 0);
@@ -87,8 +87,8 @@ void AudioResourceOGG::CloseStream(void* stream)
 // have the information we need contained in the pointer. We use this information to decode a chunk of the audio info
 // and put it inside the given decodebuffer (which is the same for all audio formats, since its decoded). It then
 // returns how many bytes were read.
-unsigned long AudioResourceOGG::_read(void* stream, char* buffer, unsigned int len, bool& eof, char bytes,
-                                      unsigned int channels)
+unsigned long AudioResourceOGG::_read(void* stream, char* buffer, uint32_t len, bool& eof, char bytes,
+                                      uint32_t channels)
 {
   if(!stream)
     return 0;
@@ -130,7 +130,7 @@ unsigned long AudioResourceOGG::_read(void* stream, char* buffer, unsigned int l
 
   return ulBytesDone;
 }
-unsigned long AudioResourceOGG::Read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceOGG::Read(void* stream, char* buffer, uint32_t len, bool& eof)
 {
   return _read(stream, buffer, len, eof, _samplebits >> 3, _channels);
 }
@@ -184,7 +184,7 @@ void AudioResourceOGG::_setcallbacks(ov_callbacks& callbacks, bool isfile)
   }
 }
 
-size_t AudioResourceOGG::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
+size_t AudioResourceOGG::Construct(void* p, void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p)
     new(p) AudioResourceOGG(data, datalength, flags, loop);
@@ -192,7 +192,7 @@ size_t AudioResourceOGG::Construct(void* p, void* data, unsigned int datalength,
 }
 bool AudioResourceOGG::ScanHeader(const char* fileheader) { return !strncmp(fileheader, "OggS", 4); }
 
-std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+std::pair<void*, uint32_t> AudioResourceOGG::ToWave(void* data, uint32_t datalength, TINYOAL_FLAG flags)
 {
   ov_callbacks callbacks;
   _setcallbacks(callbacks, (flags & TINYOAL_ISFILE) != 0);
@@ -209,7 +209,7 @@ std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int
      ogg->fn_ov_open_callbacks((flags & TINYOAL_ISFILE) ? data : &r.stream, &r.ogg, 0, 0, callbacks) != 0)
   {
     TINYOAL_LOG(1, "Failed to create file stream");
-    return std::pair<void*, unsigned int>((void*)0, 0);
+    return std::pair<void*, uint32_t>((void*)0, 0);
   }
 
   // Get some information about the file (Channels, Format, and Frequency)
@@ -217,7 +217,7 @@ std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int
   if(!psVorbisInfo)
   {
     ogg->fn_ov_clear(&r.ogg);
-    return std::pair<void*, unsigned int>((void*)0, 0);
+    return std::pair<void*, uint32_t>((void*)0, 0);
   }
 
   uint64_t total      = ogg->fn_ov_pcm_total(&r.ogg, -1); // Get total number of samples
@@ -225,12 +225,12 @@ std::pair<void*, unsigned int> AudioResourceOGG::ToWave(void* data, unsigned int
   int channels        = psVorbisInfo->channels;
   short samplebits    = 16;
   uint64_t totalbytes = total * channels * (samplebits >> 3);
-  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
+  uint32_t header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(totalbytes + header);
   assert(buffer != 0);
   bool eof;
   totalbytes = _read(&r, buffer + header, totalbytes, eof, samplebits >> 3, channels);
   TinyOAL::Instance()->GetWave()->WriteHeader(buffer, totalbytes + header, channels, samplebits, freq);
   ogg->fn_ov_clear(&r.ogg);
-  return std::pair<void*, unsigned int>(buffer, totalbytes + header);
+  return std::pair<void*, uint32_t>(buffer, totalbytes + header);
 }

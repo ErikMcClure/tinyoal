@@ -14,11 +14,10 @@ Audio::Audio(const Audio& copy)
 {
   memcpy(this, &copy, sizeof(Audio));
   _flags -= TINYOAL_MANAGED; // Any copying can't be managed
-  _stream       = nullptr;
-  pDecodeBuffer = nullptr;
-  prev          = nullptr;
-  next          = nullptr;
-  _source       = nullptr;
+  _stream = nullptr;
+  prev    = nullptr;
+  next    = nullptr;
+  _source = nullptr;
 
   if(!_resource)
   {
@@ -28,21 +27,16 @@ Audio::Audio(const Audio& copy)
 
   _resource->Grab();
   bss::LLAdd<Audio>(this, _resource->_inactivelist);
-  _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer);
+  _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer, _resource->GetBufSize(), _resource->GetFormat(),
+                                                        _resource->GetFreq());
 
-  _stream = (!_source) ? 0 : _resource->OpenStream(); // If we don't have oalFuncs, force stream to 0
-  if(_stream != 0)
+  _stream = (!_source) ? nullptr : _resource->OpenStream(); // If we don't have oalFuncs, force stream to 0
+  if(_stream != nullptr)
   { // Allocate a buffer to be used to store decoded data for all Buffers
-    pDecodeBuffer = TinyOAL::Instance()->_allocDecoder(_bufsize = _resource->GetBufSize());
     Skip(copy.IsWhere());
 
-    if(pDecodeBuffer != 0)
-    {
-      // Fill all the Buffers with decoded audio data
-      _source->FillBuffers(_resource->GetFormat(), _resource->GetFreq(), this);
-    }
-    else
-      TINYOAL_LOG(1, "Failed to allocate memory for decoded audio data");
+    // Fill all the Buffers with decoded audio data
+    _source->FillBuffers(this);
   }
 
   if(_flags & TINYOAL_ISPLAYING)
@@ -56,19 +50,16 @@ Audio::Audio(AudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) :
   _flags(addflags),
   _pitch(1.0f),
   _vol(1.0f),
-  pDecodeBuffer(0),
-  _stream(0),
-  _source(0),
+  _stream(nullptr),
+  _source(nullptr),
   _resource(ref),
-  userdata(_userdata),
-  ONDESTROY(0),
-  _bufsize(0)
+  userdata(_userdata)
 {
   _pos[0] = 0.0f;
   _pos[1] = 0.0f;
   _pos[2] = 0.5f;
-  prev    = 0;
-  next    = 0;
+  prev    = nullptr;
+  next    = nullptr;
 
   if(!ref)
   {
@@ -80,20 +71,14 @@ Audio::Audio(AudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) :
   _looptime = ref->GetLoopPoint();
   _flags += ref->GetFlags();
   bss::LLAdd<Audio>(this, ref->_inactivelist);
-  _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer);
+  _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer, _resource->GetBufSize(), _resource->GetFormat(),
+                                                        _resource->GetFreq());
 
-  _stream = (!_source) ? 0 : ref->OpenStream(); // If we don't have oalFuncs, force stream to 0
-  if(_stream != 0)
-  { // Allocate a buffer to be used to store decoded data for all Buffers
-    pDecodeBuffer = TinyOAL::Instance()->_allocDecoder(_bufsize = ref->GetBufSize());
-
-    if(pDecodeBuffer != 0)
-    {
-      // Fill all the Buffers with decoded audio data
-      _source->FillBuffers(_resource->GetFormat(), _resource->GetFreq(), this);
-    }
-    else
-      TINYOAL_LOG(1, "Failed to allocate memory for decoded audio data");
+  _stream = (!_source) ? nullptr : ref->OpenStream(); // If we don't have oalFuncs, force stream to 0
+  if(_stream != nullptr)
+  {
+    // Fill all the Buffers with decoded audio data
+    _source->FillBuffers(this);
   }
   else
     TINYOAL_LOG(2, "Stream request failed");
@@ -107,8 +92,6 @@ Audio::Audio(AudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) :
 
 Audio::~Audio()
 {
-  if(ONDESTROY)
-    (*ONDESTROY)(this);
   _flags -= TINYOAL_MANAGED; // Remove the flag first, which prevents us from going into an infinite loop
   Stop();                    // Stop destroys the source for us and ensures we are in the inactive list
 
@@ -117,8 +100,6 @@ Audio::~Audio()
     if(_resource)
       _resource->CloseStream(_stream);
   }
-  if(pDecodeBuffer)
-    TinyOAL::Instance()->_deallocDecoder(pDecodeBuffer, _bufsize);
 
   if(_resource)
   {
@@ -170,7 +151,7 @@ void Audio::Stop()
   if(_stream != 0)
   {
     _resource->Reset(_stream);
-    _source->FillBuffers(_resource->GetFormat(), _resource->GetFreq(), this); // Refill all buffers
+    _source->FillBuffers(this); // Refill all buffers
   }
 
   _stop();
@@ -202,7 +183,9 @@ bool Audio::Skip(uint64_t sample)
   if(!_resource->Skip(_stream, sample))
     return false;
 
-  _source->Skip(sample, _resource->GetFormat(), _resource->GetFreq(), this, _flags & TINYOAL_ISPLAYING);
+  _source->Skip(this);
+  if(_flags & TINYOAL_ISPLAYING)
+    _source->Play(_vol, _pitch, _pos);
   return true;
 }
 
@@ -210,10 +193,7 @@ uint64_t Audio::IsWhere() const
 {
   if(!_resource || !_stream)
     return 0;
-  return _resource->Tell(_stream) -
-         (TinyOAL::Instance()->GetEngine()->GetNumBuffers() *
-          (_bufsize / (_resource->GetChannels() * (_resource->GetBitsPerSample() >> 3)))) +
-         _source->GetOffset();
+  return _resource->Tell(_stream);
 }
 
 void Audio::SetLoopPointSeconds(double seconds)
@@ -229,7 +209,7 @@ bool Audio::Update()
   if(!_resource || !_source) // Do we have a valid stream
     return false;
 
-  if(_source->Update(_resource->GetFormat(), _resource->GetFreq(), this, _flags & TINYOAL_ISPLAYING))
+  if(_source->Update(this, _flags & TINYOAL_ISPLAYING))
     return true;
 
   Stop();
@@ -277,19 +257,19 @@ void Audio::SetPosition(float X, float Y, float Z)
     _source->SetPosition(_pos);
 }
 
-unsigned long Audio::_readBuffer()
+unsigned long Audio::_readBuffer(unsigned long bufsize, char* buffer)
 {
   bool eof;
   unsigned long hold;
-  unsigned long ulBytesWritten = _resource->Read(_stream, pDecodeBuffer, _bufsize, eof);
+  unsigned long ulBytesWritten = _resource->Read(_stream, buffer, bufsize, eof);
   if(eof && _looptime != (uint64_t)-1)
   {
     while(eof && ulBytesWritten <
-                   _bufsize) // If we didn't completely fill up our buffer, we hit the end, so if we're looping, reset.
+                   bufsize) // If we didn't completely fill up our buffer, we hit the end, so if we're looping, reset.
     { // We reset the stream here for every loop, because we will only loop if we hit the end of the stream.
       _resource->Skip(_stream,
                       _looptime); // This is because if we didn't hit the end, Read will return _bufsize-ulBytesWritten,
-      hold = _resource->Read(_stream, pDecodeBuffer + ulBytesWritten, _bufsize - ulBytesWritten,
+      hold = _resource->Read(_stream, buffer + ulBytesWritten, bufsize - ulBytesWritten,
                              eof); // which will make ulBytesWritten==_bufsize.
       if(!hold)
         break; // If Read returns 0 AFTER we attempted to go back to the loop location, something is wrong, so bail out.
@@ -299,9 +279,8 @@ unsigned long Audio::_readBuffer()
   return ulBytesWritten;
 }
 
-char* Audio::ReadBuffer(unsigned long& written, void* context)
+unsigned long Audio::ReadBuffer(unsigned long bufsize, char* buffer, void* context)
 {
   auto audio = (Audio*)context;
-  written    = audio->_readBuffer();
-  return audio->pDecodeBuffer;
+  return audio->_readBuffer(bufsize, buffer);
 }
