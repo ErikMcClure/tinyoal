@@ -30,6 +30,13 @@ namespace tinyoal {
   class FlacFunctions;
   class Engine;
 
+  enum ENGINE_TYPE
+  {
+    ENGINE_OPENAL = 0,
+    ENGINE_WASAPI_SHARED,
+    ENGINE_WASAPI_EXCLUSIVE
+  };
+
   // This is the main engine class. It loads functions tables and is used to load audio resources. It also updates all
   // currently playing audio
   class TINYOAL_DLLEXPORT TinyOAL
@@ -38,8 +45,9 @@ namespace tinyoal {
 
   public:
     // Constructors
-    TinyOAL(unsigned char bufferCount = 4, FNLOG fnLog = 0, const char* forceOAL = 0, const char* forceOGG = 0,
-            const char* forceFLAC = 0, const char* forceMP3 = 0);
+    TinyOAL(enum ENGINE_TYPE type = ENGINE_OPENAL, FNLOG fnLog = nullptr, unsigned char bufferCount = 4,
+            const char* forceOAL = nullptr, const char* forceOGG = nullptr, const char* forceFLAC = nullptr,
+            const char* forceMP3 = nullptr);
     ~TinyOAL();
     // This updates any currently playing samples and returns the number that are still playing after the update. The time
     // between calls to this update function can never exceed the length of a buffer, or the sound will cut out.
@@ -68,7 +76,7 @@ namespace tinyoal {
     // Gets the underlying engine
     Engine* GetEngine();
     // Gets the name of the default device
-    const char* GetDefaultDevice();
+    size_t GetDefaultDevice(char* out, size_t len);
     // Sets current device to the given device
     bool SetDevice(const char* device);
     // Gets a null-seperated list of all available devices, terminated by a double null character.
@@ -101,6 +109,8 @@ namespace tinyoal {
 
     static const bssVersionInfo Version;
 
+    inline char* AllocBytes(size_t sz) { return _allocDecoder(sz); }
+    inline void DeallocBytes(char* p, size_t sz) { _deallocDecoder(p, sz); }
     template<class T> T* AllocViaPool() { return reinterpret_cast<T*>(_allocDecoder(sizeof(T))); }
     template<class T> void DeallocViaPool(T* p) { _deallocDecoder(reinterpret_cast<char*>(p), sizeof(T)); }
 

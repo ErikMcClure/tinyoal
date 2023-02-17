@@ -11,7 +11,7 @@ using namespace tinyoal;
 
 DatStreamEx* AudioResourceFLAC::_freelist = 0;
 
-AudioResourceFLAC::AudioResourceFLAC(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) :
+AudioResourceFLAC::AudioResourceFLAC(void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop) :
   AudioResource(data, datalength, flags, TINYOAL_FILETYPE_FLAC, loop)
 {
   auto fn         = TinyOAL::Instance()->GetFlac();
@@ -97,7 +97,7 @@ void AudioResourceFLAC::_closestream(void* stream)
   ex->next  = _freelist;
   _freelist = ex;
 }
-unsigned long AudioResourceFLAC::Read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceFLAC::Read(void* stream, char* buffer, uint32_t len, bool& eof)
 {
   DatStreamEx* ex = (DatStreamEx*)stream;
   auto fn         = TinyOAL::Instance()->GetFlac();
@@ -161,22 +161,22 @@ void AudioResourceFLAC::_cbmeta(const FLAC__StreamDecoder* decoder, const FLAC__
 {}
 
 template<typename T>
-BSS_FORCEINLINE void r_flacread(T* target, const FLAC__int32* const buffer[], unsigned int num, unsigned int channels)
+BSS_FORCEINLINE void r_flacread(T* target, const FLAC__int32* const buffer[], uint32_t num, uint32_t channels)
 {
-  for(unsigned int i = 0; i < num; i += 1)
+  for(uint32_t i = 0; i < num; i += 1)
   {
-    for(unsigned int j = 0; j < channels; ++j)
+    for(uint32_t j = 0; j < channels; ++j)
       target[j] = (T)buffer[j][i];
     target += channels;
   }
 }
 template<>
-BSS_FORCEINLINE void r_flacread<float>(float* target, const FLAC__int32* const buffer[], unsigned int num,
-                                       unsigned int channels)
+BSS_FORCEINLINE void r_flacread<float>(float* target, const FLAC__int32* const buffer[], uint32_t num,
+                                       uint32_t channels)
 {
-  for(unsigned int i = 0; i < num; i += 1)
+  for(uint32_t i = 0; i < num; i += 1)
   {
-    for(unsigned int j = 0; j < channels; ++j)
+    for(uint32_t j = 0; j < channels; ++j)
       target[j] = (float)buffer[j][i] / 8388607.0f;
     target += channels;
   }
@@ -185,8 +185,8 @@ FLAC__StreamDecoderWriteStatus AudioResourceFLAC::_cbwrite(const FLAC__StreamDec
                                                            const FLAC__int32* const buffer[], void* client_data)
 {
   INTERNAL* self        = *(INTERNAL**)client_data;
-  unsigned int channels = frame->header.channels;
-  unsigned int num      = frame->header.blocksize;
+  uint32_t channels = frame->header.channels;
+  uint32_t num      = frame->header.blocksize;
   if(num == 1)
     num = 192;
   else if(num >= 2 && num <= 5)
@@ -194,9 +194,9 @@ FLAC__StreamDecoderWriteStatus AudioResourceFLAC::_cbwrite(const FLAC__StreamDec
   else if(num >= 8 && num <= 15)
     num = 256 * (1 << (num - 8));
 
-  unsigned int bits      = frame->header.bits_per_sample == 24 ? 32 : frame->header.bits_per_sample;
-  unsigned int persample = channels * (bits >> 3);
-  unsigned int len       = self->_len / persample;
+  uint32_t bits      = frame->header.bits_per_sample == 24 ? 32 : frame->header.bits_per_sample;
+  uint32_t persample = channels * (bits >> 3);
+  uint32_t len       = self->_len / persample;
 
   if(num > len)
   {
@@ -204,7 +204,7 @@ FLAC__StreamDecoderWriteStatus AudioResourceFLAC::_cbwrite(const FLAC__StreamDec
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
   }
 
-  unsigned int bytes = num * persample;
+  uint32_t bytes = num * persample;
   switch(bits)
   {
   case 8: r_flacread<char>(reinterpret_cast<char*>(self->_buffer), buffer, num, channels); break;
@@ -233,7 +233,7 @@ FLAC__StreamDecoderSeekStatus AudioResourceFLAC::_cbfseekoffset(const FLAC__Stre
     return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 }
 
-size_t AudioResourceFLAC::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
+size_t AudioResourceFLAC::Construct(void* p, void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p)
     new(p) AudioResourceFLAC(data, datalength, flags, loop);
@@ -241,9 +241,9 @@ size_t AudioResourceFLAC::Construct(void* p, void* data, unsigned int datalength
 }
 bool AudioResourceFLAC::ScanHeader(const char* fileheader) { return !strncmp(fileheader, "fLaC", 4); }
 
-std::pair<void*, unsigned int> AudioResourceFLAC::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+std::pair<void*, uint32_t> AudioResourceFLAC::ToWave(void* data, uint32_t datalength, TINYOAL_FLAG flags)
 {
-  static const std::pair<void*, unsigned int> NULLRET(nullptr, 0);
+  static const std::pair<void*, uint32_t> NULLRET(nullptr, 0);
   auto fn = TinyOAL::Instance()->GetFlac();
   if(!fn)
   {
@@ -290,14 +290,14 @@ std::pair<void*, unsigned int> AudioResourceFLAC::ToWave(void* data, unsigned in
   if(!fn->fn_flac_process_single(stream->d)) // Lets us pick up all this metadata
     TINYOAL_LOG(2, "Failed to preprocess first frame");
 
-  unsigned int channels   = fn->fn_flac_get_channels(stream->d);
-  unsigned int samplebits = fn->fn_flac_get_bits_per_sample(stream->d);
+  uint32_t channels   = fn->fn_flac_get_channels(stream->d);
+  uint32_t samplebits = fn->fn_flac_get_bits_per_sample(stream->d);
   if(samplebits == 24)
     samplebits = 32;
-  unsigned int freq   = fn->fn_flac_get_sample_rate(stream->d);
+  uint32_t freq   = fn->fn_flac_get_sample_rate(stream->d);
   uint64_t total      = fn->fn_flac_get_total_samples(stream->d);
   uint64_t totalbytes = total * channels * (samplebits >> 3);
-  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
+  uint32_t header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(totalbytes + header);
   assert(buffer != 0);
   TinyOAL::Instance()->GetFlac()->fn_flac_reset(stream->d);
@@ -308,7 +308,7 @@ std::pair<void*, unsigned int> AudioResourceFLAC::ToWave(void* data, unsigned in
   TinyOAL::Instance()->GetWave()->WriteHeader(buffer, internal._bytesread + header, channels, samplebits, freq);
 
   _closestream(stream);
-  return std::pair<void*, unsigned int>(buffer, internal._bytesread + header);
+  return std::pair<void*, uint32_t>(buffer, internal._bytesread + header);
 }
 FLAC__StreamDecoderWriteStatus AudioResourceFLAC::_cbemptywrite(const FLAC__StreamDecoder* decoder,
                                                                 const FLAC__Frame* frame, const FLAC__int32* const buffer[],

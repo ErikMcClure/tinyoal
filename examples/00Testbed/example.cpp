@@ -159,9 +159,9 @@ TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const
     AudioResource* loop = AudioResource::Create(SEAMLESS, 0, 0, 0);
     AudioResource* loopcopy = AudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY, 0, 0);
     AudioResource* loopwave = AudioResource::Create(SEAMLESS, (TINYOAL_FLAG)TINYOAL_FORCETOWAVE, 0, 0);
-    TEST(loop != 0);
-    TEST(loopcopy != 0);
-    TEST(loopwave != 0);
+    TEST(loop != nullptr);
+    TEST(loopcopy != nullptr);
+    TEST(loopwave != nullptr);
 
     auto fn2 = [&](Audio* r, AudioResource* res) {
       TEST(!res->GetLoopPoint());
