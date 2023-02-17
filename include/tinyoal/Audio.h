@@ -11,7 +11,7 @@
 #include "bss-util/bss_util.h"
 
 namespace tinyoal {
-  typedef unsigned char TINYOAL_FLAG;
+  typedef uint8_t TINYOAL_FLAG;
 
   enum TINYOAL_FLAGS : TINYOAL_FLAG
   {
@@ -27,6 +27,8 @@ namespace tinyoal {
   class AudioResource;
   class Source;
 
+  // TODO: Rip the "managed" behavior into a subtype to isolate it from an unmanaged instance. There is no need for 
+  // a TINYOAL_MANAGED flag because this should be determined at compile time.
   class TINYOAL_DLLEXPORT Audio final : public bss::LLBase<Audio>
   {
   public:
@@ -76,17 +78,16 @@ namespace tinyoal {
     void Invalidate();
 
     void* userdata;
-    void (*ONDESTROY)(Audio* ref);
 
     Audio& operator=(const Audio& mov);
     Audio& operator=(Audio&& mov);
 
-    static char* ReadBuffer(unsigned long& written, void* context);
+    static unsigned long ReadBuffer(unsigned long bufsize, char* buffer, void* context);
 
   protected:
     void _applyAll(); // In case we have to reset our openAL source, this reapplies all volume/pitch/location modifications
     void _stop();
-    unsigned long _readBuffer();
+    unsigned long _readBuffer(unsigned long bufsize, char* buffer);
 
     AudioResource* _resource;
     Source* _source;
@@ -96,8 +97,6 @@ namespace tinyoal {
     float _pitch;
     bss::BitField<TINYOAL_FLAG> _flags;
     uint64_t _looptime;
-    unsigned int _bufsize;
-    char* pDecodeBuffer;
   };
 }
 

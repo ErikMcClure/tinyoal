@@ -7,7 +7,7 @@
 #include "tinyoal/TinyOAL.h"
 
 #ifdef BSS_PLATFORM_WIN32
-  #include "bss-util/win32_includes.h"
+  #include "win32_includes.h"
 
   #define MP3_MODULE "mpg123.dll"
 #else

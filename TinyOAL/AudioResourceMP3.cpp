@@ -9,7 +9,7 @@
 
 using namespace tinyoal;
 
-AudioResourceMP3::AudioResourceMP3(void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop) :
+AudioResourceMP3::AudioResourceMP3(void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop) :
   AudioResource(data, datalength, flags, TINYOAL_FILETYPE_MP3, loop)
 {
   mpg123_handle* h = (mpg123_handle*)OpenStream();
@@ -88,10 +88,10 @@ void AudioResourceMP3::CloseStream(void* stream)
   fn->fn_mpgDelete(h);
 }
 
-unsigned long AudioResourceMP3::_read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceMP3::_read(void* stream, char* buffer, uint32_t len, bool& eof)
 {
   size_t done        = 0;
-  unsigned int total = 0;
+  uint32_t total = 0;
   int err            = 0;
   while(total < len && !err)
   {
@@ -113,7 +113,7 @@ unsigned long AudioResourceMP3::_read(void* stream, char* buffer, unsigned int l
   return done;
 }
 
-unsigned long AudioResourceMP3::Read(void* stream, char* buffer, unsigned int len, bool& eof)
+unsigned long AudioResourceMP3::Read(void* stream, char* buffer, uint32_t len, bool& eof)
 {
   return _read(stream, buffer, len, eof);
 }
@@ -147,7 +147,7 @@ off_t AudioResourceMP3::cb_fileseekoffset(void* stream, off_t off, int loc)
   return -1;
 }
 
-size_t AudioResourceMP3::Construct(void* p, void* data, unsigned int datalength, TINYOAL_FLAG flags, uint64_t loop)
+size_t AudioResourceMP3::Construct(void* p, void* data, uint32_t datalength, TINYOAL_FLAG flags, uint64_t loop)
 {
   if(p)
     new(p) AudioResourceMP3(data, datalength, flags, loop);
@@ -155,10 +155,10 @@ size_t AudioResourceMP3::Construct(void* p, void* data, unsigned int datalength,
 }
 bool AudioResourceMP3::ScanHeader(const char* fileheader)
 {
-  return !strncmp(fileheader, "ID3", 3) || 0x3FF == (0x3FF & (*(unsigned short*)fileheader));
+  return !strncmp(fileheader, "ID3", 3) || 0x3FF == (0x3FF & (*(uint16_t*)fileheader));
 }
 
-std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int datalength, TINYOAL_FLAG flags)
+std::pair<void*, uint32_t> AudioResourceMP3::ToWave(void* data, uint32_t datalength, TINYOAL_FLAG flags)
 {
   auto fn = TinyOAL::Instance()->GetMp3();
   int err;
@@ -167,7 +167,7 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
   if(!fn || !(h = fn->fn_mpgNew(0, &err)) || err != MPG123_OK)
   {
     TINYOAL_LOG(1, "Failed to create new mpg instance");
-    return std::pair<void*, unsigned int>((void*)0, 0);
+    return std::pair<void*, uint32_t>((void*)0, 0);
   }
 
   DatStream dat;
@@ -187,11 +187,11 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
     err = fn->fn_mpgOpenHandle(h, &dat);
   }
 
-  auto fnabort = [](mpg123_handle* h, const char* error) -> std::pair<void*, unsigned int> {
+  auto fnabort = [](mpg123_handle* h, const char* error) -> std::pair<void*, uint32_t> {
     TINYOAL_LOG(1, error);
     TinyOAL::Instance()->GetMp3()->fn_mpgClose(h);
     TinyOAL::Instance()->GetMp3()->fn_mpgDelete(h);
-    return std::pair<void*, unsigned int>((void*)0, 0);
+    return std::pair<void*, uint32_t>((void*)0, 0);
   };
 
   if(err != MPG123_OK)
@@ -213,8 +213,8 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
     return fnabort(h, "Failed to get or set format");
 
   unsigned char bits  = (enc == MPG123_ENC_SIGNED_16) ? 16 : 32;
-  unsigned int total  = len * (bits >> 3) * channels;
-  unsigned int header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
+  uint32_t total  = len * (bits >> 3) * channels;
+  uint32_t header = TinyOAL::Instance()->GetWave()->WriteHeader(0, 0, 0, 0, 0);
   char* buffer        = (char*)malloc(total + header);
   assert(buffer != 0);
   bool eof;
@@ -223,7 +223,7 @@ std::pair<void*, unsigned int> AudioResourceMP3::ToWave(void* data, unsigned int
 
   fn->fn_mpgClose(h);
   fn->fn_mpgDelete(h);
-  return std::pair<void*, unsigned int>(buffer, total + header);
+  return std::pair<void*, uint32_t>(buffer, total + header);
 }
 
 void AudioResourceMP3::cb_cleanup(void* dat)

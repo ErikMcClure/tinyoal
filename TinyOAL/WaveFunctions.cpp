@@ -150,11 +150,11 @@ WaveFunctions::WAVERESULT WaveFunctions::Close(WAVEFILEINFO& wave)
 }
 uint64_t WaveFunctions::Tell(WAVEFILEINFO& wave) { return wave.callbacks.tell_func(wave.source) - wave.offset; }
 
-unsigned int WaveFunctions::WriteHeader(char* buffer, unsigned int length, unsigned short channels, unsigned short bits,
+uint32_t WaveFunctions::WriteHeader(char* buffer, uint32_t length, uint16_t channels, uint16_t bits,
                                         uint32_t freq)
 {
   static const int FULL_HEADER_SIZE =
-    sizeof(WAVEFILEHEADER) + sizeof(RIFFCHUNK) + sizeof(WAVEFORMATEX) - sizeof(unsigned short) + sizeof(RIFFCHUNK);
+    sizeof(WAVEFILEHEADER) + sizeof(RIFFCHUNK) + sizeof(WAVEFORMATEX) - sizeof(uint16_t) + sizeof(RIFFCHUNK);
   if(!buffer)
     return FULL_HEADER_SIZE;
   if(length < FULL_HEADER_SIZE)
@@ -168,7 +168,7 @@ unsigned int WaveFunctions::WriteHeader(char* buffer, unsigned int length, unsig
   buffer += sizeof(WAVEFILEHEADER);
   RIFFCHUNK& fmt = *(RIFFCHUNK*)buffer;
   memcpy(fmt.name, "fmt ", 4);
-  fmt.size = sizeof(WAVEFORMATEX) - sizeof(unsigned short); // we aren't going to include cbsize
+  fmt.size = sizeof(WAVEFORMATEX) - sizeof(uint16_t); // we aren't going to include cbsize
 
   buffer += sizeof(RIFFCHUNK);
   WAVEFORMATEX& format   = *(WAVEFORMATEX*)buffer;
