@@ -34,7 +34,7 @@ void* g_hOpenALDLL = nullptr;
   #define GETDYNFUNC(p, s)    (&s)
   #define FREEDYNLIB(p)       ((void)0)
 #else
-  #ifdef BSS_PLATFORM_WIN32
+  #ifdef BUN_PLATFORM_WIN32
     #include "win32_includes.h"
     #define DEFAULT_OAL_DLLPATH "OpenAL32.dll"
   #else

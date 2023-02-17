@@ -3,12 +3,11 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "OggFunctions.h"
-#include "bss-util/bss_util.h"
-#include "bss-util/Str.h"
+#include "buntils/Str.h"
 #include "tinyoal/TinyOAL.h"
 #include <ostream>
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
   #include "win32_includes.h"
 
   #define OGG_MODULE_ALT "vorbisfile.dll"
@@ -26,7 +25,7 @@ OggFunctions::OggFunctions(const char* force)
 {
   if(!force)
     force = OGG_MODULE;
-  bss::bssFill(*this, 0);
+  bun::bun_Fill(*this, 0);
   _oggDLL = LOADDYNLIB(force);
   if(!_oggDLL)
     _oggDLL = LOADDYNLIB(OGG_MODULE_ALT);
@@ -75,7 +74,7 @@ ogg_int64_t OggFunctions::GetCommentSection(OggVorbis_File* vf)
   const size_t BUFSIZE  = 128;
   const size_t READSIZE = BUFSIZE - 5;
   char buf[BUFSIZE];
-  bss::bssFill(buf, 0);
+  bun::bun_Fill(buf, 0);
   int numhits = 0;
   char* pos;
   ptrdiff_t index = 0;
@@ -86,11 +85,11 @@ ogg_int64_t OggFunctions::GetCommentSection(OggVorbis_File* vf)
     if((num = vf->callbacks.read_func(buf + 5, 1, READSIZE, vf->datasource)) != READSIZE)
       return 0; // this means we hit the end of the file and it must not be valid
 
-    if((pos = (char*)bss::ByteSearch(buf, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
+    if((pos = (char*)bun::ByteSearch(buf, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
     {
       ++numhits;
       num = pos - buf;
-      if(numhits < 2 && num > 6 && (pos = (char*)bss::ByteSearch(pos += 6, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
+      if(numhits < 2 && num > 6 && (pos = (char*)bun::ByteSearch(pos += 6, BUFSIZE, (void*)"vorbis", 6)) != nullptr)
       {
         ++numhits;
       }
@@ -126,7 +125,7 @@ ogg_int64_t OggFunctions::GetLoopStart(OggVorbis_File* vf)
   int32_t numcomments;
   if(vf->callbacks.read_func(&numcomments, 4, 1, vf->datasource) == 1) // get number of comments
   {
-    bss::Str comment;
+    bun::Str comment;
     for(int32_t i = 0; i < numcomments; ++i)
     {
       if(vf->callbacks.read_func(&length, 4, 1, vf->datasource) != 1)

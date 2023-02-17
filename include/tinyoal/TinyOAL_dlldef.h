@@ -11,13 +11,13 @@
 
 #ifndef _WINRESRC_
 
-  #include "bss-util/compiler.h"
+  #include "buntils/compiler.h"
 
   #ifdef TINYOAL_EXPORTS
-    #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLEXPORT
+    #define TINYOAL_DLLEXPORT BUN_COMPILER_DLLEXPORT
   #else
     #ifndef TINYOAL_STATICLIB
-      #define TINYOAL_DLLEXPORT BSS_COMPILER_DLLIMPORT
+      #define TINYOAL_DLLEXPORT BUN_COMPILER_DLLIMPORT
     #else
       #define TINYOAL_DLLEXPORT
     #endif

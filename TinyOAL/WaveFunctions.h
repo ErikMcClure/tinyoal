@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "tinyoal/AudioResource.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 #include "win32_includes.h"
   #include <mmreg.h>
 #else

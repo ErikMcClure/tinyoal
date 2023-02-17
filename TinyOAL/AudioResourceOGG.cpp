@@ -122,9 +122,9 @@ unsigned long AudioResourceOGG::_read(void* stream, char* buffer, uint32_t len, 
     {
       // WAVEFORMATEXTENSIBLE Order : FL, FR, FC, LFE, RL, RR
       // OggVorbis Order            : FL, FC, FR,  RL, RR, LFE
-      std::swap(pSamples[ulSamples + 1], pSamples[ulSamples + 2]);
-      std::swap(pSamples[ulSamples + 3], pSamples[ulSamples + 5]);
-      std::swap(pSamples[ulSamples + 4], pSamples[ulSamples + 5]);
+      std::swap<short>(pSamples[ulSamples + 1], pSamples[ulSamples + 2]);
+      std::swap<short>(pSamples[ulSamples + 3], pSamples[ulSamples + 5]);
+      std::swap<short>(pSamples[ulSamples + 4], pSamples[ulSamples + 5]);
     }
   }
 

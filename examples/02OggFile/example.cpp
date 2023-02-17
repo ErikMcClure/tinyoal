@@ -9,7 +9,7 @@
 #include <iostream>
 #include <time.h>
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)
 #else
 #include <unistd.h>
@@ -17,7 +17,7 @@
 #endif
 
 using namespace tinyoal;
-using namespace bss;
+using namespace bun;
 
 int main()
 {

@@ -3,10 +3,9 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "FlacFunctions.h"
-#include "bss-util/bss_util.h"
 #include "tinyoal/TinyOAL.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
   #include "win32_includes.h"
 
   #define FLAC_MODULE     "libflac.dll"
@@ -28,7 +27,7 @@ FlacFunctions::FlacFunctions(const char* force)
   if(!force)
     force = FLAC_MODULE;
 
-  bss::bssFill(*this, 0);
+  bun::bun_Fill(*this, 0);
   _flacDLL = LOADDYNLIB(force);
   if(!_flacDLL)
     _flacDLL = LOADDYNLIB(FLAC_MODULE_ALT);

@@ -26,7 +26,7 @@ Audio::Audio(const Audio& copy)
   }
 
   _resource->Grab();
-  bss::LLAdd<Audio>(this, _resource->_inactivelist);
+  bun::LLAdd<Audio>(this, _resource->_inactivelist);
   _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer, _resource->GetBufSize(), _resource->GetFormat(),
                                                         _resource->GetFreq());
 
@@ -70,7 +70,7 @@ Audio::Audio(AudioResource* ref, TINYOAL_FLAG addflags, void* _userdata) :
   ref->Grab();
   _looptime = ref->GetLoopPoint();
   _flags += ref->GetFlags();
-  bss::LLAdd<Audio>(this, ref->_inactivelist);
+  bun::LLAdd<Audio>(this, ref->_inactivelist);
   _source = TinyOAL::Instance()->GetEngine()->GenSource(&ReadBuffer, _resource->GetBufSize(), _resource->GetFormat(),
                                                         _resource->GetFreq());
 
@@ -103,7 +103,7 @@ Audio::~Audio()
 
   if(_resource)
   {
-    bss::LLRemove<Audio>(this, _resource->_inactivelist);
+    bun::LLRemove<Audio>(this, _resource->_inactivelist);
     _resource->Drop();
   }
 

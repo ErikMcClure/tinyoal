@@ -68,9 +68,9 @@ int main()
       tone.SetVolume(1 - (pos % 188) / 187.0);          // This creates a falloff in volume we use to make a "pluck" sound.
       tone.SetPitch(fn(song[pos / 188]));               // This sets the pitch for the current "note" we are on.
       echo.SetVolume(0.5 - ((pos + 94) % 188) / 375.0); // Note that 1.0 is full volume, and 0.0 is silent.
-      echo.SetPitch(fn(song[bss::bssMod(pos - 94 - 188, songsz * 188) / 188]));
+      echo.SetPitch(fn(song[bun::bssMod(pos - 94 - 188, songsz * 188) / 188]));
       echo2.SetVolume(0.25 - (pos % 188) / 751.0);
-      echo2.SetPitch(fn(song[bss::bssMod(pos - (188 * 3), songsz * 188) / 188]));
+      echo2.SetPitch(fn(song[bun::bssMod(pos - (188 * 3), songsz * 188) / 188]));
       pos = (pos + 1) % (songsz * 188);
     }
   }

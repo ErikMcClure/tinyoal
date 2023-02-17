@@ -1,3 +1,3 @@
-[submodule "bss-util"]
-	path = bss-util
-	url = https://github.com/ErikMcClure/bss-util.git
+[submodule "buntils"]
+	path = buntils
+	url = https://github.com/ErikMcClure/buntils

@@ -161,7 +161,7 @@ void AudioResourceFLAC::_cbmeta(const FLAC__StreamDecoder* decoder, const FLAC__
 {}
 
 template<typename T>
-BSS_FORCEINLINE void r_flacread(T* target, const FLAC__int32* const buffer[], uint32_t num, uint32_t channels)
+BUN_FORCEINLINE void r_flacread(T* target, const FLAC__int32* const buffer[], uint32_t num, uint32_t channels)
 {
   for(uint32_t i = 0; i < num; i += 1)
   {
@@ -171,7 +171,7 @@ BSS_FORCEINLINE void r_flacread(T* target, const FLAC__int32* const buffer[], ui
   }
 }
 template<>
-BSS_FORCEINLINE void r_flacread<float>(float* target, const FLAC__int32* const buffer[], uint32_t num,
+BUN_FORCEINLINE void r_flacread<float>(float* target, const FLAC__int32* const buffer[], uint32_t num,
                                        uint32_t channels)
 {
   for(uint32_t i = 0; i < num; i += 1)

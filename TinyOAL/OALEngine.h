@@ -6,10 +6,10 @@
 #ifndef TOAL__OALENGINE_H
 #define TOAL__OALENGINE_H
 
-#include "bss-util/compiler.h"
+#include "buntils/compiler.h"
 #include "loadoal.h"
 #include "Engine.h"
-#include "bss-util/BlockAlloc.h"
+#include "buntils/BlockAlloc.h"
 #include <memory>
 
 namespace tinyoal {
@@ -70,7 +70,7 @@ namespace tinyoal {
     const unsigned char defNumBuf;
     std::unique_ptr<OPENALFNTABLE> oalFuncs;
     std::unique_ptr<char[]> _dllpath;
-    bss::BlockAlloc _bufalloc;
+    bun::BlockAlloc _bufalloc;
   };
 }
 

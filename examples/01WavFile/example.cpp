@@ -7,7 +7,7 @@
 
 #include "tinyoal/TinyOAL.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
 #define SLEEP(n) _sleep(n)
 #else
 #include <unistd.h>
@@ -24,7 +24,7 @@ int main()
   TinyOAL engine(4);
   // The engine will use the default device at first, but you can get a null-seperated list of devices with 
   // GetDevices(), and change the device to one of your choosing with SetDevice().
-  std::vector<bss::Str> devices = bss::Str::Explode(0,engine.GetDevices());
+  std::vector<bun::Str> devices = bun::Str::Explode(0,engine.GetDevices());
 
   // Here, we load a sound resource. TinyOAL supports a wide range of formats, and this particular wave file is
   // stored using the u-Law format to save space. The high frequency artifacts you might hear are a result of
