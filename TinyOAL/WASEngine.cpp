@@ -194,11 +194,17 @@ bool WASEngine::WASSource::Update(void* context, bool isPlaying)
 
   // Get next 1/2-second of data from the audio source.
   const auto framebytes = _frameBytes();
-  numFramesAvailable    = (*_loadBuffer)(numFramesAvailable * framebytes, (char*)buffer, context) / framebytes;
+  auto numFramesWritten    = (*_loadBuffer)(numFramesAvailable * framebytes, (char*)buffer, context) / framebytes;
+
+  if(FAILED(render->ReleaseBuffer(numFramesWritten, 0)))
+    return false;
 
   // if we are out of data, mark the source as exhausted, so that we know to set _isPlaying to false when we run out of
   // buffer.
-  return SUCCEEDED(render->ReleaseBuffer(numFramesAvailable, 0));
+  if(numFramesAvailable == bufferFrameCount && numFramesWritten == 0)
+    return false;
+
+  return true;
 }
 bool WASEngine::WASSource::Play(float volume, float pitch, float (&pos)[3])
 {

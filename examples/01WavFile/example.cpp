@@ -21,7 +21,7 @@ int main()
   TinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
 
   // We initialize the engine here with the default number of buffers. You can also specify the error log file.
-  TinyOAL engine(4);
+  TinyOAL engine(ENGINE_OPENAL, nullptr, 4);
   // The engine will use the default device at first, but you can get a null-seperated list of devices with 
   // GetDevices(), and change the device to one of your choosing with SetDevice().
   std::vector<bun::Str> devices = bun::Str::Explode(0,engine.GetDevices());
