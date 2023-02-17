@@ -56,7 +56,7 @@ struct TESTDEF
 TESTDEF::RETPAIR test_AudioResource(const char* RES, const char* SEAMLESS, const char* strlog, double length)
 {
   BEGINTEST;
-  static TinyOAL engine(4); // Initialize the engine with default number of buffers
+  static TinyOAL engine(ENGINE_OPENAL, nullptr, 4); // Initialize the engine with default number of buffers
 
   AudioResource* resnorm = AudioResource::Create(RES, 0);
   AudioResource* rescopy = AudioResource::Create(RES, (TINYOAL_FLAG)TINYOAL_COPYINTOMEMORY);
