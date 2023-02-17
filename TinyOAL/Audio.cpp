@@ -135,7 +135,8 @@ bool Audio::Play()
   if(!_stream)
     return false;
 
-  _source->Play(_vol, _pitch, _pos);
+  if(_source)
+    _source->Play(_vol, _pitch, _pos);
 
   if(!(_flags & TINYOAL_ISPLAYING) && _resource != 0)
     TinyOAL::Instance()->_addAudio(this, _resource);
@@ -146,7 +147,8 @@ bool Audio::Play()
 
 void Audio::Stop()
 {
-  _source->Stop();
+  if(_source)
+    _source->Stop();
 
   if(_stream != 0)
   {
