@@ -6,9 +6,9 @@
 #define TOAL__AUDIO_H
 
 #include "TinyOAL_dlldef.h"
-#include "bss-util/LLBase.h"
-#include "bss-util/BitField.h"
-#include "bss-util/bss_util.h"
+#include "buntils/LLBase.h"
+#include "buntils/BitField.h"
+#include "buntils/buntils.h"
 
 namespace tinyoal {
   typedef uint8_t TINYOAL_FLAG;
@@ -29,7 +29,7 @@ namespace tinyoal {
 
   // TODO: Rip the "managed" behavior into a subtype to isolate it from an unmanaged instance. There is no need for 
   // a TINYOAL_MANAGED flag because this should be determined at compile time.
-  class TINYOAL_DLLEXPORT Audio final : public bss::LLBase<Audio>
+  class TINYOAL_DLLEXPORT Audio final : public bun::LLBase<Audio>
   {
   public:
     // Constructors
@@ -95,7 +95,7 @@ namespace tinyoal {
     float _pos[3];
     float _vol;
     float _pitch;
-    bss::BitField<TINYOAL_FLAG> _flags;
+    bun::BitField<TINYOAL_FLAG> _flags;
     uint64_t _looptime;
   };
 }

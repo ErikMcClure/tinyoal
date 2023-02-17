@@ -23,12 +23,12 @@
  */
 
 #include "WaveFunctions.h"
-#include "bss-util/sseVec.h"
+#include "buntils/sseVec.h"
 #include <string.h> //STRNICMP
 #include "tinyoal/TinyOAL.h"
 
 using namespace tinyoal;
-using namespace bss;
+using namespace bun;
 
 #pragma pack(push, 4)
 struct WAVEFILEHEADER
@@ -128,7 +128,7 @@ WaveFunctions::WAVERESULT WaveFunctions::Read(WAVEFILEINFO& wave, void* data, si
     float* dest = (float*)data;
     for(; i < sz; i += 4) // SSE optimized conversions. We're losing about 8 bits of precision here, but we don't care
                           // because no one can hear past 20 bits anyway.
-      BSS_SSE_STORE_UPS(dest + (i - 4), sseVec(sseVeci(BSS_UNALIGNED<const int>(src + (i - 4)))) / sseVec(2147483648.0f));
+      BUN_SSE_STORE_UPS(dest + (i - 4), sseVec(sseVeci(BUN_UNALIGNED<const int>(src + (i - 4)))) / sseVec(2147483648.0f));
     for(i -= 4; i < sz; ++i)
     { // Traditional conversion for the last few
       dest[i] = (float)src[i] / 2147483648.0f;

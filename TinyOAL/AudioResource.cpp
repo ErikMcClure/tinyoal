@@ -24,7 +24,7 @@ AudioResource::AudioResource(void* data, uint32_t len, TINYOAL_FLAG flags, unsig
   _total(0),
   _filetype(TINYOAL_FILETYPE(filetype))
 {
-  bss::LLAdd<AudioResource>(this, TinyOAL::Instance()->_reslist);
+  bun::LLAdd<AudioResource>(this, TinyOAL::Instance()->_reslist);
 }
 
 AudioResource::~AudioResource()
@@ -36,7 +36,7 @@ AudioResource::~AudioResource()
     fclose((FILE*)_data);
   else if(_flags & TINYOAL_COPYINTOMEMORY && _data != 0)
     free(_data);
-  bss::LLRemove<AudioResource>(this, TinyOAL::Instance()->_reslist);
+  bun::LLRemove<AudioResource>(this, TinyOAL::Instance()->_reslist);
 }
 
 void AudioResource::_destruct()
@@ -75,8 +75,8 @@ Audio* AudioResource::Play(TINYOAL_FLAG flags)
 AudioResource* AudioResource::Create(const char* file, TINYOAL_FLAG flags, unsigned char filetype, uint64_t loop)
 {
   FILE* f;
-#ifdef BSS_PLATFORM_WIN32
-  _wfopen_s(&f, bss::StrW(file).c_str(), L"rb");
+#ifdef BUN_PLATFORM_WIN32
+  _wfopen_s(&f, bun::StrW(file).c_str(), L"rb");
 #else
   FOPEN(f, file, "rb");
 #endif
@@ -93,7 +93,7 @@ AudioResource* AudioResource::Create(const char* file, TINYOAL_FLAG flags, unsig
 AudioResource* AudioResource::Create(FILE* file, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
                                      uint64_t loop)
 {
-  return AudioResource::_fcreate(file, datalength, flags | TINYOAL_COPYINTOMEMORY, filetype, bss::StrF("%p", file), loop);
+  return AudioResource::_fcreate(file, datalength, flags | TINYOAL_COPYINTOMEMORY, filetype, bun::StrF("%p", file), loop);
 }
 
 AudioResource* AudioResource::Create(const void* data, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,
@@ -112,7 +112,7 @@ AudioResource* AudioResource::Create(const void* data, uint32_t datalength, TINY
     filetype = TinyOAL::Instance()->_getFiletype((const char*)data);
 
   if((flags & TINYOAL_FORCETOWAVE) == TINYOAL_FORCETOWAVE)
-    return _force(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
+    return _force(const_cast<void*>(data), datalength, flags, filetype, bun::StrF("%p", data), loop);
   else if(flags & TINYOAL_COPYINTOMEMORY)
   {
     void* ndata = malloc(datalength);
@@ -121,7 +121,7 @@ AudioResource* AudioResource::Create(const void* data, uint32_t datalength, TINY
     data = ndata;
   } // We do a const cast here because data must be stored as void* in case it needs to be deleted. Otherwise, we don't
     // touch it.
-  return _create(const_cast<void*>(data), datalength, flags, filetype, bss::StrF("%p", data), loop);
+  return _create(const_cast<void*>(data), datalength, flags, filetype, bun::StrF("%p", data), loop);
 }
 
 AudioResource* AudioResource::_force(void* data, uint32_t datalength, TINYOAL_FLAG flags, unsigned char filetype,

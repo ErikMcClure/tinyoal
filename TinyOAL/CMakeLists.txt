@@ -23,7 +23,7 @@ set_property(TARGET TinyOAL PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET TinyOAL PROPERTY VERBOSE_MAKEFILE TRUE)
 
 retarget_output(TinyOAL)
-target_include_directories(TinyOAL PUBLIC ${CMAKE_SOURCE_DIR}/bss-util/include)
+target_include_directories(TinyOAL PUBLIC ${CMAKE_SOURCE_DIR}/buntils/include)
 target_include_directories(TinyOAL PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(TinyOAL PUBLIC ${PROJECT_SOURCE_DIR})
 

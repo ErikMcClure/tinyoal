@@ -19,11 +19,11 @@
 #include <stdio.h>
 
 using namespace tinyoal;
-using namespace bss;
+using namespace bun;
 
 #define LOG(level, format, ...) Log(__FILE__, __LINE__, level, format, ##__VA_ARGS__)
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
   #include "win32_includes.h"
   #include <ShlObj.h>
 
@@ -43,7 +43,7 @@ size_t UTF16toUTF8(const wchar_t* input, ptrdiff_t srclen, char* output, size_t 
 #endif
 
 TinyOAL* TinyOAL::_instance           = nullptr;
-const bssVersionInfo TinyOAL::Version = { 0, TINYOAL_VERSION_REVISION, TINYOAL_VERSION_MINOR, TINYOAL_VERSION_MAJOR };
+const bun_VersionInfo TinyOAL::Version = { 0, TINYOAL_VERSION_REVISION, TINYOAL_VERSION_MINOR, TINYOAL_VERSION_MAJOR };
 
 TinyOAL::TinyOAL(enum ENGINE_TYPE type, FNLOG fnLog, unsigned char defnumbuf, const char* forceOAL, const char* forceOGG,
                  const char* forceFLAC,
@@ -117,7 +117,7 @@ int TinyOAL::DefaultLog(const char* file, uint32_t line, unsigned char level, co
   static std::unique_ptr<std::FILE, decltype(&std::fclose)> f(std::fopen("tinyoal.log", "wb"), &std::fclose);
   const char* r  = strrchr(file, '/');
   const char* r2 = strrchr(file, '\\');
-  r              = bssmax(r, r2);
+  r              = std::max(r, r2);
   file           = (!r) ? file : (r + 1);
 
   const char* lvl = "UNKNOWN";
@@ -176,22 +176,22 @@ void TinyOAL::_addAudio(Audio* ref, AudioResource* res)
 {
   if(!res->_activelist) // If true we need to move it
   {
-    bss::LLRemove(res, _reslist);
-    bss::LLAdd(res, _activereslist);
+    bun::LLRemove(res, _reslist);
+    bun::LLAdd(res, _activereslist);
   }
-  bss::LLRemove(ref, res->_inactivelist);
-  bss::LLAdd(ref, res->_activelist, res->_activelistend);
+  bun::LLRemove(ref, res->_inactivelist);
+  bun::LLAdd(ref, res->_activelist, res->_activelistend);
   ++res->_numactive;
 }
 void TinyOAL::_removeAudio(Audio* ref, AudioResource* res)
 {
-  bss::LLRemove(ref, res->_activelist, res->_activelistend);
-  bss::LLAdd(ref, res->_inactivelist);
+  bun::LLRemove(ref, res->_activelist, res->_activelistend);
+  bun::LLAdd(ref, res->_inactivelist);
   --res->_numactive;
   if(!res->_activelist)
   {
-    bss::LLRemove(res, _activereslist);
-    bss::LLAdd(res, _reslist);
+    bun::LLRemove(res, _activereslist);
+    bun::LLAdd(res, _reslist);
   }
 }
 
@@ -201,7 +201,7 @@ char* TinyOAL::_allocDecoder(uint32_t sz)
   if(!p)
   {
     LOG(4, "Created allocation pool of size %u", sz);
-    _treealloc.Insert(sz, std::unique_ptr<bss::BlockAlloc>(new BlockAlloc(sz, 3)));
+    _treealloc.Insert(sz, std::unique_ptr<bun::BlockAlloc>(new BlockAlloc(sz, 3)));
     p = _treealloc[sz];
   }
   return !p ? 0 : (char*)p->Alloc();
@@ -239,7 +239,7 @@ void TinyOAL::SetSettingsStream(const char* data)
   const char*
     magic; // stores the location of the openAL config file, usually buried in %APPDATA% or other dark corners of the abyss.
   Str path;
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
   path.resize(MAX_PATH); // We have to resize here, putting numbers into the constructor just reserves things instead
   if(SHGetSpecialFolderPathA(nullptr, path.UnsafeString(), CSIDL_APPDATA, FALSE) != FALSE)
   {

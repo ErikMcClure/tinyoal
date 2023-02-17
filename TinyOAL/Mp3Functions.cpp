@@ -3,10 +3,9 @@
 // For conditions of distribution and use, see copyright notice in TinyOAL.h
 
 #include "Mp3Functions.h"
-#include "bss-util/bss_util.h"
 #include "tinyoal/TinyOAL.h"
 
-#ifdef BSS_PLATFORM_WIN32
+#ifdef BUN_PLATFORM_WIN32
   #include "win32_includes.h"
 
   #define MP3_MODULE "mpg123.dll"
@@ -27,7 +26,7 @@ Mp3Functions::Mp3Functions(const char* force)
   if(!force)
     force = MP3_MODULE;
 
-  bss::bssFill(*this, 0);
+  bun::bun_Fill(*this, 0);
   _mpgDLL = LOADDYNLIB(force);
 
   if(_mpgDLL)
@@ -58,7 +57,7 @@ Mp3Functions::Mp3Functions(const char* force)
       if(fn_mpgExit != nullptr)
         fn_mpgExit();
       FREEDYNLIB(_mpgDLL);
-      bss::bssFill(*this, 0);
+      bun::bun_Fill(*this, 0);
     }
   }
   else

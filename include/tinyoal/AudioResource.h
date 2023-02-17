@@ -5,10 +5,10 @@
 #ifndef TOAL__AUDIO_RESOURCE_H
 #define TOAL__AUDIO_RESOURCE_H
 
-#include "bss-util/Hash.h"
-#include "bss-util/RefCounter.h"
-#include "bss-util/Str.h"
-#include "bss-util/BlockAlloc.h"
+#include "buntils/Hash.h"
+#include "buntils/RefCounter.h"
+#include "buntils/Str.h"
+#include "buntils/BlockAlloc.h"
 #include "Audio.h"
 #include <stdio.h>
 
@@ -16,7 +16,7 @@ namespace tinyoal {
   // Holds information about a given audio resource. An audio resource is different from an actual Audio instance, in that
   // it holds the raw audio information, which is then ACCESSED by any number of Audio instances. This prevents memory
   // wasting.
-  class TINYOAL_DLLEXPORT AudioResource : public bss::RefCounter, public bss::LLBase<AudioResource>
+  class TINYOAL_DLLEXPORT AudioResource : public bun::RefCounter, public bun::LLBase<AudioResource>
   {
   public:
     virtual void* OpenStream() = 0; // This returns a pointer to the internal stream on success, or NULL on failure
@@ -93,7 +93,7 @@ namespace tinyoal {
 
     void* _data;
     size_t _datalength;
-    bss::BitField<TINYOAL_FLAG> _flags;
+    bun::BitField<TINYOAL_FLAG> _flags;
     const TINYOAL_FILETYPE _filetype;
     unsigned int _freq;
     unsigned int _channels;
@@ -102,7 +102,7 @@ namespace tinyoal {
     unsigned short _samplebits;
     uint64_t _loop;
     uint64_t _total; // total number of samples
-    bss::Str _hash;
+    bun::Str _hash;
     Audio* _activelist;
     Audio* _activelistend;
     Audio* _inactivelist;
