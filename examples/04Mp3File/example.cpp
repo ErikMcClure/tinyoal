@@ -20,7 +20,7 @@ using namespace tinyoal;
 int main()
 {
   TinyOAL::SetSettingsStream(0); // Done in case testbed failed and left a settings file in.
-  TinyOAL engine(ENGINE_WASAPI_EXCLUSIVE);
+  TinyOAL engine(ENGINE_OPENAL);
  
   {
     // TinyOAL attempts to use file headers to detect the filetype, and does not rely on extensions. However, this
